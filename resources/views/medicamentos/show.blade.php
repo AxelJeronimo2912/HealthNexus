@@ -67,6 +67,87 @@
                 </dl>
             </div>
 
+            {{-- STOCK --}}
+            <div class="bg-white p-6 rounded-lg shadow space-y-4">
+
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Stock actual</p>
+                        <p
+                            class="text-3xl font-bold {{ $medicamento->stock_bajo ? 'text-red-600' : 'text-green-600' }}">
+                            {{ $medicamento->stock_actual }} {{ $medicamento->unidad_medida }}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            Mínimo: {{ $medicamento->stock_minimo }} | Máximo: {{ $medicamento->stock_maximo }}
+                        </p>
+                        @if ($medicamento->stock_bajo)
+                            <p class="text-xs text-red-600 mt-1">⚠️ Stock por debajo del mínimo</p>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Formulario rápido de entrada --}}
+                <form action="{{ route('medicamentos.entrada', $medicamento) }}" method="POST"
+                    class="flex gap-2 items-end pt-4 border-t">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500">Registrar entrada</label>
+                        <input type="number" name="cantidad" min="1" value="10"
+                            class="w-full border-gray-300 rounded-md shadow-sm text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500">Motivo</label>
+                        <input type="text" name="motivo" placeholder="Compra, donación..."
+                            class="w-full border-gray-300 rounded-md shadow-sm text-sm">
+                    </div>
+                    <button type="submit"
+                        class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm">
+                        + Entrada
+                    </button>
+                </form>
+
+                {{-- Historial de movimientos --}}
+                <div>
+                    <h4 class="font-semibold text-sm text-gray-700 mb-2">Últimos movimientos</h4>
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-1 text-left text-xs text-gray-500">Fecha</th>
+                                <th class="px-2 py-1 text-left text-xs text-gray-500">Tipo</th>
+                                <th class="px-2 py-1 text-right text-xs text-gray-500">Cant.</th>
+                                <th class="px-2 py-1 text-right text-xs text-gray-500">Stock</th>
+                                <th class="px-2 py-1 text-left text-xs text-gray-500">Motivo</th>
+                                <th class="px-2 py-1 text-left text-xs text-gray-500">Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($medicamento->movimientos()->limit(20)->get() as $mov)
+                                <tr class="border-b">
+                                    <td class="px-2 py-1">{{ $mov->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="px-2 py-1">
+                                        <span class="px-2 py-0.5 rounded text-xs {{ $mov->tipo_color }}">
+                                            {{ $mov->tipo_label }}
+                                        </span>
+                                    </td>
+                                    <td
+                                        class="px-2 py-1 text-right {{ $mov->cantidad >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $mov->cantidad >= 0 ? '+' : '' }}{{ $mov->cantidad }}
+                                    </td>
+                                    <td class="px-2 py-1 text-right">{{ $mov->stock_nuevo }}</td>
+                                    <td class="px-2 py-1 text-xs text-gray-500">{{ $mov->motivo ?? '—' }}</td>
+                                    <td class="px-2 py-1 text-xs">{{ $mov->user?->nombre_completo ?? '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-2 py-3 text-center text-gray-500 text-xs">Sin
+                                        movimientos.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div>
                 <h4 class="font-semibold text-sm text-gray-700 mb-2">Estado</h4>
                 @if ($medicamento->activo)

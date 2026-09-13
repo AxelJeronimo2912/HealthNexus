@@ -11,6 +11,10 @@ use App\Http\Controllers\SignoVitalController;
 use App\Http\Controllers\TurnoController;
 use App\Http\Controllers\AsignacionTurnoController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\CitaController;
+use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\ExpedienteController;
+    use App\Http\Controllers\ExistenciaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,13 +94,24 @@ Route::middleware(['auth', 'role:administrador'])
 Route::middleware(['auth', 'permission:medicamentos.ver'])
     ->group(function () {
         Route::resource('medicamentos', MedicamentoController::class);
+        
     });
-/*
-|--------------------------------------------------------------------------
-| Rutas de autenticación (Breeze + PIN)
-|--------------------------------------------------------------------------
-*/
 
+
+    Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
+    ->middleware(['auth', 'permission:medicamentos.ver'])
+    ->name('medicamentos.entrada');
+
+
+
+
+Route::middleware(['auth', 'permission:expediente.ver'])
+    ->prefix('expedientes')
+    ->name('expedientes.')
+    ->group(function () {
+        Route::get('/', [ExpedienteController::class, 'index'])->name('index');
+        Route::get('/{paciente}', [ExpedienteController::class, 'show'])->name('show');
+    });
 
 
 /*
@@ -145,4 +160,42 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
         Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
     });
 
+
+
+Route::middleware(['auth', 'permission:citas.ver'])
+    ->prefix('citas')
+    ->name('citas.')
+    ->group(function () {
+        Route::get('/', [CitaController::class, 'index'])->name('index');
+        Route::get('/{cita}', [CitaController::class, 'show'])->name('show');
+        Route::post('/{cita}/estado', [CitaController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
+    });
+
+
+
+
+Route::middleware(['auth', 'permission:consultas.ver'])
+    ->prefix('consultas')
+    ->name('consultas.')
+    ->group(function () {
+        Route::get('/cita/{cita}/iniciar', [ConsultaController::class, 'iniciar'])->name('iniciar');
+        Route::post('/cita/{cita}', [ConsultaController::class, 'store'])->name('store');
+        Route::get('/{consulta}', [ConsultaController::class, 'show'])->name('show');
+        Route::get('/{consulta}/editar', [ConsultaController::class, 'edit'])->name('edit');
+        Route::put('/{consulta}', [ConsultaController::class, 'update'])->name('update');
+        Route::get('/{consulta}/pdf', [ConsultaController::class, 'pdf'])->name('pdf');
+        Route::get('/{consulta}/receta/pdf', [ConsultaController::class, 'pdfReceta'])->name('receta.pdf');
+    });
+
+
+
+Route::middleware(['auth', 'permission:existencias.ver'])
+    ->prefix('existencias')
+    ->name('existencias.')
+    ->group(function () {
+        Route::get('/', [ExistenciaController::class, 'index'])->name('index');
+        Route::get('/lotes', [ExistenciaController::class, 'lotes'])->name('lotes');
+        Route::get('/{medicamento}', [ExistenciaController::class, 'show'])->name('show');
+    });
 require __DIR__.'/auth.php';

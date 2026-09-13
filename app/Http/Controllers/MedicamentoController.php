@@ -6,6 +6,7 @@ use App\Models\Medicamento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Services\InventarioService;
 
 class MedicamentoController extends Controller
 {
@@ -26,6 +27,21 @@ class MedicamentoController extends Controller
         return view('medicamentos.index', compact('medicamentos', 'busqueda'));
     }
 
+    public function entrada(Request $request, Medicamento $medicamento): RedirectResponse
+{
+    $request->validate([
+        'cantidad' => ['required', 'integer', 'min:1'],
+        'motivo' => ['nullable', 'string', 'max:255'],
+    ]);
+
+    InventarioService::entrada(
+        $medicamento,
+        (int) $request->cantidad,
+        $request->motivo ?? 'Entrada manual'
+    );
+
+    return back()->with('success', "Se agregaron {$request->cantidad} unidades al stock.");
+}
     public function create(): View
     {
         return view('medicamentos.create');

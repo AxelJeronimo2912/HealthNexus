@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Medicamento;
+use App\Models\MovimientoInventario;
 use Illuminate\Database\Seeder;
 
 class MedicamentoSeeder extends Seeder
@@ -115,7 +116,7 @@ class MedicamentoSeeder extends Seeder
             ['Aciclovir', 'Aciclovir sódico', 'Solución inyectable', '250 mg', 'Intravenosa', 'Antiviral'],
             ['Oseltamivir', 'Oseltamivir fosfato', 'Cápsula', '75 mg', 'Oral', 'Antiviral'],
 
-            // Analgésicos / Anestésicos
+            // Anestésicos
             ['Lidocaína', 'Lidocaína clorhidrato', 'Solución inyectable', '2 %', 'Subcutánea', 'Anestésico local'],
             ['Bupivacaína', 'Bupivacaína clorhidrato', 'Solución inyectable', '0.5 %', 'Subcutánea', 'Anestésico local'],
             ['Midazolam', 'Midazolam clorhidrato', 'Solución inyectable', '5 mg/ml', 'Intravenosa', 'Sedante'],
@@ -139,7 +140,7 @@ class MedicamentoSeeder extends Seeder
             ['Cloruro de Potasio', 'Cloruro de potasio', 'Solución inyectable', '20 mEq/10 ml', 'Intravenosa', 'Electrolito'],
             ['Bicarbonato de Sodio', 'Bicarbonato de sodio', 'Solución inyectable', '1 mEq/ml', 'Intravenosa', 'Electrolito'],
 
-            // Oftálmicos / Óticos
+            // Oftálmicos
             ['Tobramicina', 'Tobramicina', 'Solución oftálmica', '0.3 %', 'Oftálmica', 'Antibiótico oftálmico'],
             ['Ciprofloxacino', 'Ciprofloxacino', 'Solución oftálmica', '0.3 %', 'Oftálmica', 'Antibiótico oftálmico'],
             ['Lágrimas Artificiales', 'Carboximetilcelulosa', 'Solución oftálmica', '0.5 %', 'Oftálmica', 'Lubricante ocular'],
@@ -212,7 +213,7 @@ class MedicamentoSeeder extends Seeder
             ['Acetilcisteína', 'Acetilcisteína', 'Solución inyectable', '300 mg/3 ml', 'Intravenosa', 'Mucolítico'],
             ['Aminofilina', 'Aminofilina', 'Solución inyectable', '250 mg/10 ml', 'Intravenosa', 'Broncodilatador'],
 
-            // Antihipertensivos / Vasodilatadores
+            // Vasodilatadores
             ['Isosorbide', 'Isosorbide dinitrato', 'Tableta', '5 mg', 'Oral', 'Vasodilatador'],
             ['Amlodipino', 'Amlodipino besilato', 'Tableta', '10 mg', 'Oral', 'Antihipertensivo'],
             ['Valsartán', 'Valsartán', 'Tableta', '80 mg', 'Oral', 'Antihipertensivo'],
@@ -221,7 +222,7 @@ class MedicamentoSeeder extends Seeder
             ['Bisoprolol', 'Bisoprolol fumarato', 'Tableta', '5 mg', 'Oral', 'Antihipertensivo'],
             ['Nebivolol', 'Nebivolol', 'Tableta', '5 mg', 'Oral', 'Antihipertensivo'],
 
-            // Antihipertensivos combinados
+            // Combinados
             ['Losartán + Hidroclorotiazida', 'Losartán + Hidroclorotiazida', 'Tableta', '50/12.5 mg', 'Oral', 'Antihipertensivo'],
             ['Valsartán + Hidroclorotiazida', 'Valsartán + Hidroclorotiazida', 'Tableta', '80/12.5 mg', 'Oral', 'Antihipertensivo'],
             ['Enalapril + Hidroclorotiazida', 'Enalapril + Hidroclorotiazida', 'Tableta', '10/25 mg', 'Oral', 'Antihipertensivo'],
@@ -256,6 +257,9 @@ class MedicamentoSeeder extends Seeder
 
         $unidades = ['pieza', 'caja', 'frasco', 'ampolleta', 'tubo', 'sobre', 'blíster'];
 
+        $totalMedicamentos = 0;
+        $totalMovimientos = 0;
+
         foreach ($medicamentos as $index => $med) {
             [$nombre, $sustancia, $presentacion, $concentracion, $via, $grupo] = $med;
 
@@ -263,7 +267,9 @@ class MedicamentoSeeder extends Seeder
             $esPsicotropico = in_array(strtolower($grupo), ['antidepresivo', 'ansiolítico', 'antipsicótico']);
             $esControlado = in_array(strtolower($nombre), ['morfina', 'fentanilo', 'tramadol', 'midazolam', 'ketamina', 'propofol', 'clonazepam', 'alprazolam', 'diazepam']);
 
-            Medicamento::create([
+            $stockInicial = rand(50, 200);
+
+            $medicamento = Medicamento::create([
                 'nombre' => $nombre,
                 'sustancia_activa' => $sustancia,
                 'presentacion' => $presentacion,
@@ -279,12 +285,30 @@ class MedicamentoSeeder extends Seeder
                 'unidad_medida' => $unidades[array_rand($unidades)],
                 'stock_minimo' => rand(5, 50),
                 'stock_maximo' => rand(100, 500),
+                'stock_actual' => $stockInicial,   
                 'precio_compra' => rand(20, 800) + (rand(0, 99) / 100),
                 'precio_venta' => rand(30, 1200) + (rand(0, 99) / 100),
                 'activo' => true,
             ]);
+
+            $totalMedicamentos++;
+
+            MovimientoInventario::create([
+                'medicamento_id' => $medicamento->id,
+                'user_id' => null,   // sin usuario (fue el sistema)
+                'tipo' => 'entrada',
+                'cantidad' => $stockInicial,
+                'stock_anterior' => 0,
+                'stock_nuevo' => $stockInicial,
+                'motivo' => 'Stock inicial (carga masiva)',
+                'referencia_tipo' => 'seeder',
+                'referencia_id' => null,
+            ]);
+
+            $totalMovimientos++;
         }
 
-        $this->command->info(' ' . count($medicamentos) . ' medicamentos creados.');
+        $this->command->info("✅ {$totalMedicamentos} medicamentos creados con stock inicial.");
+        $this->command->info("✅ {$totalMovimientos} movimientos de inventario creados.");
     }
 }

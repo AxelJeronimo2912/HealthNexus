@@ -37,7 +37,8 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sustancia</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Presentación</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock mín.</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock mín.</th>}
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>
@@ -49,6 +50,15 @@
                             <td class="px-4 py-3 text-sm">{{ $med->sustancia_activa ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm">{{ $med->presentacion ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm">{{ $med->stock_minimo }}</td>
+                            <td class="px-4 py-3 text-sm">
+                                @if ($med->stock_actual <= 0)
+                                    <span class="text-red-600 font-semibold">{{ $med->stock_actual }} — Sin stock</span>
+                                @elseif ($med->stock_bajo)
+                                    <span class="text-yellow-600 font-semibold">{{ $med->stock_actual }} — Bajo</span>
+                                @else
+                                    <span class="text-green-600 font-semibold">{{ $med->stock_actual }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-sm">
                                 @if ($med->activo)
                                     <span class="text-green-600 font-semibold">Activo</span>

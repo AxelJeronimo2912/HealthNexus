@@ -26,6 +26,8 @@ class RolePermissionSeeder extends Seeder
             'signos-vitales.ver',
             'camas.ver',
             'agenda.ver',
+            'expediente.ver',
+            'existencias.ver'
         ]);
 
         // Enfermería
@@ -37,7 +39,9 @@ class RolePermissionSeeder extends Seeder
             'seguimiento.ver',
             'signos-vitales.ver',
             'camas.ver',
-            'agenda.ver'
+            'agenda.ver',
+            'expediente.ver',
+            'existencias.ver'
         ]);
 
         // Farmacia
@@ -47,7 +51,7 @@ class RolePermissionSeeder extends Seeder
             'existencias.ver',
             'movimientos.ver',
             'prediccion.ver',
-            
+            'existencias.ver'
         ]);
     }
 }

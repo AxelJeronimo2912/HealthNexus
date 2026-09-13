@@ -69,8 +69,7 @@
                             <td class="px-4 py-3 text-right text-sm space-x-2">
                                 <a href="{{ route('signos-vitales.show', $r) }}"
                                     class="text-gray-600 hover:underline">Ver</a>
-                                <a href="{{ route('signos-vitales.edit', $r) }}"
-                                    class="text-blue-600 hover:underline">Editar</a>
+
                             </td>
                         </tr>
                     @empty

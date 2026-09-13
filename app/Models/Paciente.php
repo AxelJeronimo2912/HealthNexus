@@ -66,4 +66,27 @@ public function asignacionesCama()
 {
     return $this->hasMany(CamaPaciente::class);
 }
+
+public function ultimoSignoVital()
+{
+    return $this->hasOne(SignoVital::class)->latestOfMany();
+}
+
+/**
+ * Accessor directo al objeto para usar en vistas.
+ */
+public function getUltimoSignoAttribute(): ?SignoVital
+{
+    return $this->relationLoaded('ultimoSignoVital')
+        ? $this->ultimoSignoVital
+        : $this->ultimoSignoVital()->first();
+}
+
+public function consultas()
+{
+    return $this->hasMany(Consulta::class);
+}
+
+
+
 }

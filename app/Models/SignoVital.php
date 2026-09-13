@@ -24,6 +24,8 @@ class SignoVital extends Model
         'triage_manual' => 'boolean',
     ];
 
+    // ---------------- Relaciones ----------------
+
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
@@ -38,6 +40,8 @@ class SignoVital extends Model
     {
         return $this->hasMany(CamaPaciente::class);
     }
+
+    // ---------------- Accessors seguros ----------------
 
     public function getImcAttribute(): ?float
     {
@@ -91,5 +95,20 @@ class SignoVital extends Model
             'azul' => 5,
             default => 99,
         };
+    }
+
+    // ---------------- Helpers ----------------
+
+    /**
+     * Devuelve el último signo vital de un paciente, o null si no tiene.
+     * Uso: SignoVital::ultimoDe($pacienteId)
+     */
+    public static function ultimoDe(?int $pacienteId): ?self
+    {
+        if (!$pacienteId) return null;
+
+        return static::where('paciente_id', $pacienteId)
+            ->orderByDesc('created_at')
+            ->first();
     }
 }

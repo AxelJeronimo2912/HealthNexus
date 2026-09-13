@@ -70,7 +70,8 @@
             @endcan
 
             @can('citas.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('citas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('citas.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-calendar-days class="w-5 h-5" />
                     <span class="ml-2">Citas</span>
                 </a>
@@ -112,14 +113,16 @@
             <p class="px-3 pt-4 pb-1 text-xs uppercase text-slate-500 tracking-wider">Atención Clínica</p>
 
             @can('expediente.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('expedientes.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('expedientes.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-document-text class="w-5 h-5" />
                     <span class="ml-2">Expediente</span>
                 </a>
             @endcan
 
             @can('consultas.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('citas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('citas.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5" />
                     <span class="ml-2">Consultas</span>
                 </a>
@@ -160,7 +163,8 @@
             @endcan
 
             @can('existencias.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('existencias.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('existencias.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-archive-box class="w-5 h-5" />
                     <span class="ml-2">Existencias</span>
                 </a>

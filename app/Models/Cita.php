@@ -30,6 +30,10 @@ class Cita extends Model
         return $this->belongsTo(User::class, 'medico_id');
     }
 
+    public function consulta()
+{
+    return $this->hasOne(Consulta::class);
+}
     public function turno()
     {
         return $this->belongsTo(Turno::class);

@@ -26,7 +26,7 @@ return [
                 ['permiso' => 'admision.ver',       'label' => 'Admisión',       'icono' => 'clipboard-document-check', 'ruta' => '#'],
                 ['permiso' => 'servicios.ver',      'label' => 'Servicios',      'icono' => 'building-office-2',        'ruta' => '#'],
                 ['permiso' => 'especialidades.ver', 'label' => 'Especialidades', 'icono' => 'academic-cap',             'ruta' => '#'],
-                ['permiso' => 'citas.ver',          'label' => 'Citas',          'icono' => 'calendar-days',            'ruta' => '#'],
+                ['permiso' => 'citas.ver', 'label' => 'Citas', 'icono' => 'calendar-days', 'ruta' => 'citas.index'],
                 ['permiso' => 'turnos.ver',         'label' => 'Turnos',         'icono' => 'clock',                    'ruta' => 'admin.turnos.index'],
                 ['permiso' => 'camas.ver',          'label' => 'Camas',          'icono' => 'home-modern',              'ruta' => 'camas.index'],
             ],
@@ -42,8 +42,7 @@ return [
             'items' => [
                 ['permiso' => 'agenda.ver',          'label' => 'Calendario de Citas', 'icono' => 'calendar-days',           'ruta' => 'agenda.index'],
                 ['permiso' => 'agenda.crear',        'label' => 'Nueva Cita',          'icono' => 'plus-circle',             'ruta' => 'agenda.create'],
-                ['permiso' => 'expediente.ver',      'label' => 'Expediente',          'icono' => 'document-text',           'ruta' => '#'],
-                ['permiso' => 'consultas.ver',       'label' => 'Consultas',           'icono' => 'clipboard-document-list', 'ruta' => '#'],
+                ['permiso' => 'expediente.ver', 'label' => 'Expediente', 'icono' => 'document-text', 'ruta' => 'expedientes.index'],                ['permiso' => 'consultas.ver',       'label' => 'Consultas',           'icono' => 'clipboard-document-list', 'ruta' => 'citas.index'],
                 ['permiso' => 'enfermeria.ver',      'label' => 'Enfermería',          'icono' => 'heart',                   'ruta' => '#'],
                 ['permiso' => 'seguimiento.ver',     'label' => 'Seguimiento',         'icono' => 'chart-bar',               'ruta' => '#'],
                 ['permiso' => 'signos-vitales.ver',  'label' => 'Signos Vitales',      'icono' => 'heart',                   'ruta' => 'signos-vitales.index'],
@@ -59,7 +58,7 @@ return [
             'titulo' => 'Farmacia e Inventario',
             'items' => [
                 ['permiso' => 'medicamentos.ver', 'label' => 'Medicamentos',  'icono' => 'beaker',      'ruta' => 'medicamentos.index'],
-                ['permiso' => 'existencias.ver',  'label' => 'Existencias',   'icono' => 'archive-box', 'ruta' => '#'],
+                ['permiso' => 'existencias.ver', 'label' => 'Existencias', 'icono' => 'archive-box', 'ruta' => 'existencias.index'],
                 ['permiso' => 'movimientos.ver',  'label' => 'Movimientos',   'icono' => 'arrow-path',  'ruta' => '#'],
                 ['permiso' => 'prediccion.ver',   'label' => 'Predicción IA', 'icono' => 'cpu-chip',    'ruta' => '#'],
             ],

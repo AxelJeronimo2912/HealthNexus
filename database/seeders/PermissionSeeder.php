@@ -20,12 +20,14 @@ class PermissionSeeder extends Seeder
 
             // Atención Clínica
             'expediente.ver',
-            'consultas.ver',
+            'consultas.ver',      
             'enfermeria.ver',
             'seguimiento.ver',
             'camas.ver',
+              'consultas.ver',
             'signos-vitales.ver',
-
+            'expediente.ver',
+            'existencias.ver',
             // Farmacia e Inventario
             'medicamentos.ver',
             'existencias.ver',
@@ -33,7 +35,7 @@ class PermissionSeeder extends Seeder
             'prediccion.ver',
             'turnos.ver',
             'agenda.ver',
-            
+
             // Seguridad e Inteligencia
             'usuarios.ver',
             'roles.ver',

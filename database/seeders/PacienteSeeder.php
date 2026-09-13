@@ -15,7 +15,7 @@ class PacienteSeeder extends Seeder
         $estados = Estado::with('municipios')->get();
 
         if ($estados->isEmpty()) {
-            $this->command->error(' No hay estados en la base de datos. Corre primero EstadosMunicipiosSeeder.');
+            $this->command->error('No hay estados en la base de datos. Corre primero EstadosMunicipiosSeeder.');
             return;
         }
 
@@ -197,49 +197,85 @@ class PacienteSeeder extends Seeder
     /**
      * Genera una CURP simplificada (18 caracteres).
      */
-   private function generarCurp(
-    string $nombre,
-    string $apellidoPaterno,
-    string $apellidoMaterno,
-    string $fechaNacimiento,
-    string $sexo,
-    string $estado
-): string {
-    $iniciales = strtoupper(
-        substr($apellidoPaterno, 0, 1) .
-        $this->primeraVocal($apellidoPaterno) .
-        substr($apellidoMaterno, 0, 1) .
-        substr($nombre, 0, 1)
-    );
+    private function generarCurp(
+        string $nombre,
+        string $apellidoPaterno,
+        string $apellidoMaterno,
+        string $fechaNacimiento,
+        string $sexo,
+        string $estado
+    ): string {
+        // Quitar acentos y caracteres especiales antes de generar la CURP
+        $nombre = $this->limpiarParaCurp($nombre);
+        $apellidoPaterno = $this->limpiarParaCurp($apellidoPaterno);
+        $apellidoMaterno = $this->limpiarParaCurp($apellidoMaterno);
 
-    $fecha = str_replace('-', '', $fechaNacimiento);
-    $yy = substr($fecha, 2, 2);
-    $mm = substr($fecha, 4, 2);
-    $dd = substr($fecha, 6, 2);
+        $iniciales = strtoupper(
+            substr($apellidoPaterno, 0, 1) .
+            $this->primeraVocal($apellidoPaterno) .
+            substr($apellidoMaterno, 0, 1) .
+            substr($nombre, 0, 1)
+        );
 
-    $estadoClave = $this->claveEstado($estado);
-    $consonantes = strtoupper(
-        $this->primeraConsonante($apellidoPaterno) .
-        $this->primeraConsonante($apellidoMaterno) .
-        $this->primeraConsonante($nombre)
-    );
+        $fecha = str_replace('-', '', $fechaNacimiento);
 
-    // Homoclave: SOLO 1 carácter (dígito) + 1 dígito verificador = 18 total
-    $homoclave = rand(0, 9);
-    $digito = rand(0, 9);
+        $yy = substr($fecha, 2, 2);
+        $mm = substr($fecha, 4, 2);
+        $dd = substr($fecha, 6, 2);
 
-    return $iniciales . $yy . $mm . $dd . $sexo . $estadoClave . $consonantes . $homoclave . $digito;
-}
+        $estadoClave = $this->claveEstado($estado);
 
+        $consonantes = strtoupper(
+            $this->primeraConsonante($apellidoPaterno) .
+            $this->primeraConsonante($apellidoMaterno) .
+            $this->primeraConsonante($nombre)
+        );
+
+        $homoclave = rand(0, 9);
+        $digito = rand(0, 9);
+
+        return $iniciales
+            . $yy
+            . $mm
+            . $dd
+            . $sexo
+            . $estadoClave
+            . $consonantes
+            . $homoclave
+            . $digito;
+    }
+
+    /**
+     * Limpia un texto dejándolo solo con letras a-z (minúsculas) sin acentos.
+     * Usado para emails.
+     */
     private function limpiar(string $texto): string
     {
-        $texto = strtolower($texto);
-        $texto = str_replace(
-            ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü'],
-            ['a', 'e', 'i', 'o', 'u', 'n', 'u'],
-            $texto
-        );
-        return preg_replace('/[^a-z]/', '', $texto);
+        return $this->limpiarParaCurp(strtolower($texto));
+    }
+
+    /**
+     * Quita acentos, diéresis y la Ñ, dejando solo A-Z (mayúsculas).
+     * Usado para generar la CURP.
+     */
+    private function limpiarParaCurp(string $texto): string
+    {
+        $texto = strtoupper($texto);
+
+        $reemplazos = [
+            'Á' => 'A', 'À' => 'A', 'Ä' => 'A', 'Â' => 'A',
+            'É' => 'E', 'È' => 'E', 'Ë' => 'E', 'Ê' => 'E',
+            'Í' => 'I', 'Ì' => 'I', 'Ï' => 'I', 'Î' => 'I',
+            'Ó' => 'O', 'Ò' => 'O', 'Ö' => 'O', 'Ô' => 'O',
+            'Ú' => 'U', 'Ù' => 'U', 'Ü' => 'U', 'Û' => 'U',
+            'Ñ' => 'X', // La Ñ se sustituye por X en la CURP
+            'Ç' => 'C',
+        ];
+
+        $texto = strtr($texto, $reemplazos);
+
+        // Dejar solo letras A-Z
+        return preg_replace('/[^A-Z]/', '', $texto);
     }
 
     private function primeraVocal(string $palabra): string

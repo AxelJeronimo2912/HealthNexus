@@ -35,17 +35,17 @@ class SignoVitalController extends Controller
     }
 
     public function create(Request $request): View
-    {
-        $pacienteSeleccionado = null;
-        if ($request->filled('paciente_id')) {
-            $pacienteSeleccionado = Paciente::find($request->paciente_id);
-        }
-
-        return view('signos-vitales.create', [
-            'pacientes' => Paciente::orderBy('apellido_paterno')->get(),
-            'pacienteSeleccionado' => $pacienteSeleccionado,
-        ]);
+{
+    $pacienteSeleccionado = null;
+    if ($request->filled('paciente_id')) {
+        $pacienteSeleccionado = Paciente::find($request->paciente_id);
     }
+
+    return view('signos-vitales.create', [
+        'pacientes' => Paciente::orderBy('apellido_paterno')->get(),
+        'pacienteSeleccionado' => $pacienteSeleccionado,
+    ]);
+}
 
     public function store(Request $request): RedirectResponse
     {
@@ -85,14 +85,21 @@ class SignoVitalController extends Controller
     return view('signos-vitales.show', compact('signoVital', 'camasDisponibles'));
 }
 
-    public function edit(SignoVital $signoVital): View
-    {
-        return view('signos-vitales.edit', [
-            'registro' => $signoVital,
-            'pacientes' => Paciente::orderBy('apellido_paterno')->get(),
-        ]);
-    }
+   public function edit(SignoVital $signoVital): View
+{
+    $signoVital->load('paciente'); // eager loading
 
+    abort_if(
+        !$signoVital->paciente,
+        404,
+        'El paciente asociado a este registro ya no existe.'
+    );
+
+    return view('signos-vitales.edit', [
+        'registro'    => $signoVital,
+        'pacientes'   => Paciente::orderBy('apellido_paterno')->get(),
+    ]);
+}
     public function update(Request $request, SignoVital $signoVital): RedirectResponse
     {
         $data = $this->validar($request);

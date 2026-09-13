@@ -4,18 +4,28 @@
     </x-slot>
 
     <div class="py-8 max-w-4xl mx-auto sm:px-6 lg:px-8">
+
         <form action="{{ route('signos-vitales.store') }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow"
             id="form-signos">
             @csrf
+            @if (session('warning'))
+                <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                    <p class="font-semibold text-yellow-800">⚠️ Atención</p>
+                    <p class="text-sm text-yellow-700">{{ session('warning') }}</p>
+                </div>
+            @endif
 
+            @if (request('cita_id'))
+                <input type="hidden" name="cita_id" value="{{ request('cita_id') }}">
+            @endif
             {{-- Paciente --}}
             <div>
                 <label class="block text-sm font-medium">Paciente *</label>
                 <select name="paciente_id" required class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
                     <option value="">— Selecciona un paciente —</option>
                     @foreach ($pacientes as $p)
-                        <option value="{{ $p->id }}" @selected(old('paciente_id', $pacienteSeleccionado->id ?? '') == $p->id)>
-                            {{ $p->nombre_completo }} — {{ $p->curp ?? ($p->pasaporte ?? 'Sin doc.') }}
+                        <option value="{{ $p->id }}" @selected(old('paciente_id', $pacienteSeleccionado?->id ?? '') == $p->id)>
+                            {{ $p->nombre_completo }}
                         </option>
                     @endforeach
                 </select>
