@@ -32,6 +32,8 @@
                                 'rojo' => '🔴 Rojo',
                                 'naranja' => '🟠 Naranja',
                                 'amarillo' => '🟡 Amarillo',
+                                'verde' => '🟢 Verde',
+                                'azul' => '🔵 Azul',
                                 default => '—',
                             };
                         @endphp

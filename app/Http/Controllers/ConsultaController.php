@@ -67,7 +67,7 @@ class ConsultaController extends Controller
     /* =========================================================
      |  GUARDAR CONSULTA
      ========================================================= */
-    public function store(Request $request, Cita $cita): RedirectResponse
+       public function store(Request $request, Cita $cita): RedirectResponse
     {
         $data = $this->validar($request);
 
@@ -87,14 +87,11 @@ class ConsultaController extends Controller
 
         $this->guardarMedicamentos($consulta, $request);
 
-        if ($data['estado'] === 'finalizada') {
-            $cita->update(['estado' => 'atendida']);
-        }
+        $cita->update(['estado' => 'atendida']);
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta guardada correctamente.');
     }
-
     /* =========================================================
      |  MOSTRAR CONSULTA
      ========================================================= */
@@ -139,7 +136,7 @@ class ConsultaController extends Controller
     /* =========================================================
      |  ACTUALIZAR CONSULTA
      ========================================================= */
-    public function update(Request $request, Consulta $consulta): RedirectResponse
+        public function update(Request $request, Consulta $consulta): RedirectResponse
     {
         $this->autorizarAcceso($consulta);
 
@@ -150,21 +147,19 @@ class ConsultaController extends Controller
             $data['finalizada_en'] = now();
         }
 
-        // Validar stock antes de guardar cambios (por si se agregan nuevos)
+        // Validar stock antes de guardar cambios
         $this->validarStock($request, $consulta);
 
         $consulta->update($data);
 
         $this->guardarMedicamentos($consulta, $request);
 
-        if ($consulta->estado === 'finalizada') {
-            $consulta->cita->update(['estado' => 'atendida']);
-        }
+        // ✅ SOLUCIÓN: Marcar la cita como atendida SIEMPRE
+        $consulta->cita->update(['estado' => 'atendida']);
 
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta actualizada correctamente.');
     }
-
     /* =========================================================
      |  PDF CONSULTA
      ========================================================= */

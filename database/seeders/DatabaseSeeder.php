@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             TurnoSeeder::class,
             CamaSeeder::class,
             MedicamentoSeeder::class,
+            LoteSeeder::class,
             PacienteSeeder::class,
         ]);
     }

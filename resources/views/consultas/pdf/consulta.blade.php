@@ -128,9 +128,24 @@
     <p><strong>P — Plan:</strong><br>{{ $consulta->plan ?? '—' }}</p>
 
     <h2>Diagnóstico</h2>
-    <p><strong>Principal:</strong> {{ $consulta->diagnostico_principal ?? '—' }}</p>
-    <p><strong>Secundario:</strong> {{ $consulta->diagnostico_secundario ?? '—' }}</p>
-
+    <p>
+        <strong>Principal:</strong>
+        @if ($consulta->diagnosticoPrincipal)
+            [{{ $consulta->diagnosticoPrincipal->codigo }}]
+            {{ $consulta->diagnosticoPrincipal->nombre }}
+        @else
+            —
+        @endif
+    </p>
+    <p>
+        <strong>Secundario:</strong>
+        @if ($consulta->diagnosticoSecundario)
+            [{{ $consulta->diagnosticoSecundario->codigo }}]
+            {{ $consulta->diagnosticoSecundario->nombre }}
+        @else
+            —
+        @endif
+    </p>
     @if ($consulta->medicamentos->count())
         <h2>Receta</h2>
         <table>

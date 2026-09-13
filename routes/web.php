@@ -14,7 +14,9 @@ use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\ExpedienteController;
-    use App\Http\Controllers\ExistenciaController;
+use App\Http\Controllers\ExistenciaController;
+use App\Http\Controllers\DispensacionController;
+use App\Http\Controllers\SeguimientoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -198,4 +200,31 @@ Route::middleware(['auth', 'permission:existencias.ver'])
         Route::get('/lotes', [ExistenciaController::class, 'lotes'])->name('lotes');
         Route::get('/{medicamento}', [ExistenciaController::class, 'show'])->name('show');
     });
+
+
+
+Route::middleware(['auth', 'permission:dispensaciones.ver'])
+    ->prefix('dispensaciones')
+    ->name('dispensaciones.')
+    ->group(function () {
+        Route::get('/', [DispensacionController::class, 'index'])->name('index');
+        Route::get('/{consulta}', [DispensacionController::class, 'show'])->name('show');
+        Route::post('/{consulta}/dispensar', [DispensacionController::class, 'dispensar'])->name('dispensar');
+        Route::post('/{consulta}/revertir', [DispensacionController::class, 'revertir'])->name('revertir');
+    });
+
+
+
+
+Route::middleware(['auth', 'permission:seguimiento.ver'])
+    ->prefix('seguimientos')
+    ->name('seguimientos.')
+    ->group(function () {
+        Route::get('/', [SeguimientoController::class, 'index'])->name('index');
+        Route::get('/{paciente}', [SeguimientoController::class, 'show'])->name('show');
+        Route::get('/{paciente}/crear', [SeguimientoController::class, 'create'])->name('create');
+        Route::post('/{paciente}', [SeguimientoController::class, 'store'])->name('store');
+        Route::delete('/{seguimiento}', [SeguimientoController::class, 'destroy'])->name('destroy');
+    });
+
 require __DIR__.'/auth.php';

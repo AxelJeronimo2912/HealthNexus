@@ -134,9 +134,9 @@
                     <span class="ml-2">Enfermería</span>
                 </a>
             @endcan
-
             @can('seguimiento.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('seguimientos.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('seguimientos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-chart-bar class="w-5 h-5" />
                     <span class="ml-2">Seguimiento</span>
                 </a>
@@ -161,7 +161,13 @@
                     <span class="ml-2">Medicamentos</span>
                 </a>
             @endcan
-
+            @can('dispensaciones.ver')
+                <a href="{{ route('dispensaciones.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('dispensaciones.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-clipboard-document-list class="w-5 h-5" />
+                    <span class="ml-2">Recetas</span>
+                </a>
+            @endcan
             @can('existencias.ver')
                 <a href="{{ route('existencias.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('existencias.*') ? $linkActivo : '' }}">

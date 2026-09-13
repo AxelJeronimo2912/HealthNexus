@@ -44,7 +44,7 @@ return [
                 ['permiso' => 'agenda.crear',        'label' => 'Nueva Cita',          'icono' => 'plus-circle',             'ruta' => 'agenda.create'],
                 ['permiso' => 'expediente.ver', 'label' => 'Expediente', 'icono' => 'document-text', 'ruta' => 'expedientes.index'],                ['permiso' => 'consultas.ver',       'label' => 'Consultas',           'icono' => 'clipboard-document-list', 'ruta' => 'citas.index'],
                 ['permiso' => 'enfermeria.ver',      'label' => 'Enfermería',          'icono' => 'heart',                   'ruta' => '#'],
-                ['permiso' => 'seguimiento.ver',     'label' => 'Seguimiento',         'icono' => 'chart-bar',               'ruta' => '#'],
+                ['permiso' => 'seguimiento.ver', 'label' => 'Seguimiento', 'icono' => 'chart-bar', 'ruta' => 'seguimientos.index'],
                 ['permiso' => 'signos-vitales.ver',  'label' => 'Signos Vitales',      'icono' => 'heart',                   'ruta' => 'signos-vitales.index'],
             ],
         ],
@@ -54,15 +54,16 @@ return [
         | Farmacia e Inventario
         |--------------------------------------------------------------------------
         */
-        [
-            'titulo' => 'Farmacia e Inventario',
-            'items' => [
-                ['permiso' => 'medicamentos.ver', 'label' => 'Medicamentos',  'icono' => 'beaker',      'ruta' => 'medicamentos.index'],
-                ['permiso' => 'existencias.ver', 'label' => 'Existencias', 'icono' => 'archive-box', 'ruta' => 'existencias.index'],
-                ['permiso' => 'movimientos.ver',  'label' => 'Movimientos',   'icono' => 'arrow-path',  'ruta' => '#'],
-                ['permiso' => 'prediccion.ver',   'label' => 'Predicción IA', 'icono' => 'cpu-chip',    'ruta' => '#'],
-            ],
-        ],
+       [
+       'titulo' => 'Farmacia e Inventario',
+       'items' => [
+        ['permiso' => 'dispensaciones.ver', 'label' => 'Recetas',       'icono' => 'clipboard-document-list', 'ruta' => 'dispensaciones.index'],
+        ['permiso' => 'medicamentos.ver',   'label' => 'Medicamentos',  'icono' => 'beaker',                 'ruta' => 'medicamentos.index'],
+        ['permiso' => 'existencias.ver',    'label' => 'Existencias',   'icono' => 'archive-box',            'ruta' => 'existencias.index'],
+        ['permiso' => 'movimientos.ver',    'label' => 'Movimientos',   'icono' => 'arrow-path',             'ruta' => '#'],
+        ['permiso' => 'prediccion.ver',     'label' => 'Predicción IA', 'icono' => 'cpu-chip',               'ruta' => '#'],
+    ],
+],
 
         /*
         |--------------------------------------------------------------------------

@@ -43,6 +43,7 @@ class PermissionSeeder extends Seeder
             'auditoria.ver',
             'asistente.ver',
             'alertas.ver',
+            'dispensaciones.ver',
         ];
 
         foreach ($permisos as $nombre) {

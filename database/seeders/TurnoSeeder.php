@@ -21,6 +21,6 @@ class TurnoSeeder extends Seeder
             Turno::firstOrCreate(['codigo' => $t['codigo']], $t);
         }
 
-        $this->command->info('✅ Turnos creados.');
+        $this->command->info(' Turnos creados.');
     }
 }

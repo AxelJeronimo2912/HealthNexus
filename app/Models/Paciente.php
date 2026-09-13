@@ -87,6 +87,36 @@ public function consultas()
     return $this->hasMany(Consulta::class);
 }
 
+public function seguimientos()
+{
+    return $this->hasMany(Seguimiento::class)->orderByDesc('created_at');
+}
 
+public function seguimientoActual()
+{
+    return $this->hasOne(Seguimiento::class)->latestOfMany();
+}
+
+/**
+ * ¿Este paciente debe estar en seguimiento?
+ * Criterio: tiene cama activa O triage grave reciente (últimas 24h).
+ */
+public function getEnSeguimientoAttribute(): bool
+{
+    // 1. ¿Tiene cama asignada activa?
+    $tieneCama = \App\Models\CamaPaciente::where('paciente_id', $this->id)
+        ->where('activa', true)
+        ->exists();
+
+    if ($tieneCama) return true;
+
+    // 2. ¿Triage grave en las últimas 24 horas?
+    $triageGrave = $this->signosVitales()
+        ->whereIn('triage', ['rojo', 'naranja', 'amarillo'])
+        ->where('created_at', '>=', now()->subHours(24))
+        ->exists();
+
+    return $triageGrave;
+}
 
 }

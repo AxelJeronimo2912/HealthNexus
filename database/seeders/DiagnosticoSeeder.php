@@ -156,6 +156,6 @@ class DiagnosticoSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ ' . count($diagnosticos) . ' diagnósticos CIE-10 creados.');
+        $this->command->info(' ' . count($diagnosticos) . ' diagnósticos CIE-10 creados.');
     }
 }

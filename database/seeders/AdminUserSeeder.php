@@ -11,13 +11,10 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Crear (o recuperar) el rol administrador
         $rolAdmin = Role::firstOrCreate(['name' => 'administrador']);
 
-        // 2. Asegurar que el rol admin tenga TODOS los permisos
-        $rolAdmin->syncPermissions(Permission::all());   // 👈 clave
+        $rolAdmin->syncPermissions(Permission::all());   
 
-        // 3. Crear el usuario administrador
         $admin = User::firstOrCreate(
             ['email' => 'admin@healthnexus.com'],
             [
@@ -36,13 +33,11 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        // 4. Asignar el rol administrador
         if (!$admin->hasRole($rolAdmin->name)) {
             $admin->assignRole($rolAdmin);
         }
 
-        // 5. Mensaje en consola
-        $this->command->info('✅ Usuario administrador creado:');
+        $this->command->info(' Usuario administrador creado:');
         $this->command->line('   Correo:     admin@healthnexus.com');
         $this->command->line('   Contraseña: Admin1234');
         $this->command->line('   Permisos:   ' . $rolAdmin->permissions()->count());

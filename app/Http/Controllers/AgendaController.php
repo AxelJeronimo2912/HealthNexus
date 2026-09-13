@@ -85,7 +85,7 @@ class AgendaController extends Controller
      * Incluye pacientes con CUALQUIER triage (rojo, naranja, amarillo, verde, azul)
      * que aún no tengan una cita activa.
      */
-    public function create(Request $request): View
+   public function create(Request $request): View
     {
         $pacientes = Paciente::whereHas('signosVitales', function ($q) {
                 // No filtramos por triage → aparecen TODOS.
@@ -97,6 +97,9 @@ class AgendaController extends Controller
             })
             ->whereDoesntHave('citas', function ($q) {
                 $q->whereIn('estado', ['programada', 'confirmada', 'en_curso']);
+            })
+            ->whereDoesntHave('consultas', function ($q) {
+                $q->whereIn('estado', ['borrador', 'finalizada']);
             })
             ->with([
                 'medicoAsignado.medico',
@@ -330,9 +333,14 @@ public function medicosDisponibles(Request $request): JsonResponse
     /**
      * Endpoint AJAX: pacientes con signos vitales sin cita activa (cualquier triage).
      */
+     
     public function pacientesDisponibles(): JsonResponse
     {
-        $pacientes = Paciente::whereHas('signosVitales', function ($q) {
+        $user = auth()->user();
+        $esAdmin = $user->hasRole('administrador');
+        $esMedico = $this->esMedico($user);
+
+        $query = Paciente::whereHas('signosVitales', function ($q) {
                 $q->whereIn('id', function ($sub) {
                     $sub->selectRaw('MAX(id)')
                         ->from('signos_vitales')
@@ -342,12 +350,24 @@ public function medicosDisponibles(Request $request): JsonResponse
             ->whereDoesntHave('citas', function ($q) {
                 $q->whereIn('estado', ['programada', 'confirmada', 'en_curso']);
             })
+            ->whereDoesntHave('consultas', function ($q) {
+                $q->whereIn('estado', ['borrador', 'finalizada']);
+            })
             ->with([
                 'medicoAsignado.medico',
                 'signosVitales' => fn($q) => $q->orderByDesc('created_at')->limit(1),
             ])
-            ->orderBy('apellido_paterno')
-            ->get();
+            ->orderBy('apellido_paterno');
+
+        if (!$esAdmin && $esMedico) {
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('citas', fn($sub) => $sub->where('medico_id', $user->id))
+                  ->orWhereHas('consultas', fn($sub) => $sub->where('medico_id', $user->id))
+                  ->orWhereHas('medicoAsignado', fn($sub) => $sub->where('medico_id', $user->id));
+            });
+        }
+
+        $pacientes = $query->get();
 
         return response()->json(
             $pacientes->map(fn($p) => [

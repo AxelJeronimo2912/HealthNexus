@@ -51,7 +51,8 @@ class RolePermissionSeeder extends Seeder
             'existencias.ver',
             'movimientos.ver',
             'prediccion.ver',
-            'existencias.ver'
+            'existencias.ver',
+            'dispensaciones.ver',
         ]);
     }
 }

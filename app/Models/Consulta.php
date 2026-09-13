@@ -17,16 +17,25 @@ class Consulta extends Model
         'peso', 'talla', 'imc', 'perimetro_abdominal',
         'receta_libre', 'notas', 'estado', 'finalizada_en',
         'diagnostico_principal_id', 'diagnostico_secundario_id',
-
+        'dispensada', 'dispensada_en', 'dispensada_por', 'notas_dispensacion',
     ];
 
     protected $casts = [
-        'finalizada_en' => 'datetime',
-        'temperatura' => 'decimal:1',
-        'peso' => 'decimal:2',
-        'talla' => 'decimal:2',
-        'imc' => 'decimal:1',
+    
+        'subjetivo'    => 'encrypted',
+        'objetivo'     => 'encrypted',
+        'analisis'     => 'encrypted',
+        'plan'         => 'encrypted',
+        'receta_libre' => 'encrypted',
+        'notas'        => 'encrypted',
+        'finalizada_en'       => 'datetime',
+        'temperatura'         => 'decimal:1',
+        'peso'                => 'decimal:2',
+        'talla'               => 'decimal:2',
+        'imc'                 => 'decimal:1',
         'perimetro_abdominal' => 'decimal:2',
+        'dispensada'          => 'boolean',
+        'dispensada_en'       => 'datetime',
     ];
 
     public function cita()
@@ -67,12 +76,17 @@ class Consulta extends Model
     }
 
     public function diagnosticoPrincipal()
-{
-    return $this->belongsTo(Diagnostico::class, 'diagnostico_principal_id');
-}
+    {
+        return $this->belongsTo(Diagnostico::class, 'diagnostico_principal_id');
+    }
 
-public function diagnosticoSecundario()
-{
-    return $this->belongsTo(Diagnostico::class, 'diagnostico_secundario_id');
-}
+    public function diagnosticoSecundario()
+    {
+        return $this->belongsTo(Diagnostico::class, 'diagnostico_secundario_id');
+    }
+
+    public function dispensadaPor()
+    {
+        return $this->belongsTo(User::class, 'dispensada_por');
+    }
 }
