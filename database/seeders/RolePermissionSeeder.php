@@ -27,7 +27,8 @@ class RolePermissionSeeder extends Seeder
             'camas.ver',
             'agenda.ver',
             'expediente.ver',
-            'existencias.ver'
+            'existencias.ver',
+            'servicios.ver',
         ]);
 
         // Enfermería
@@ -42,7 +43,8 @@ class RolePermissionSeeder extends Seeder
             'agenda.ver',
             'expediente.ver',
             'existencias.ver',
-            'movimientos.ver'
+            'movimientos.ver',
+            'servicios.ver',
         ]);
 
         // Farmacia

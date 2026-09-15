@@ -3,19 +3,21 @@
 namespace Database\Seeders;
 
 use App\Models\Cama;
+use App\Models\Servicio;
 use Illuminate\Database\Seeder;
 
 class CamaSeeder extends Seeder
 {
     public function run(): void
     {
+        // Mapeo de área de cama → tipo de servicio
         $areas = [
-            'Hospitalización' => ['Piso 1', 'Piso 2', 'Piso 3'],
-            'Urgencias'       => ['Piso 1'],
-            'UCI'             => ['Piso 2'],
-            'Pediatría'       => ['Piso 3'],
-            'Ginecología'     => ['Piso 4'],
-            'Cirugía'         => ['Piso 2'],
+            'Hospitalización' => ['pisos' => ['Piso 1', 'Piso 2', 'Piso 3'], 'tipo_servicio' => 'hospitalizacion'],
+            'Urgencias'       => ['pisos' => ['Piso 1'],                     'tipo_servicio' => 'urgencias'],
+            'UCI'             => ['pisos' => ['Piso 2'],                     'tipo_servicio' => 'hospitalizacion'],
+            'Pediatría'       => ['pisos' => ['Piso 3'],                     'tipo_servicio' => 'hospitalizacion'],
+            'Ginecología'     => ['pisos' => ['Piso 4'],                     'tipo_servicio' => 'hospitalizacion'],
+            'Cirugía'         => ['pisos' => ['Piso 2'],                     'tipo_servicio' => 'quirofano'],
         ];
 
         $estados = [
@@ -26,8 +28,11 @@ class CamaSeeder extends Seeder
 
         $total = 0;
 
-        foreach ($areas as $area => $pisos) {
-            $tipo = match ($area) {
+        foreach ($areas as $area => $config) {
+            // Buscar el servicio que corresponde al tipo
+            $servicio = Servicio::where('tipo', $config['tipo_servicio'])->first();
+
+            $tipoCama = match ($area) {
                 'UCI'         => 'uci',
                 'Pediatría'   => 'pediatrica',
                 'Urgencias'   => 'urgencias',
@@ -36,7 +41,7 @@ class CamaSeeder extends Seeder
                 default       => 'general',
             };
 
-            foreach ($pisos as $piso) {
+            foreach ($config['pisos'] as $piso) {
                 $habitaciones = 5;
                 $camasPorHab  = 2;
                 $numPiso      = (int) filter_var($piso, FILTER_SANITIZE_NUMBER_INT);
@@ -50,17 +55,18 @@ class CamaSeeder extends Seeder
                         Cama::updateOrCreate(
                             ['codigo' => $codigo],
                             [
-                                'nombre'     => null,
-                                'piso'       => $piso,
-                                'ala'        => fake()->randomElement(['Ala Norte', 'Ala Sur']),
-                                'habitacion' => (string) $numHab,
-                                'area'       => $area,
-                                'tipo'       => $tipo,
-                                'estado'     => fake()->randomElement($estados),
-                                'oxigeno'    => in_array($area, ['UCI', 'Urgencias', 'Hospitalización'], true),
-                                'monitor'    => in_array($area, ['UCI', 'Urgencias'], true),
-                                'ventilador' => $area === 'UCI',
-                                'activo'     => true,
+                                'servicio_id' => $servicio?->id,   
+                                'nombre'      => null,
+                                'piso'        => $piso,
+                                'ala'         => fake()->randomElement(['Ala Norte', 'Ala Sur']),
+                                'habitacion'  => (string) $numHab,
+                                'area'        => $area,
+                                'tipo'        => $tipoCama,
+                                'estado'      => fake()->randomElement($estados),
+                                'oxigeno'     => in_array($area, ['UCI', 'Urgencias', 'Hospitalización'], true),
+                                'monitor'     => in_array($area, ['UCI', 'Urgencias'], true),
+                                'ventilador'  => $area === 'UCI',
+                                'activo'      => true,
                             ]
                         );
 
@@ -70,6 +76,6 @@ class CamaSeeder extends Seeder
             }
         }
 
-        $this->command->info("{$total} camas procesadas (creadas o actualizadas).");
+        $this->command->info(" {$total} camas procesadas (creadas o actualizadas).");
     }
 }

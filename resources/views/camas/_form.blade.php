@@ -54,6 +54,18 @@
             <input type="text" name="habitacion" value="{{ old('habitacion', $c->habitacion ?? '') }}"
                 placeholder="Ej. 101" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
         </div>
+
+        <div>
+            <label class="block text-sm font-medium">Servicio</label>
+            <select name="servicio_id" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                <option value="">— Selecciona —</option>
+                @foreach ($servicios as $s)
+                    <option value="{{ $s->id }}" @selected(old('servicio_id', $c->servicio_id ?? '') == $s->id)>
+                        {{ $s->nombre }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
     </div>
 </section>
 

@@ -17,7 +17,8 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ExistenciaController;
 use App\Http\Controllers\DispensacionController;
 use App\Http\Controllers\SeguimientoController;
-    use App\Http\Controllers\MovimientoController;
+ use App\Http\Controllers\MovimientoController;
+    use App\Http\Controllers\ServicioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -236,5 +237,25 @@ Route::middleware(['auth', 'permission:movimientos.ver'])
     ->group(function () {
         Route::get('/', [MovimientoController::class, 'index'])->name('index');
         Route::get('/{movimiento}', [MovimientoController::class, 'show'])->name('show');
+    });
+
+
+
+Route::middleware(['auth', 'permission:servicios.ver'])
+    ->prefix('servicios')
+    ->name('servicios.')
+    ->group(function () {
+        Route::get('/', [ServicioController::class, 'index'])->name('index');
+        Route::get('/crear', [ServicioController::class, 'create'])->name('create');
+        Route::post('/', [ServicioController::class, 'store'])->name('store');
+        Route::get('/{servicio}', [ServicioController::class, 'show'])->name('show');
+        Route::get('/{servicio}/editar', [ServicioController::class, 'edit'])->name('edit');
+        Route::put('/{servicio}', [ServicioController::class, 'update'])->name('update');
+        Route::delete('/{servicio}', [ServicioController::class, 'destroy'])->name('destroy');
+
+        // Personal
+        Route::get('/{servicio}/personal', [ServicioController::class, 'personal'])->name('personal');
+        Route::post('/{servicio}/personal', [ServicioController::class, 'asignarPersonal'])->name('personal.asignar');
+        Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
     });
 require __DIR__.'/auth.php';

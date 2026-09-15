@@ -24,7 +24,7 @@ return [
             'items' => [
                 ['permiso' => 'pacientes.ver',      'label' => 'Pacientes',      'icono' => 'user-group',               'ruta' => 'pacientes.index'],
                 ['permiso' => 'admision.ver',       'label' => 'Admisión',       'icono' => 'clipboard-document-check', 'ruta' => '#'],
-                ['permiso' => 'servicios.ver',      'label' => 'Servicios',      'icono' => 'building-office-2',        'ruta' => '#'],
+                ['permiso' => 'servicios.ver', 'label' => 'Servicios', 'icono' => 'building-office-2', 'ruta' => 'servicios.index'],
                 ['permiso' => 'especialidades.ver', 'label' => 'Especialidades', 'icono' => 'academic-cap',             'ruta' => '#'],
                 ['permiso' => 'citas.ver', 'label' => 'Citas', 'icono' => 'calendar-days', 'ruta' => 'citas.index'],
                 ['permiso' => 'turnos.ver',         'label' => 'Turnos',         'icono' => 'clock',                    'ruta' => 'admin.turnos.index'],
@@ -60,7 +60,7 @@ return [
         ['permiso' => 'dispensaciones.ver', 'label' => 'Recetas',       'icono' => 'clipboard-document-list', 'ruta' => 'dispensaciones.index'],
         ['permiso' => 'medicamentos.ver',   'label' => 'Medicamentos',  'icono' => 'beaker',                 'ruta' => 'medicamentos.index'],
         ['permiso' => 'existencias.ver',    'label' => 'Existencias',   'icono' => 'archive-box',            'ruta' => 'existencias.index'],
-['permiso' => 'movimientos.ver', 'label' => 'Movimientos', 'icono' => 'arrow-path', 'ruta' => 'movimientos.index'],
+        ['permiso' => 'movimientos.ver', 'label' => 'Movimientos', 'icono' => 'arrow-path', 'ruta' => 'movimientos.index'],
         ['permiso' => 'prediccion.ver',     'label' => 'Predicción IA', 'icono' => 'cpu-chip',               'ruta' => '#'],
     ],
 ],

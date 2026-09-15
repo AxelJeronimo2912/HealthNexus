@@ -56,7 +56,8 @@
             @endcan
 
             @can('servicios.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('servicios.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('servicios.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-building-office-2 class="w-5 h-5" />
                     <span class="ml-2">Servicios</span>
                 </a>
