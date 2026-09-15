@@ -60,7 +60,7 @@ return [
         ['permiso' => 'dispensaciones.ver', 'label' => 'Recetas',       'icono' => 'clipboard-document-list', 'ruta' => 'dispensaciones.index'],
         ['permiso' => 'medicamentos.ver',   'label' => 'Medicamentos',  'icono' => 'beaker',                 'ruta' => 'medicamentos.index'],
         ['permiso' => 'existencias.ver',    'label' => 'Existencias',   'icono' => 'archive-box',            'ruta' => 'existencias.index'],
-        ['permiso' => 'movimientos.ver',    'label' => 'Movimientos',   'icono' => 'arrow-path',             'ruta' => '#'],
+['permiso' => 'movimientos.ver', 'label' => 'Movimientos', 'icono' => 'arrow-path', 'ruta' => 'movimientos.index'],
         ['permiso' => 'prediccion.ver',     'label' => 'Predicción IA', 'icono' => 'cpu-chip',               'ruta' => '#'],
     ],
 ],

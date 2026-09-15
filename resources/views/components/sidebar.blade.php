@@ -177,7 +177,8 @@
             @endcan
 
             @can('movimientos.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('movimientos.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('movimientos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-arrow-path class="w-5 h-5" />
                     <span class="ml-2">Movimientos</span>
                 </a>

@@ -17,6 +17,7 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ExistenciaController;
 use App\Http\Controllers\DispensacionController;
 use App\Http\Controllers\SeguimientoController;
+    use App\Http\Controllers\MovimientoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -227,4 +228,13 @@ Route::middleware(['auth', 'permission:seguimiento.ver'])
         Route::delete('/{seguimiento}', [SeguimientoController::class, 'destroy'])->name('destroy');
     });
 
+
+
+Route::middleware(['auth', 'permission:movimientos.ver'])
+    ->prefix('movimientos')
+    ->name('movimientos.')
+    ->group(function () {
+        Route::get('/', [MovimientoController::class, 'index'])->name('index');
+        Route::get('/{movimiento}', [MovimientoController::class, 'show'])->name('show');
+    });
 require __DIR__.'/auth.php';

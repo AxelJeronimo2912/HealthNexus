@@ -41,7 +41,8 @@ class RolePermissionSeeder extends Seeder
             'camas.ver',
             'agenda.ver',
             'expediente.ver',
-            'existencias.ver'
+            'existencias.ver',
+            'movimientos.ver'
         ]);
 
         // Farmacia

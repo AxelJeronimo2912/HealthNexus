@@ -40,11 +40,11 @@ class EncriptarConsultasExistentes extends Command
         $total = Consulta::count();
 
         if ($total === 0) {
-            $this->warn('⚠️  No hay consultas registradas en la base de datos.');
+            $this->warn('  No hay consultas registradas en la base de datos.');
             return self::SUCCESS;
         }
 
-        $this->info("📋 Total de consultas encontradas: {$total}");
+        $this->info(" Total de consultas encontradas: {$total}");
         $this->newLine();
 
         if (!$dryRun && !$this->option('force')) {
