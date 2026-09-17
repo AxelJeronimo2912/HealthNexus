@@ -11,14 +11,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-gray-100">
-    <div x-data="{ abierto: false }" class="flex min-h-screen">
+<body class="font-sans antialiased bg-slate-100">
+    <div x-data="{ abierto: false }" class="flex min-h-screen relative">
 
-        {{-- Sidebar --}}
+        {{-- Sidebar con hover --}}
         <x-sidebar />
 
         {{-- Contenido principal --}}
-        <div class="flex-1 flex flex-col lg:ml-0">
+        <div class="flex-1 flex flex-col pl-16 transition-all duration-300">
             @include('layouts.navigation')
 
             @isset($header)

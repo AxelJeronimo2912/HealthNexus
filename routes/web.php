@@ -198,6 +198,7 @@ Route::middleware(['auth', 'permission:existencias.ver'])
     ->group(function () {
         Route::get('/', [ExistenciaController::class, 'index'])->name('index');
         Route::get('/lotes', [ExistenciaController::class, 'lotes'])->name('lotes');
+        Route::post('/movimientos', [ExistenciaController::class, 'storeMovimiento'])->name('movimientos.store'); 
         Route::get('/{medicamento}', [ExistenciaController::class, 'show'])->name('show');
     });
 

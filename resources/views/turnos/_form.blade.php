@@ -1,48 +1,90 @@
-@php $t = $turno ?? null; @endphp
+@php
+    $t = $turno ?? null;
+@endphp
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-4 text-gray-800">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Nombre -->
+        <div>
+            <label for="nombre" class="block text-xs font-bold text-gray-600 uppercase mb-1">
+                Nombre del Turno *
+            </label>
+            <input type="text" name="nombre" id="nombre" 
+                   value="{{ old('nombre', $t?->nombre) }}" 
+                   placeholder="Ej. Mañana" 
+                   required
+                   class="w-full text-sm rounded-lg border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 shadow-sm transition">
+            @error('nombre')
+                <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- Código -->
+        <div>
+            <label for="codigo" class="block text-xs font-bold text-gray-600 uppercase mb-1">
+                Código *
+            </label>
+            <input type="text" name="codigo" id="codigo" 
+                   value="{{ old('codigo', $t?->codigo) }}" 
+                   placeholder="EJ. MAT" 
+                   required
+                   class="w-full text-sm rounded-lg border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 shadow-sm uppercase font-mono transition">
+            @error('codigo')
+                <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Hora Inicio -->
+        <div>
+            <label for="hora_inicio" class="block text-xs font-bold text-gray-600 uppercase mb-1">
+                Hora de inicio *
+            </label>
+            <input type="time" name="hora_inicio" id="hora_inicio" 
+                   value="{{ old('hora_inicio', $t?->hora_inicio ? \Carbon\Carbon::parse($t->hora_inicio)->format('H:i') : '') }}" 
+                   required
+                   class="w-full text-sm rounded-lg border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 shadow-sm transition">
+            @error('hora_inicio')
+                <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- Hora Fin -->
+        <div>
+            <label for="hora_fin" class="block text-xs font-bold text-gray-600 uppercase mb-1">
+                Hora de fin *
+            </label>
+            <input type="time" name="hora_fin" id="hora_fin" 
+                   value="{{ old('hora_fin', $t?->hora_fin ? \Carbon\Carbon::parse($t->hora_fin)->format('H:i') : '') }}" 
+                   required
+                   class="w-full text-sm rounded-lg border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 shadow-sm transition">
+            @error('hora_fin')
+                <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+
+    <!-- Descripción -->
     <div>
-        <label class="block text-sm font-medium">Nombre *</label>
-        <input type="text" name="nombre" value="{{ old('nombre', $t->nombre ?? '') }}" required placeholder="Ej. Mañana"
-            class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
-        @error('nombre')
-            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+        <label for="descripcion" class="block text-xs font-bold text-gray-600 uppercase mb-1">
+            Descripción
+        </label>
+        <textarea name="descripcion" id="descripcion" rows="3" 
+                  placeholder="Detalles sobre las responsabilidades o rango de este turno..."
+                  class="w-full text-sm rounded-lg border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 shadow-sm transition">{{ old('descripcion', $t?->descripcion) }}</textarea>
+        @error('descripcion')
+            <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
         @enderror
     </div>
-    <div>
-        <label class="block text-sm font-medium">Código *</label>
-        <input type="text" name="codigo" value="{{ old('codigo', $t->codigo ?? '') }}" required placeholder="Ej. MAT"
-            maxlength="20" class="mt-1 w-full border-gray-300 rounded-md shadow-sm uppercase">
-        @error('codigo')
-            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-        @enderror
-    </div>
-    <div>
-        <label class="block text-sm font-medium">Hora de inicio *</label>
-        <input type="time" name="hora_inicio"
-            value="{{ old('hora_inicio', $t?->hora_inicio?->format('H:i') ?? '') }}" required
-            class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
-        @error('hora_inicio')
-            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-        @enderror
-    </div>
-    <div>
-        <label class="block text-sm font-medium">Hora de fin *</label>
-        <input type="time" name="hora_fin" value="{{ old('hora_fin', $t?->hora_fin?->format('H:i') ?? '') }}"
-            required class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
-        @error('hora_fin')
-            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-        @enderror
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-medium">Descripción</label>
-        <textarea name="descripcion" rows="2" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">{{ old('descripcion', $t->descripcion ?? '') }}</textarea>
-    </div>
-    <div class="md:col-span-2">
-        <label class="inline-flex items-center">
-            <input type="checkbox" name="activo" value="1" @checked(old('activo', $t->activo ?? true))
-                class="rounded border-gray-300 text-blue-600 shadow-sm">
-            <span class="ml-2 text-sm">Turno activo</span>
+
+    <!-- Checkbox Activo -->
+    <div class="pt-2">
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="activo" value="1" 
+                   {{ old('activo', $t?->activo ?? true) ? 'checked' : '' }}
+                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+            <span class="text-sm font-semibold text-gray-700">Turno activo</span>
         </label>
     </div>
 </div>
