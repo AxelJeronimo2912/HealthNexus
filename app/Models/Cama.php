@@ -11,7 +11,7 @@ class Cama extends Model
     protected $fillable = [
         'codigo', 'nombre', 'piso', 'ala', 'habitacion', 'area',
         'tipo', 'estado', 'oxigeno', 'monitor', 'ventilador',
-        'notas', 'activo',
+        'notas', 'activo','servicio_id'
     ];
 
     protected $casts = [
@@ -21,6 +21,10 @@ class Cama extends Model
         'activo' => 'boolean',
     ];
 
+    public function servicio()
+{
+    return $this->belongsTo(Servicio::class);
+}
     public function getEtiquetaAttribute(): string
     {
         return $this->codigo . ($this->habitacion ? ' — Hab. ' . $this->habitacion : '');

@@ -16,10 +16,12 @@ class DatabaseSeeder extends Seeder
             EstadosMunicipiosSeeder::class,
             DiagnosticoSeeder::class,
             TurnoSeeder::class,
+            ServicioSeeder::class,
             CamaSeeder::class,
             MedicamentoSeeder::class,
             LoteSeeder::class,
             PacienteSeeder::class,
+            
         ]);
     }
 }

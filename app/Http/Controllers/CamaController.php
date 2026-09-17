@@ -39,10 +39,12 @@ class CamaController extends Controller
         return view('camas.index', compact('camas', 'busqueda', 'filtroEstado', 'stats'));
     }
 
-    public function create(): View
-    {
-        return view('camas.create');
-    }
+   public function create(): View
+{
+    return view('camas.create', [
+        'servicios' => \App\Models\Servicio::where('activo', true)->orderBy('nombre')->get(),
+    ]);
+}
 
     public function store(Request $request): RedirectResponse
     {
@@ -64,10 +66,13 @@ class CamaController extends Controller
         return view('camas.show', compact('cama'));
     }
 
-    public function edit(Cama $cama): View
-    {
-        return view('camas.edit', compact('cama'));
-    }
+  public function edit(Cama $cama): View
+{
+    return view('camas.edit', [
+        'cama' => $cama,
+        'servicios' => \App\Models\Servicio::where('activo', true)->orderBy('nombre')->get(),
+    ]);
+}
 
     public function update(Request $request, Cama $cama): RedirectResponse
     {
@@ -118,6 +123,7 @@ class CamaController extends Controller
             'tipo' => ['required', Rule::in(['general', 'pediatrica', 'uci', 'aislamiento', 'recuperacion', 'urgencias'])],
             'estado' => ['required', Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio'])],
             'notas' => ['nullable', 'string'],
+            'servicio_id' => ['nullable', 'exists:servicios,id'],
         ], [
             'codigo.required' => 'El código de la cama es obligatorio.',
             'codigo.unique' => 'Ya existe una cama con ese código.',

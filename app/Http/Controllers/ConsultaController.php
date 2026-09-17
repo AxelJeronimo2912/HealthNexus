@@ -154,7 +154,6 @@ class ConsultaController extends Controller
 
         $this->guardarMedicamentos($consulta, $request);
 
-        // ✅ SOLUCIÓN: Marcar la cita como atendida SIEMPRE
         $consulta->cita->update(['estado' => 'atendida']);
 
         return redirect()->route('consultas.show', $consulta)
