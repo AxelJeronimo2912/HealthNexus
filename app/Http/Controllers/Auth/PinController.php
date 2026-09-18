@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\RoleHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,12 @@ use Illuminate\View\View;
 
 class PinController extends Controller
 {
+    private const SESSION_USER_ID = 'pin_pending_user_id';
+    private const SESSION_REMEMBER = 'pin_pending_remember';
+
     public function show(Request $request): View|RedirectResponse
     {
-        if (!session()->has('pin_pending_user_id')) {
+        if (! $request->session()->has(self::SESSION_USER_ID)) {
             return redirect()->route('login');
         }
 
@@ -24,46 +28,50 @@ class PinController extends Controller
 
     public function verify(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'pin' => ['required', 'digits:4'],
         ], [
             'pin.required' => 'Debes ingresar tu PIN.',
             'pin.digits' => 'El PIN debe tener exactamente 4 dígitos.',
         ]);
 
-        $userId = session('pin_pending_user_id');
+        $userId = $request->session()->get(self::SESSION_USER_ID);
 
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('login');
         }
 
         $user = User::find($userId);
 
-        if (!$user || !$user->pin || !Hash::check($request->pin, $user->pin)) {
+        if (! $user || ! $user->pin || ! Hash::check($validated['pin'], $user->pin)) {
             throw ValidationException::withMessages([
                 'pin' => 'PIN incorrecto.',
             ]);
         }
 
-        // PIN correcto → iniciar sesión de verdad
-        Auth::login($user, session('pin_pending_remember', false));
+        // PIN correcto
+        Auth::login($user, $request->session()->get(self::SESSION_REMEMBER, false));
 
-        $request->session()->forget(['pin_pending_user_id', 'pin_pending_remember']);
+        $request->session()->forget([self::SESSION_USER_ID, self::SESSION_REMEMBER]);
         $request->session()->regenerate();
 
-        if (\App\Support\RoleHelper::tieneRol($user, 'administrador')) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(
+            RoleHelper::tieneRol($user, 'administrador')
+                ? route('admin.dashboard', absolute: false)
+                : route('dashboard', absolute: false)
+        );
     }
-   
-      private function cancelPinFlow(Request $request): RedirectResponse
-{
-    $request->session()->forget(['pin_pending_user_id', 'pin_pending_remember']);
-    $request->session()->regenerate();
 
-    return redirect()->route('login')
-        ->with('status', 'Verificación cancelada. Inicia sesión nuevamente.');
-}
+    private function cancelPinFlow(Request $request): RedirectResponse
+    {
+        $request->session()->forget([
+            self::SESSION_USER_ID,
+            self::SESSION_REMEMBER,
+        ]);
+
+        $request->session()->regenerate();
+
+        return redirect()->route('login')
+            ->with('status', 'Verificación cancelada. Inicia sesión nuevamente.');
+    }
 }
