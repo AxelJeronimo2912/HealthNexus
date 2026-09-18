@@ -92,9 +92,6 @@
             pinContainer.classList.toggle('hidden', !esMedico);
 
             if (esMedico) {
-                // Si es creación y el campo está vacío → generar PIN
-                // Si es edición y ya tiene PIN → no tocar (placeholder ••••)
-                // Si es edición sin PIN → generar también
                 if (!pinInput.value) {
                     if (!esEdicion || !yaTienePin) {
                         pinInput.value = generarPinAleatorio();
@@ -108,24 +105,54 @@
         rolSelect.addEventListener('change', togglePin);
         togglePin();
 
-        // Exponer funciones globales para los botones
+        // ---- Generar PIN con mensaje de éxito ----
         window.generarPin = function() {
             pinInput.value = generarPinAleatorio();
+            alert(' PIN generado exitosamente: ' + pinInput.value +
+                '\n\nCompártelo con el médico de forma segura.');
         };
 
+        // ---- Copiar PIN (con fallback para HTTP) ----
         window.copiarPin = function() {
-            if (!pinInput.value) return;
-            navigator.clipboard.writeText(pinInput.value).then(() => {
-                alert('PIN copiado al portapapeles: ' + pinInput.value);
-            }).catch(() => {
-                alert('No se pudo copiar. PIN: ' + pinInput.value);
-            });
+            if (!pinInput.value) {
+                alert(' Primero genera un PIN.');
+                return;
+            }
+
+            const pin = pinInput.value;
+
+            // Método moderno (requiere HTTPS o localhost)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(pin).then(() => {
+                    alert(' PIN copiado al portapapeles: ' + pin);
+                }).catch(() => {
+                    copiarFallback(pin);
+                });
+            } else {
+                // Fallback para HTTP
+                copiarFallback(pin);
+            }
         };
+
+        function copiarFallback(texto) {
+            const textarea = document.createElement('textarea');
+            textarea.value = texto;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert(' PIN copiado al portapapeles: ' + texto);
+            } catch (err) {
+                alert(' No se pudo copiar. PIN: ' + texto);
+            }
+            document.body.removeChild(textarea);
+        }
     });
 
     // ---- Generador de PIN de 4 dígitos ----
     function generarPinAleatorio() {
-        // 1000–9999 para evitar PINs tipo 0001
         return String(Math.floor(1000 + Math.random() * 9000));
     }
 </script>

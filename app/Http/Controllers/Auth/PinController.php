@@ -57,4 +57,13 @@ class PinController extends Controller
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
+   
+      private function cancelPinFlow(Request $request): RedirectResponse
+{
+    $request->session()->forget(['pin_pending_user_id', 'pin_pending_remember']);
+    $request->session()->regenerate();
+
+    return redirect()->route('login')
+        ->with('status', 'Verificación cancelada. Inicia sesión nuevamente.');
+}
 }
