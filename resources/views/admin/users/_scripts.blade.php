@@ -14,7 +14,7 @@
         const canvas = document.getElementById('firmaCanvas');
         const inputFirma = document.getElementById('firma_canvas_input');
 
-        if (!canvas || !inputFirma) return; // seguridad
+        if (!canvas || !inputFirma) return;
 
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -28,10 +28,7 @@
             const rect = canvas.getBoundingClientRect();
             const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
             const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-            return {
-                x,
-                y
-            };
+            return { x, y };
         }
 
         function iniciar(e) {
@@ -53,7 +50,7 @@
 
         function terminar() {
             dibujando = false;
-            // Guarda solo si hubo al menos un trazo
+
             if (huboTrazo) {
                 inputFirma.value = canvas.toDataURL('image/png');
             }
@@ -63,23 +60,25 @@
         canvas.addEventListener('mousemove', dibujar);
         canvas.addEventListener('mouseup', terminar);
         canvas.addEventListener('mouseleave', terminar);
+
         canvas.addEventListener('touchstart', iniciar, {
             passive: false
         });
+
         canvas.addEventListener('touchmove', dibujar, {
             passive: false
         });
+
         canvas.addEventListener('touchend', terminar);
 
-        // Botón limpiar (expuesto globalmente para el onclick)
         window.limpiarFirma = function() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             inputFirma.value = '';
             huboTrazo = false;
         };
 
-        // Al enviar el formulario, si hay trazo pero no se guardó, guárdalo
         const form = canvas.closest('form');
+
         if (form) {
             form.addEventListener('submit', function() {
                 if (huboTrazo && !inputFirma.value) {
@@ -89,7 +88,7 @@
         }
     });
 
-    //  TOGGLE DE PIN Y CÉDULA SEGÚN ROL
+    // TOGGLE DE PIN Y CÉDULA SEGÚN ROL
     document.addEventListener('DOMContentLoaded', function() {
         const rolSelect = document.getElementById('role_select');
         const pinContainer = document.getElementById('pin-container');
@@ -109,6 +108,7 @@
 
         function togglePin() {
             const esMedico = rolEsMedico(rolSelect.value);
+
             pinContainer.classList.toggle('hidden', !esMedico);
             pinInput.required = esMedico;
 
@@ -131,22 +131,61 @@
         rolSelect.addEventListener('change', togglePin);
         togglePin();
 
-        // Funciones globales para los botones
+        // Generar PIN con mensaje de éxito
         window.generarPin = function() {
             pinInput.value = generarPinAleatorio();
+
+            alert(
+                'PIN generado exitosamente: ' + pinInput.value +
+                '\n\nCompártelo con el médico de forma segura.'
+            );
         };
 
+        // Copiar PIN con fallback para HTTP
         window.copiarPin = function() {
-            if (!pinInput.value) return;
-            navigator.clipboard.writeText(pinInput.value)
-                .then(() => alert('PIN copiado al portapapeles: ' + pinInput.value))
-                .catch(() => alert('No se pudo copiar. PIN: ' + pinInput.value));
+            if (!pinInput.value) {
+                alert('Primero genera un PIN.');
+                return;
+            }
+
+            const pin = pinInput.value;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(pin)
+                    .then(() => {
+                        alert('PIN copiado al portapapeles: ' + pin);
+                    })
+                    .catch(() => {
+                        copiarFallback(pin);
+                    });
+            } else {
+                copiarFallback(pin);
+            }
         };
+
+        function copiarFallback(texto) {
+            const textarea = document.createElement('textarea');
+
+            textarea.value = texto;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                alert('PIN copiado al portapapeles: ' + texto);
+            } catch (err) {
+                alert('No se pudo copiar. PIN: ' + texto);
+            }
+
+            document.body.removeChild(textarea);
+        }
     });
 
-    //  GENERADOR DE PIN DE 4 DÍGITOS
+    // GENERADOR DE PIN DE 4 DÍGITOS
     function generarPinAleatorio() {
-        // 1000–9999 para evitar PINs tipo 0001
         return String(Math.floor(1000 + Math.random() * 9000));
     }
 </script>

@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('cedula_profesional')->nullable()->after('fecha_nacimiento');
             $table->string('telefono', 20)->nullable()->after('cedula_profesional');
             $table->string('telefono_contacto', 20)->nullable()->after('telefono');
-            $table->string('tipo_servicio')->nullable()->after('telefono_contacto'); // presencial, virtual
+            $table->string('tipo_servicio')->nullable()->after('telefono_contacto');
+
+            $table->unsignedBigInteger('especialidad_id')->nullable()->after('tipo_servicio');
             $table->string('foto_perfil')->nullable()->after('especialidad_id');
             $table->string('firma_archivo')->nullable()->after('foto_perfil');
             $table->text('firma_canvas')->nullable()->after('firma_archivo');
@@ -28,12 +30,21 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['especialidad_id']);
             $table->dropColumn([
-                'nombre', 'apellido_paterno', 'apellido_materno', 'curp',
-                'fecha_nacimiento', 'cedula_profesional', 'telefono',
-                'telefono_contacto', 'tipo_servicio', 'especialidad_id',
-                'foto_perfil', 'firma_archivo', 'firma_canvas', 'activo',
+                'nombre',
+                'apellido_paterno',
+                'apellido_materno',
+                'curp',
+                'fecha_nacimiento',
+                'cedula_profesional',
+                'telefono',
+                'telefono_contacto',
+                'tipo_servicio',
+                'especialidad_id',
+                'foto_perfil',
+                'firma_archivo',
+                'firma_canvas',
+                'activo',
             ]);
         });
     }
