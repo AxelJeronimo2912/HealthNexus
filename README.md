@@ -404,8 +404,6 @@ No se deben subir al repositorio los archivos que contengan credenciales reales,
 
 HealthNexus se encuentra estructurado como una aplicación de gestión clínica basada en Laravel, con módulos administrativos, clínicos y de inventario.
 
-El README original del repositorio todavía corresponde a una instalación estándar de Laravel; este documento describe la funcionalidad específica implementada en HealthNexus.
-
 ## Licencia
 
 El proyecto utiliza la licencia MIT, de acuerdo con la configuración base de Laravel incluida en el repositorio.
