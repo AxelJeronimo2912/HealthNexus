@@ -1,4 +1,5 @@
 <script>
+    // 1. GENERADOR DE CONTRASEÑA
     function generarPassword() {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
         let pass = "";
@@ -8,74 +9,93 @@
         alert("Contraseña generada: " + pass + "\nCompártela de forma segura con el colaborador.");
     }
 
-    const canvas = document.getElementById('firmaCanvas');
-    const ctx = canvas.getContext('2d');
-    const inputFirma = document.getElementById('firma_canvas_input');
-    let dibujando = false;
+    // 2. CANVAS DE FIRMA
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('firmaCanvas');
+        const inputFirma = document.getElementById('firma_canvas_input');
 
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#111827';
+        if (!canvas || !inputFirma) return; // seguridad
 
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-        return {
-            x,
-            y
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+        let huboTrazo = false;
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#111827';
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            return {
+                x,
+                y
+            };
+        }
+
+        function iniciar(e) {
+            dibujando = true;
+            huboTrazo = true;
+            const p = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            e.preventDefault();
+        }
+
+        function dibujar(e) {
+            if (!dibujando) return;
+            const p = getPos(e);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            e.preventDefault();
+        }
+
+        function terminar() {
+            dibujando = false;
+            // Guarda solo si hubo al menos un trazo
+            if (huboTrazo) {
+                inputFirma.value = canvas.toDataURL('image/png');
+            }
+        }
+
+        canvas.addEventListener('mousedown', iniciar);
+        canvas.addEventListener('mousemove', dibujar);
+        canvas.addEventListener('mouseup', terminar);
+        canvas.addEventListener('mouseleave', terminar);
+        canvas.addEventListener('touchstart', iniciar, {
+            passive: false
+        });
+        canvas.addEventListener('touchmove', dibujar, {
+            passive: false
+        });
+        canvas.addEventListener('touchend', terminar);
+
+        // Botón limpiar (expuesto globalmente para el onclick)
+        window.limpiarFirma = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            inputFirma.value = '';
+            huboTrazo = false;
         };
-    }
 
-    function iniciar(e) {
-        dibujando = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        e.preventDefault();
-    }
-
-    function dibujar(e) {
-        if (!dibujando) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-        e.preventDefault();
-    }
-
-    function terminar() {
-        dibujando = false;
-        inputFirma.value = canvas.toDataURL('image/png');
-    }
-
-    canvas.addEventListener('mousedown', iniciar);
-    canvas.addEventListener('mousemove', dibujar);
-    canvas.addEventListener('mouseup', terminar);
-    canvas.addEventListener('mouseleave', terminar);
-    canvas.addEventListener('touchstart', iniciar, {
-        passive: false
+        // Al enviar el formulario, si hay trazo pero no se guardó, guárdalo
+        const form = canvas.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (huboTrazo && !inputFirma.value) {
+                    inputFirma.value = canvas.toDataURL('image/png');
+                }
+            });
+        }
     });
-    canvas.addEventListener('touchmove', dibujar, {
-        passive: false
-    });
-    canvas.addEventListener('touchend', terminar);
 
-    function limpiarFirma() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        inputFirma.value = "";
-    }
-
-    document.querySelector('form').addEventListener('submit', function() {
-        if (!inputFirma.value) inputFirma.value = canvas.toDataURL('image/png');
-    });
-</script>
-
-<script>
-    // ---- Mostrar/ocultar PIN según rol ----
+    //  TOGGLE DE PIN Y CÉDULA SEGÚN ROL
     document.addEventListener('DOMContentLoaded', function() {
         const rolSelect = document.getElementById('role_select');
         const pinContainer = document.getElementById('pin-container');
         const pinInput = document.getElementById('pin_input');
+        const cedulaInput = document.getElementById('cedula_input');
+        const cedulaReq = document.getElementById('cedula-required');
 
         if (!rolSelect || !pinContainer || !pinInput) return;
 
@@ -84,21 +104,24 @@
 
         function rolEsMedico(valor) {
             const v = (valor || '').toLowerCase().trim();
-            return v === 'medico' || v === 'médico' || v === 'm' || v.startsWith('medic');
+            return v === 'm' || v.startsWith('medic');
         }
 
         function togglePin() {
             const esMedico = rolEsMedico(rolSelect.value);
             pinContainer.classList.toggle('hidden', !esMedico);
+            pinInput.required = esMedico;
+
+            // Cédula obligatoria solo para médicos
+            if (cedulaInput && cedulaReq) {
+                cedulaInput.required = esMedico;
+                cedulaReq.classList.toggle('hidden', !esMedico);
+            }
 
             if (esMedico) {
-                // Si es creación y el campo está vacío → generar PIN
-                // Si es edición y ya tiene PIN → no tocar (placeholder ••••)
-                // Si es edición sin PIN → generar también
-                if (!pinInput.value) {
-                    if (!esEdicion || !yaTienePin) {
-                        pinInput.value = generarPinAleatorio();
-                    }
+                // En creación o edición sin PIN previo → autogenerar
+                if (!pinInput.value && (!esEdicion || !yaTienePin)) {
+                    pinInput.value = generarPinAleatorio();
                 }
             } else {
                 pinInput.value = '';
@@ -108,22 +131,20 @@
         rolSelect.addEventListener('change', togglePin);
         togglePin();
 
-        // Exponer funciones globales para los botones
+        // Funciones globales para los botones
         window.generarPin = function() {
             pinInput.value = generarPinAleatorio();
         };
 
         window.copiarPin = function() {
             if (!pinInput.value) return;
-            navigator.clipboard.writeText(pinInput.value).then(() => {
-                alert('PIN copiado al portapapeles: ' + pinInput.value);
-            }).catch(() => {
-                alert('No se pudo copiar. PIN: ' + pinInput.value);
-            });
+            navigator.clipboard.writeText(pinInput.value)
+                .then(() => alert('PIN copiado al portapapeles: ' + pinInput.value))
+                .catch(() => alert('No se pudo copiar. PIN: ' + pinInput.value));
         };
     });
 
-    // ---- Generador de PIN de 4 dígitos ----
+    //  GENERADOR DE PIN DE 4 DÍGITOS
     function generarPinAleatorio() {
         // 1000–9999 para evitar PINs tipo 0001
         return String(Math.floor(1000 + Math.random() * 9000));
