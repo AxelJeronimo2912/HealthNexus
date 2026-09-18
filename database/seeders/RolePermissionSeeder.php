@@ -10,13 +10,11 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Administrador: ve TODO
-        $admin = Role::findByName('administrador');
-        $admin->syncPermissions(Permission::all());
+        // Administrador: todos los permisos
+        Role::findByName('administrador')->syncPermissions(Permission::all());
 
-        // Médico
-        $medico = Role::findByName('medico');
-        $medico->syncPermissions([
+        // Médico: atención clínica
+        Role::findByName('medico')->syncPermissions([
             'pacientes.ver',
             'citas.ver',
             'turnos.ver',
@@ -26,14 +24,12 @@ class RolePermissionSeeder extends Seeder
             'signos-vitales.ver',
             'camas.ver',
             'agenda.ver',
-            'expediente.ver',
             'existencias.ver',
             'servicios.ver',
         ]);
 
-        // Enfermería
-        $enfermeria = Role::findByName('enfermeria');
-        $enfermeria->syncPermissions([
+        // Enfermería: cuidados y monitoreo
+        Role::findByName('enfermeria')->syncPermissions([
             'pacientes.ver',
             'turnos.ver',
             'enfermeria.ver',
@@ -47,14 +43,12 @@ class RolePermissionSeeder extends Seeder
             'servicios.ver',
         ]);
 
-        // Farmacia
-        $farmacia = Role::findByName('farmacia');
-        $farmacia->syncPermissions([
+        // Farmacia: inventario y dispensación
+        Role::findByName('farmacia')->syncPermissions([
             'medicamentos.ver',
             'existencias.ver',
             'movimientos.ver',
             'prediccion.ver',
-            'existencias.ver',
             'dispensaciones.ver',
         ]);
     }
