@@ -9,7 +9,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium">Nombre</label>
+            <label class="block text-sm font-medium">Nombre <span class="text-red-500">*</span></label>
             <input type="text" name="nombre" value="{{ old('nombre', $u->nombre ?? '') }}" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
             @error('nombre')
@@ -17,7 +17,7 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Apellido Paterno</label>
+            <label class="block text-sm font-medium">Apellido Paterno <span class="text-red-500">*</span></label>
             <input type="text" name="apellido_paterno"
                 value="{{ old('apellido_paterno', $u->apellido_paterno ?? '') }}" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
@@ -26,7 +26,7 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Apellido Materno</label>
+            <label class="block text-sm font-medium">Apellido Materno <span class="text-red-500">*</span></label>
             <input type="text" name="apellido_materno"
                 value="{{ old('apellido_materno', $u->apellido_materno ?? '') }}" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
@@ -35,7 +35,7 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">CURP</label>
+            <label class="block text-sm font-medium">CURP <span class="text-red-500">*</span></label>
             <input type="text" name="curp" value="{{ old('curp', $u->curp ?? '') }}" maxlength="18" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm uppercase">
             @error('curp')
@@ -43,7 +43,7 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Fecha de Nacimiento</label>
+            <label class="block text-sm font-medium">Fecha de Nacimiento <span class="text-red-500">*</span></label>
             <input type="date" name="fecha_nacimiento"
                 value="{{ old('fecha_nacimiento', $u && $u->fecha_nacimiento ? $u->fecha_nacimiento->format('Y-m-d') : '') }}"
                 required class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
@@ -52,10 +52,15 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Cédula Profesional</label>
-            <input type="text" name="cedula_profesional"
+            <label class="block text-sm font-medium">
+                Cédula Profesional <span id="cedula-required" class="text-red-500 hidden">*</span>
+            </label>
+            <input type="text" name="cedula_profesional" id="cedula_input"
                 value="{{ old('cedula_profesional', $u->cedula_profesional ?? '') }}"
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+            @error('cedula_profesional')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
     </div>
 </section>
@@ -71,7 +76,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium">Teléfono</label>
+            <label class="block text-sm font-medium">Teléfono <span class="text-red-500">*</span></label>
             <input type="text" name="telefono" value="{{ old('telefono', $u->telefono ?? '') }}" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
             @error('telefono')
@@ -83,9 +88,12 @@
             <input type="text" name="telefono_contacto"
                 value="{{ old('telefono_contacto', $u->telefono_contacto ?? '') }}"
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+            @error('telefono_contacto')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
         <div class="md:col-span-2">
-            <label class="block text-sm font-medium">Correo electrónico</label>
+            <label class="block text-sm font-medium">Correo electrónico <span class="text-red-500">*</span></label>
             <input type="email" name="email" value="{{ old('email', $u->email ?? '') }}" required
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
             @error('email')
@@ -94,7 +102,12 @@
         </div>
         <div>
             <label class="block text-sm font-medium">
-                Contraseña {{ $u ? '(dejar vacío para no cambiar)' : '*' }}
+                Contraseña
+                @if ($u)
+                    <span class="text-gray-400">(dejar vacío para no cambiar)</span>
+                @else
+                    <span class="text-red-500">*</span>
+                @endif
             </label>
             <input type="password" name="password" id="password" {{ $u ? '' : 'required' }}
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
@@ -103,7 +116,11 @@
             @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Confirmar Contraseña</label>
+            <label class="block text-sm font-medium">
+                Confirmar Contraseña @if (!$u)
+                    <span class="text-red-500">*</span>
+                @endif
+            </label>
             <input type="password" name="password_confirmation" id="password_confirmation" {{ $u ? '' : 'required' }}
                 class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
         </div>
@@ -131,16 +148,20 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium">Tipo de servicio</label>
+            <label class="block text-sm font-medium">Tipo de servicio <span class="text-red-500">*</span></label>
             <select name="tipo_servicio" required class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
                 <option value="presencial" @selected(old('tipo_servicio', $u->tipo_servicio ?? '') == 'presencial')>Presencial</option>
                 <option value="virtual" @selected(old('tipo_servicio', $u->tipo_servicio ?? '') == 'virtual')>Virtual</option>
                 <option value="mixto" @selected(old('tipo_servicio', $u->tipo_servicio ?? '') == 'mixto')>Mixto</option>
             </select>
+            @error('tipo_servicio')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
         <div>
-            <label class="block text-sm font-medium">Rol</label>
-            <select name="role" id="role_select" required class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+            <label class="block text-sm font-medium">Rol <span class="text-red-500">*</span></label>
+            <select name="role" id="role_select" required
+                class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
                 <option value="">-- Selecciona un rol --</option>
                 @foreach ($roles as $role)
                     <option value="{{ $role->name }}" @selected(old('role', $u?->getRoleNames()->first()) == $role->name)>
@@ -153,20 +174,22 @@
             @enderror
         </div>
 
-        {{-- PIN condicional: solo visible si el rol seleccionado es médico --}}
+        {{-- PIN condicional: misma lógica que el controlador (medic*, m) --}}
         @php
             $rolActual = old('role', $u?->getRoleNames()->first() ?? '');
-            $esMedicoActual = strtolower(trim($rolActual)) === 'medico';
+            $rolLower = strtolower(trim($rolActual));
+            $esMedicoActual = $rolLower === 'm' || str_starts_with($rolLower, 'medic');
         @endphp
 
         <div id="pin-container" class="md:col-span-2 {{ $esMedicoActual ? '' : 'hidden' }}">
             <label class="block text-sm font-medium">
-                PIN de 4 dígitos (obligatorio para médicos)
+                PIN de 4 dígitos <span class="text-red-500">*</span>
+                <span class="text-gray-400 font-normal">(obligatorio para médicos)</span>
             </label>
 
             <div class="mt-1 flex items-center gap-2">
-                <input type="text" name="pin" id="pin_input" inputmode="numeric" pattern="\d{4}" maxlength="4"
-                    value="{{ old('pin') }}" placeholder="{{ $u && $u->pin ? '••••' : '' }}"
+                <input type="text" name="pin" id="pin_input" inputmode="numeric" pattern="\d{4}"
+                    maxlength="4" value="{{ old('pin') }}" placeholder="{{ $u && $u->pin ? '••••' : '' }}"
                     class="w-40 border-gray-300 rounded-md shadow-sm text-center tracking-widest text-lg font-mono">
 
                 <button type="button" onclick="generarPin()"
@@ -198,31 +221,67 @@
     <h3 class="text-lg font-bold text-gray-800 mb-1">Documentos y firma</h3>
     <p class="text-sm text-gray-500 mb-4">
         Sube los archivos necesarios o dibuja la firma directamente en el lienzo interactivo.
+        <strong class="text-gray-700">La firma es obligatoria.</strong>
     </p>
+
+    @php
+        // ¿Ya existe firma previa en edición?
+        $tieneFirmaPrevia = $u && ($u->firma_archivo || $u->firma_canvas);
+    @endphp
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label class="block text-sm font-medium">Imagen de Perfil</label>
             <input type="file" name="foto_perfil" accept="image/*" class="mt-1 block w-full text-sm">
+            @error('foto_perfil')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
             @if ($u && $u->foto_perfil)
                 <img src="{{ asset('storage/' . $u->foto_perfil) }}"
                     class="mt-2 w-20 h-20 rounded-full object-cover">
             @endif
         </div>
+
+        {{-- Firma por archivo --}}
         <div>
-            <label class="block text-sm font-medium">Firma (archivo)</label>
+            <label class="block text-sm font-medium">
+                Firma (archivo)
+                @if (!$tieneFirmaPrevia)
+                    <span class="text-red-500">*</span>
+                @endif
+            </label>
             <input type="file" name="firma_archivo" accept="image/*" class="mt-1 block w-full text-sm">
+
+            @error('firma_archivo')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
+
             @if ($u && $u->firma_archivo)
-                <img src="{{ asset('storage/' . $u->firma_archivo) }}" class="mt-2 h-16 bg-white border">
+                <div class="mt-2">
+                    <img src="{{ asset('storage/' . $u->firma_archivo) }}" class="h-16 bg-white border">
+                    <p class="text-xs text-gray-500 mt-1">
+                        Ya existe una firma registrada. Sube otra solo si deseas reemplazarla.
+                    </p>
+                </div>
             @endif
         </div>
     </div>
 
     <div class="mt-6">
-        <label class="block text-sm font-medium mb-2">Firmar en pantalla</label>
+        <label class="block text-sm font-medium mb-2">
+            Firmar en pantalla
+            @if (!$tieneFirmaPrevia)
+                <span class="text-red-500">*</span>
+            @endif
+        </label>
         <canvas id="firmaCanvas" width="600" height="200"
             class="border-2 border-dashed border-gray-300 rounded-md w-full touch-none bg-white"></canvas>
         <input type="hidden" name="firma_canvas" id="firma_canvas_input">
+
+        @error('firma_canvas')
+            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+        @enderror
+
         <div class="mt-2 flex justify-between items-center">
             <p class="text-xs text-gray-500">
                 Dibuja la firma con tu dedo, stylus o mouse antes de guardar.
