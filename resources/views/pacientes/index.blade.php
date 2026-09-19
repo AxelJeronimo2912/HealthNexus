@@ -1,5 +1,3 @@
-
-
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -12,16 +10,14 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-bold text-2xl text-slate-800 leading-tight">
-                        Directorio de Pacientes
-                    </h2>
+                    <h2 class="font-bold text-2xl text-slate-800 leading-tight">Directorio de Pacientes</h2>
                     <p class="text-xs text-slate-500 font-medium mt-0.5">Control de expedientes clínicos y datos de
                         contacto de HealthNexus</p>
                 </div>
             </div>
 
-            <!-- Botón Crear Paciente -->
-            <button @click="$dispatch('open-modal', 'modal-crear-paciente')"
+            <button type="button"
+                onclick="window.abrirModalPaciente && window.abrirModalPaciente('create', '{{ route('pacientes.create') }}?partial=1')"
                 class="group relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-nexus-accent bg-nexus-primary rounded-2xl shadow-md hover:shadow-lg hover:bg-slate-900 transition-all duration-200">
                 <svg class="w-5 h-5 me-2 group-hover:scale-110 transition-transform" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
@@ -33,23 +29,11 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-100 min-h-screen" x-data="{
-        pacienteSeleccionado: null,
-        setPaciente(p) { this.pacienteSeleccionado = p; },
-        busqueda: '',
-        coincide(texto) {
-            if (!this.busqueda) return true;
-            const q = this.busqueda.toLowerCase().trim();
-            return (texto || '').toLowerCase().includes(q);
-        },
-        hayResultados() {
-            const filas = [...$el.querySelectorAll('tbody tr[data-paciente]')];
-            return filas.some(r => r.style.display !== 'none');
-        }
-    }">
+    <div class="py-8 bg-slate-100 min-h-screen" x-data="pacientesIndex()" x-init="init()">
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            <!-- TARJETAS DE MÉTRICAS RÁPIDAS -->
+            <!-- MÉTRICAS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
                     <div
@@ -61,7 +45,7 @@
                     </div>
                     <div>
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pacientes</p>
-                        <h4 class="text-xl font-bold text-slate-800">{{ $pacientes->total() }}</h4>
+                        <h4 class="text-xl font-bold text-slate-800" id="total-pacientes">{{ $pacientes->total() }}</h4>
                     </div>
                 </div>
 
@@ -97,7 +81,6 @@
                 </div>
             </div>
 
-            <!-- ALERTA DE ÉXITO -->
             @if (session('success'))
                 <div
                     class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
@@ -111,7 +94,7 @@
                 </div>
             @endif
 
-            <!-- BUSCADOR EN TIEMPO REAL (sin recargar) -->
+            <!-- BUSCADOR -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 flex items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
@@ -121,401 +104,372 @@
                     </svg>
                 </div>
 
-                <input type="text" x-model="busqueda" autocomplete="off"
+                <input type="text" x-model="busqueda" @input.debounce.400ms="buscar()" autocomplete="off"
                     placeholder="Buscar por nombre, correo, teléfono o ID..."
                     class="w-full border-0 bg-transparent text-sm focus:ring-0 placeholder:text-slate-400">
 
-                <button x-show="busqueda" @click="busqueda = ''" type="button"
+                <svg x-show="buscando" x-cloak class="animate-spin w-4 h-4 text-nexus-primary shrink-0" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+
+                <button x-show="busqueda && !buscando" @click="limpiarBusqueda()" type="button"
                     class="text-xs font-bold text-slate-400 hover:text-slate-600 px-2 whitespace-nowrap">
                     Limpiar
                 </button>
             </div>
 
-            <!-- TABLA DE PACIENTES -->
+            <!-- TABLA -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50/70 border-b border-slate-100">
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Paciente
-                                </th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Contacto
-                                </th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Edad
-                                </th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Sexo
-                                </th>
-                                <th
-                                    class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 text-right">
-                                    Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-                            @forelse ($pacientes as $paciente)
-                                <tr data-paciente class="hover:bg-slate-50/80 transition-colors group"
-                                    x-show="coincide('{{ $paciente->nombre_completo }} {{ $paciente->correo_electronico }} {{ $paciente->telefono_principal }} {{ $paciente->id }}')">
-                                    <!-- Nombre + Avatar -->
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-nexus-primary group-hover:text-nexus-accent transition-colors">
-                                                {{ strtoupper(substr($paciente->nombre_completo, 0, 2)) }}
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-slate-800">{{ $paciente->nombre_completo }}
-                                                </p>
-                                                <span class="text-[11px] text-slate-400">ID:
-                                                    #{{ $paciente->id }}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Correo y Teléfono -->
-                                    <td class="px-6 py-4">
-                                        <div class="space-y-1">
-                                            <div class="flex items-center gap-1.5 text-xs text-slate-600">
-                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                </svg>
-                                                {{ $paciente->correo_electronico ?? 'Sin correo' }}
-                                            </div>
-                                            <div class="flex items-center gap-1.5 text-xs text-slate-500">
-                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                </svg>
-                                                {{ $paciente->telefono_principal ?? 'Sin teléfono' }}
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Edad -->
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold">
-                                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {{ $paciente->edad }} años
-                                        </span>
-                                    </td>
-
-                                    <!-- Sexo -->
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ strtolower($paciente->sexo) === 'hombre' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700' }}">
-                                            {{ ucfirst($paciente->sexo) }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Botones de Acción con Íconos -->
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="inline-flex items-center gap-1">
-                                            <!-- Botón Ver -->
-                                            <button
-                                                @click="setPaciente({{ json_encode($paciente) }}); $dispatch('open-modal', 'modal-ver-paciente')"
-                                                title="Ver detalles"
-                                                class="p-2 text-nexus-primary hover:bg-nexus-primary/10 rounded-2xl transition-all">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-
-                                            <!-- Botón Editar -->
-                                            <button
-                                                @click="setPaciente({{ json_encode($paciente) }}); $dispatch('open-modal', 'modal-editar-paciente')"
-                                                title="Editar"
-                                                class="p-2 text-nexus-secondary hover:bg-nexus-secondary/10 rounded-2xl transition-all">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-
-                                            <!-- Botón Eliminar -->
-                                            <button
-                                                @click="setPaciente({{ json_encode($paciente) }}); $dispatch('open-modal', 'modal-eliminar-paciente')"
-                                                title="Eliminar"
-                                                class="p-2 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center">
-                                        <div class="max-w-xs mx-auto text-center space-y-3">
-                                            <div
-                                                class="w-12 h-12 bg-slate-100 rounded-2xl text-slate-400 flex items-center justify-center mx-auto">
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                                </svg>
-                                            </div>
-                                            <p class="text-slate-500 font-medium text-sm">Sin pacientes registrados</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-
-                            <!-- Mensaje cuando el buscador no encuentra nada -->
-                            <tr x-show="busqueda && !hayResultados()">
-                                <td colspan="5" class="px-6 py-12 text-center">
-                                    <div class="max-w-xs mx-auto text-center space-y-3">
-                                        <div
-                                            class="w-12 h-12 bg-slate-100 rounded-2xl text-slate-400 flex items-center justify-center mx-auto">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-slate-500 font-medium text-sm">
-                                            Sin resultados para "<span class="font-semibold text-slate-700"
-                                                x-text="busqueda"></span>"
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="overflow-x-auto" id="tabla-pacientes">
+                    @include('pacientes._tabla', [
+                        'pacientes' => $pacientes,
+                        'busqueda' => $busqueda ?? '',
+                    ])
                 </div>
-
-                @if ($pacientes->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                        {{ $pacientes->links() }}
-                    </div>
-                @endif
             </div>
-
         </div>
 
-        <!-- ================= MODAL: CREAR PACIENTE ================= -->
-        <x-modal name="modal-crear-paciente" focusable>
-            <form method="POST" action="{{ route('pacientes.store') }}" class="p-6 sm:p-8">
-                @csrf
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-10 h-10 rounded-2xl bg-nexus-primary/10 text-nexus-primary flex items-center justify-center">
+        <!-- ================= MODAL GLOBAL ================= -->
+        <div x-show="modalAbierto" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            @keydown.escape.window="cerrarModal()">
+
+            <div x-show="modalAbierto" x-transition.opacity @click="cerrarModal()"
+                class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+            <div x-show="modalAbierto" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="font-bold text-lg text-slate-800"
+                        x-text="{
+                            create: 'Nuevo Paciente',
+                            edit: 'Editar Paciente',
+                            show: 'Detalle del Paciente',
+                            delete: 'Confirmar eliminación'
+                        }[modalTipo] || ''">
+                    </h3>
+
+                    <button type="button" @click="cerrarModal()"
+                        class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-2xl transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto p-6">
+                    <div x-show="modalCargando" class="flex items-center justify-center py-16">
+                        <svg class="animate-spin w-8 h-8 text-nexus-primary" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                         </svg>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">Registrar Nuevo Paciente</h3>
-                        <p class="text-xs text-slate-400">Completa los datos esenciales del paciente</p>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Nombre Completo</label>
-                        <input type="text" name="nombre_completo" required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-primary focus:ring-nexus-primary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Correo Electrónico</label>
-                        <input type="email" name="correo_electronico"
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-primary focus:ring-nexus-primary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Teléfono</label>
-                        <input type="text" name="telefono_principal"
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-primary focus:ring-nexus-primary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Edad</label>
-                        <input type="number" name="edad" required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-primary focus:ring-nexus-primary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Sexo</label>
-                        <select name="sexo" required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-primary focus:ring-nexus-primary">
-                            <option value="hombre">Hombre</option>
-                            <option value="mujer">Mujer</option>
-                            <option value="otro">Otro</option>
-                        </select>
-                    </div>
-                </div>
+                    <div x-show="modalError" x-cloak
+                        class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm"
+                        x-text="modalError"></div>
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" @click="$dispatch('close')"
-                        class="px-5 py-2.5 text-xs font-bold text-slate-500 rounded-2xl hover:bg-slate-100 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2.5 text-xs font-bold text-nexus-accent bg-nexus-primary rounded-2xl hover:bg-slate-900 shadow-md">
-                        Guardar Paciente
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+                    <!-- Contenido inyectado por fetch (create/edit/show) -->
+                    <div x-show="!modalCargando && !modalError && modalTipo !== 'delete'" x-ref="modalBody"></div>
 
-        <!-- ================= MODAL: VER PACIENTE ================= -->
-        <x-modal name="modal-ver-paciente" focusable>
-            <div class="p-6 sm:p-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 rounded-3xl bg-nexus-primary text-nexus-accent flex items-center justify-center font-extrabold text-lg shadow-md"
-                        x-text="pacienteSeleccionado?.nombre_completo ? pacienteSeleccionado.nombre_completo.substring(0,2).toUpperCase() : ''">
+                    <!-- Confirmar eliminación -->
+                    <div x-show="modalTipo === 'delete'" x-cloak class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01M4.93 19h14.14a2 2 0 001.74-2.99l-7.07-12.14a2 2 0 00-3.48 0L2.19 16.01A2 2 0 004.93 19z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-slate-700">
+                                    ¿Seguro que deseas eliminar al paciente
+                                    <strong class="text-slate-900" x-text="eliminarNombre"></strong>?
+                                </p>
+                                <p class="text-xs text-slate-500 mt-1">Esta acción no se puede deshacer.</p>
+                            </div>
+                        </div>
+
+                        <form :action="eliminarUrl" method="POST" class="flex justify-end gap-3 pt-4">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" @click="cerrarModal()"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">Cancelar</button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-sm font-medium">
+                                Sí, eliminar
+                            </button>
+                        </form>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800" x-text="pacienteSeleccionado?.nombre_completo">
-                        </h3>
-                        <p class="text-xs text-nexus-secondary font-semibold">Expediente Clínico Activo</p>
-                    </div>
-                </div>
-
-                <div class="space-y-3 text-sm bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-6">
-                    <div class="flex justify-between items-center"><span
-                            class="text-xs text-slate-400 font-medium">Correo Electrónico:</span> <span
-                            class="font-semibold text-slate-700"
-                            x-text="pacienteSeleccionado?.correo_electronico || '—'"></span></div>
-                    <div class="flex justify-between items-center"><span
-                            class="text-xs text-slate-400 font-medium">Teléfono:</span> <span
-                            class="font-semibold text-slate-700"
-                            x-text="pacienteSeleccionado?.telefono_principal || '—'"></span></div>
-                    <div class="flex justify-between items-center"><span
-                            class="text-xs text-slate-400 font-medium">Edad:</span> <span
-                            class="font-semibold text-slate-700"
-                            x-text="(pacienteSeleccionado?.edad || 0) + ' años'"></span></div>
-                    <div class="flex justify-between items-center"><span
-                            class="text-xs text-slate-400 font-medium">Sexo:</span> <span
-                            class="font-semibold text-slate-700 capitalize"
-                            x-text="pacienteSeleccionado?.sexo"></span></div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="button" @click="$dispatch('close')"
-                        class="px-6 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-colors">
-                        Cerrar
-                    </button>
                 </div>
             </div>
-        </x-modal>
+        </div>
 
-        <!-- ================= MODAL: EDITAR PACIENTE ================= -->
-        <x-modal name="modal-editar-paciente" focusable>
-            <form method="POST" :action="`/pacientes/${pacienteSeleccionado?.id}`" class="p-6 sm:p-8">
-                @csrf
-                @method('PUT')
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-10 h-10 rounded-2xl bg-nexus-secondary/10 text-nexus-secondary flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">Editar Información</h3>
-                        <p class="text-xs text-slate-400">Actualiza los datos del expediente</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Nombre Completo</label>
-                        <input type="text" name="nombre_completo" :value="pacienteSeleccionado?.nombre_completo"
-                            required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-secondary focus:ring-nexus-secondary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Correo Electrónico</label>
-                        <input type="email" name="correo_electronico"
-                            :value="pacienteSeleccionado?.correo_electronico"
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-secondary focus:ring-nexus-secondary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Teléfono</label>
-                        <input type="text" name="telefono_principal"
-                            :value="pacienteSeleccionado?.telefono_principal"
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-secondary focus:ring-nexus-secondary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Edad</label>
-                        <input type="number" name="edad" :value="pacienteSeleccionado?.edad" required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-secondary focus:ring-nexus-secondary">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Sexo</label>
-                        <select name="sexo" :value="pacienteSeleccionado?.sexo" required
-                            class="w-full rounded-2xl border-slate-200 text-sm focus:border-nexus-secondary focus:ring-nexus-secondary">
-                            <option value="hombre">Hombre</option>
-                            <option value="mujer">Mujer</option>
-                            <option value="otro">Otro</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" @click="$dispatch('close')"
-                        class="px-5 py-2.5 text-xs font-bold text-slate-500 rounded-2xl hover:bg-slate-100 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2.5 text-xs font-bold text-white bg-nexus-secondary rounded-2xl hover:opacity-90 shadow-md">
-                        Guardar Cambios
-                    </button>
-                </div>
-            </form>
-        </x-modal>
-
-        <!-- ================= MODAL: ELIMINAR PACIENTE ================= -->
-        <x-modal name="modal-eliminar-paciente" focusable>
-            <form method="POST" :action="`/pacientes/${pacienteSeleccionado?.id}`" class="p-6 sm:p-8">
-                @csrf
-                @method('DELETE')
-
-                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </div>
-
-                <h3 class="text-lg font-bold text-slate-800">¿Confirmas la eliminación?</h3>
-                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
-                    Estás a punto de eliminar a <strong class="text-slate-800"
-                        x-text="pacienteSeleccionado?.nombre_completo"></strong>. Esta acción eliminará su registro
-                    permanentemente.
-                </p>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" @click="$dispatch('close')"
-                        class="px-5 py-2.5 text-xs font-bold text-slate-500 rounded-2xl hover:bg-slate-100 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2.5 text-xs font-bold text-white bg-rose-600 rounded-2xl hover:bg-rose-700 shadow-md">
-                        Eliminar
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+        <div x-show="toast.visible" x-cloak x-transition.opacity.duration.300ms
+            class="fixed bottom-6 right-6 z-[100] px-5 py-3 bg-emerald-600 text-white rounded-2xl shadow-2xl text-sm font-medium flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span x-text="toast.mensaje"></span>
+        </div>
 
     </div>
+
+    <script>
+        // FUNCIONES GLOBALES DEL MÓDULO PACIENTES
+
+        function pacientesIndex() {
+            return {
+                // Buscador
+                busqueda: '{{ $busqueda ?? '' }}',
+                buscando: false,
+                abortController: null,
+
+                // Modal
+                modalAbierto: false,
+                modalTipo: null,
+                modalContenido: '',
+                modalCargando: false,
+                modalError: null,
+                eliminarNombre: '',
+                eliminarUrl: '',
+
+                // Toast
+                toast: {
+                    visible: false,
+                    mensaje: ''
+                },
+
+                init() {
+                    window.abrirModalPaciente = (tipo, url) => this.abrirModal(tipo, url);
+                    window.abrirModalEliminarPaciente = (id, nombre, url) => this.abrirModalEliminar(id, nombre, url);
+                    window.cerrarModalPaciente = () => this.cerrarModal();
+                    window.recargarTablaPacientes = (mensaje) => this.recargarTabla(mensaje);
+                    window.mostrarToast = (mensaje) => this.mostrarToast(mensaje);
+                },
+
+                // ============ BUSCADOR EN VIVO ============
+                async buscar() {
+                    if (this.abortController) this.abortController.abort();
+                    this.abortController = new AbortController();
+                    this.buscando = true;
+
+                    try {
+                        const res = await fetch(
+                            `{{ route('pacientes.buscar') }}?q=${encodeURIComponent(this.busqueda)}`, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                signal: this.abortController.signal
+                            });
+                        if (!res.ok) throw new Error();
+                        const html = await res.text();
+                        document.getElementById('tabla-pacientes').innerHTML = html;
+                    } catch (e) {
+                        if (e.name !== 'AbortError') {
+                            console.error('Error en búsqueda:', e);
+                        }
+                    } finally {
+                        this.buscando = false;
+                    }
+                },
+
+                limpiarBusqueda() {
+                    this.busqueda = '';
+                    this.buscar();
+                },
+
+                // ============ RECARGAR TABLA ============
+                async recargarTabla(mensaje = null) {
+                    try {
+                        const res = await fetch(
+                            `{{ route('pacientes.buscar') }}?q=${encodeURIComponent(this.busqueda)}`, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
+                        if (res.ok) {
+                            document.getElementById('tabla-pacientes').innerHTML = await res.text();
+                        }
+                    } catch (e) {
+                        console.error('Error recargando tabla:', e);
+                    }
+
+                    if (mensaje) this.mostrarToast(mensaje);
+                },
+
+                // ============ TOAST ============
+                mostrarToast(mensaje) {
+                    this.toast.mensaje = mensaje;
+                    this.toast.visible = true;
+                    setTimeout(() => {
+                        this.toast.visible = false;
+                    }, 3000);
+                },
+
+                // ============ MODALES ============
+                async abrirModal(tipo, url) {
+                    this.modalTipo = tipo;
+                    this.modalAbierto = true;
+                    this.modalCargando = true;
+                    this.modalContenido = '';
+                    this.modalError = null;
+
+                    try {
+                        const res = await fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        if (!res.ok) throw new Error();
+                        const html = await res.text();
+
+                        this.modalCargando = false;
+
+                        // Esperar a que el modal se pinte
+                        this.$nextTick(() => {
+                            const body = this.$refs.modalBody;
+                            body.innerHTML = html;
+
+                            if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                                window.Alpine.initTree(body);
+                            }
+
+                            // Inicializar los listeners (edad, municipios, etc.)
+                            setTimeout(() => {
+                                if (typeof window.initPacienteForm === 'function') {
+                                    window.initPacienteForm();
+                                }
+                            }, 50);
+                        });
+                    } catch (e) {
+                        this.modalError = 'No se pudo cargar el contenido.';
+                        this.modalCargando = false;
+                    }
+                },
+
+                abrirModalEliminar(id, nombre, url) {
+                    this.eliminarNombre = nombre;
+                    this.eliminarUrl = url;
+                    this.modalTipo = 'delete';
+                    this.modalAbierto = true;
+                },
+
+                cerrarModal() {
+                    this.modalAbierto = false;
+                    this.modalTipo = null;
+                    this.modalContenido = '';
+                    this.modalError = null;
+                    this.eliminarNombre = '';
+                    this.eliminarUrl = '';
+
+                    // Limpiar el contenido inyectado
+                    if (this.$refs.modalBody) {
+                        this.$refs.modalBody.innerHTML = '';
+                    }
+                }
+            };
+        }
+
+        // FORMULARIO DEL MODAL (validación + submit AJAX)
+        function pacienteForm(config = {}) {
+            return {
+                errores: config.erroresServidor || {},
+                enviando: false,
+
+                init() {},
+
+                tieneError(campo) {
+                    return !!this.errores[campo];
+                },
+
+                mensajeError(campo) {
+                    const msg = this.errores[campo];
+                    return Array.isArray(msg) ? msg[0] : (msg || '');
+                },
+
+                hayErrores() {
+                    return Object.keys(this.errores).length > 0;
+                },
+
+                limpiarErrores() {
+                    this.errores = {};
+                },
+
+                async enviar() {
+                    this.enviando = true;
+                    this.limpiarErrores();
+
+                    const form = this.$refs.formulario;
+                    const formData = new FormData(form);
+                    const url = form.action;
+
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ||
+                                    formData.get('_token'),
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: formData,
+                        });
+
+                        if (res.status === 422) {
+                            const data = await res.json();
+                            this.errores = data.errors || {};
+                            this.$nextTick(() => {
+                                const primerError = document.querySelector('.border-rose-400');
+                                primerError?.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            });
+                            return;
+                        }
+
+                        if (!res.ok) {
+                            this.errores = {
+                                general: ['Ocurrió un error inesperado. Intenta de nuevo.']
+                            };
+                            return;
+                        }
+
+                        const data = await res.json();
+
+                        if (typeof window.cerrarModalPaciente === 'function') {
+                            window.cerrarModalPaciente();
+                        }
+                        if (typeof window.recargarTablaPacientes === 'function') {
+                            window.recargarTablaPacientes(data.mensaje || 'Guardado correctamente.');
+                        } else {
+                            window.location.reload();
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        this.errores = {
+                            general: ['Error de conexión. Revisa tu internet.']
+                        };
+                    } finally {
+                        this.enviando = false;
+                    }
+                }
+            };
+        }
+
+        // Exponer globalmente por si Alpine no las encuentra
+        window.pacientesIndex = pacientesIndex;
+        window.pacienteForm = pacienteForm;
+    </script>
+
+    @include('pacientes._scripts')
+
 </x-app-layout>

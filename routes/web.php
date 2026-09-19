@@ -54,9 +54,12 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 */
 Route::middleware(['auth', 'permission:pacientes.ver'])
     ->group(function () {
-        Route::resource('pacientes', PacienteController::class);
+        Route::get('pacientes/buscar', [PacienteController::class, 'buscar'])
+            ->name('pacientes.buscar');
         Route::get('estados/{estado}/municipios', [PacienteController::class, 'municipiosPorEstado'])
             ->name('estados.municipios');
+
+        Route::resource('pacientes', PacienteController::class);
     });
 
 /*
