@@ -1,6 +1,6 @@
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ---- Cálculo automático de edad ----
+    window.initPacienteForm = function() {
+        // ============ Cálculo de edad ============
         const fechaInput = document.getElementById('fecha_nacimiento');
         const edadInput = document.getElementById('edad');
 
@@ -14,18 +14,17 @@
             const hoy = new Date();
             let edad = hoy.getFullYear() - nacimiento.getFullYear();
             const m = hoy.getMonth() - nacimiento.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
-                edad--;
-            }
+            if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
             edadInput.value = edad >= 0 ? edad + ' años' : '';
         }
 
-        if (fechaInput) {
+        if (fechaInput && !fechaInput.dataset.init) {
+            fechaInput.dataset.init = '1';
             fechaInput.addEventListener('change', calcularEdad);
             calcularEdad();
         }
 
-        // ---- Nacionalidad: CURP/Pasaporte + Estado/País de nacimiento ----
+        // ============ Nacionalidad ============
         const nacionalidadSelect = document.getElementById('nacionalidad');
         const curpContainer = document.getElementById('curp-container');
         const pasaporteContainer = document.getElementById('pasaporte-container');
@@ -35,41 +34,34 @@
         function toggleDocumento() {
             if (!nacionalidadSelect) return;
             const esMexicana = nacionalidadSelect.value === 'MEXICANA';
-
             if (curpContainer) curpContainer.classList.toggle('hidden', !esMexicana);
             if (pasaporteContainer) pasaporteContainer.classList.toggle('hidden', esMexicana);
-
             if (!esMexicana && curpContainer) {
-                const curpInput = curpContainer.querySelector('input');
-                if (curpInput) curpInput.value = '';
+                const i = curpContainer.querySelector('input');
+                if (i) i.value = '';
             } else if (esMexicana && pasaporteContainer) {
-                const pasaporteInput = pasaporteContainer.querySelector('input');
-                if (pasaporteInput) pasaporteInput.value = '';
+                const i = pasaporteContainer.querySelector('input');
+                if (i) i.value = '';
             }
         }
 
         function toggleNacimiento() {
             if (!nacionalidadSelect) return;
             const esMexicana = nacionalidadSelect.value === 'MEXICANA';
-
-            if (estadoNacimientoContainer) {
-                estadoNacimientoContainer.classList.toggle('hidden', !esMexicana);
-            }
-            if (paisNacimientoContainer) {
-                paisNacimientoContainer.classList.toggle('hidden', esMexicana);
-            }
-
+            if (estadoNacimientoContainer) estadoNacimientoContainer.classList.toggle('hidden', !esMexicana);
+            if (paisNacimientoContainer) paisNacimientoContainer.classList.toggle('hidden', esMexicana);
             if (!esMexicana && estadoNacimientoContainer) {
-                const sel = estadoNacimientoContainer.querySelector('select');
-                if (sel) sel.value = '';
+                const s = estadoNacimientoContainer.querySelector('select');
+                if (s) s.value = '';
             }
             if (esMexicana && paisNacimientoContainer) {
-                const input = paisNacimientoContainer.querySelector('input');
-                if (input) input.value = '';
+                const i = paisNacimientoContainer.querySelector('input');
+                if (i) i.value = '';
             }
         }
 
-        if (nacionalidadSelect) {
+        if (nacionalidadSelect && !nacionalidadSelect.dataset.init) {
+            nacionalidadSelect.dataset.init = '1';
             nacionalidadSelect.addEventListener('change', function() {
                 toggleDocumento();
                 toggleNacimiento();
@@ -78,20 +70,19 @@
             toggleNacimiento();
         }
 
-        // ---- Municipios dinámicos según estado ----
+        // ============ Municipios ============
         const estadoSelect = document.getElementById('estado_id');
         const municipioSelect = document.getElementById('municipio_id');
 
-        if (estadoSelect && municipioSelect) {
+        if (estadoSelect && municipioSelect && !estadoSelect.dataset.init) {
+            estadoSelect.dataset.init = '1';
             estadoSelect.addEventListener('change', function() {
                 const estadoId = this.value;
                 municipioSelect.innerHTML = '<option value="">Cargando...</option>';
-
                 if (!estadoId) {
                     municipioSelect.innerHTML = '<option value="">— Selecciona un municipio —</option>';
                     return;
                 }
-
                 fetch(`/estados/${estadoId}/municipios`)
                     .then(r => r.json())
                     .then(data => {
@@ -109,5 +100,7 @@
                     });
             });
         }
-    });
+    };
+
+    document.addEventListener('DOMContentLoaded', window.initPacienteForm);
 </script>
