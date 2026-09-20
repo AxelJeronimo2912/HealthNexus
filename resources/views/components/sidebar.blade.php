@@ -319,7 +319,8 @@
             @endcan
 
             @can('auditoria.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('admin.login-logs.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('admin.login-logs.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5 shrink-0" />
                     <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Auditoria
@@ -369,6 +370,8 @@
     </div>
 
 </aside>
+
+
 
 <!-- BOTON MOVIL -->
 <button

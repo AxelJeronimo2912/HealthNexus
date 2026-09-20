@@ -17,8 +17,9 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ExistenciaController;
 use App\Http\Controllers\DispensacionController;
 use App\Http\Controllers\SeguimientoController;
- use App\Http\Controllers\MovimientoController;
-    use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\Admin\LoginLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,21 +96,20 @@ Route::middleware(['auth', 'role:administrador'])
             ->name('users.turnos.destroy');
         Route::post('users/{user}/turnos/{pivotId}/toggle', [AsignacionTurnoController::class, 'toggle'])
             ->name('users.turnos.toggle');
+
+        // === AQUÍ SÍ: Ruta de la bitácora dentro del grupo admin ===
+        Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
     });
 
 
 Route::middleware(['auth', 'permission:medicamentos.ver'])
     ->group(function () {
         Route::resource('medicamentos', MedicamentoController::class);
-        
     });
 
-
-    Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
+Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
     ->middleware(['auth', 'permission:medicamentos.ver'])
     ->name('medicamentos.entrada');
-
-
 
 
 Route::middleware(['auth', 'permission:expediente.ver'])
@@ -139,7 +139,6 @@ Route::middleware(['auth', 'permission:camas.ver'])
 | Módulo de Signos Vitales
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'permission:signos-vitales.ver'])
     ->group(function () {
         Route::resource('signos-vitales', SignoVitalController::class);
@@ -154,8 +153,7 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
 | Módulo de agenda
 |--------------------------------------------------------------------------
 */
-
-    Route::middleware(['auth', 'permission:agenda.ver'])
+Route::middleware(['auth', 'permission:agenda.ver'])
     ->prefix('agenda')
     ->name('agenda.')
     ->group(function () {
@@ -168,7 +166,6 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
     });
 
 
-
 Route::middleware(['auth', 'permission:citas.ver'])
     ->prefix('citas')
     ->name('citas.')
@@ -178,8 +175,6 @@ Route::middleware(['auth', 'permission:citas.ver'])
         Route::post('/{cita}/estado', [CitaController::class, 'cambiarEstado'])->name('cambiar-estado');
         Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
     });
-
-
 
 
 Route::middleware(['auth', 'permission:consultas.ver'])
@@ -196,7 +191,6 @@ Route::middleware(['auth', 'permission:consultas.ver'])
     });
 
 
-
 Route::middleware(['auth', 'permission:existencias.ver'])
     ->prefix('existencias')
     ->name('existencias.')
@@ -208,7 +202,6 @@ Route::middleware(['auth', 'permission:existencias.ver'])
     });
 
 
-
 Route::middleware(['auth', 'permission:dispensaciones.ver'])
     ->prefix('dispensaciones')
     ->name('dispensaciones.')
@@ -218,8 +211,6 @@ Route::middleware(['auth', 'permission:dispensaciones.ver'])
         Route::post('/{consulta}/dispensar', [DispensacionController::class, 'dispensar'])->name('dispensar');
         Route::post('/{consulta}/revertir', [DispensacionController::class, 'revertir'])->name('revertir');
     });
-
-
 
 
 Route::middleware(['auth', 'permission:seguimiento.ver'])
@@ -234,7 +225,6 @@ Route::middleware(['auth', 'permission:seguimiento.ver'])
     });
 
 
-
 Route::middleware(['auth', 'permission:movimientos.ver'])
     ->prefix('movimientos')
     ->name('movimientos.')
@@ -242,7 +232,6 @@ Route::middleware(['auth', 'permission:movimientos.ver'])
         Route::get('/', [MovimientoController::class, 'index'])->name('index');
         Route::get('/{movimiento}', [MovimientoController::class, 'show'])->name('show');
     });
-
 
 
 Route::middleware(['auth', 'permission:servicios.ver'])
@@ -262,4 +251,5 @@ Route::middleware(['auth', 'permission:servicios.ver'])
         Route::post('/{servicio}/personal', [ServicioController::class, 'asignarPersonal'])->name('personal.asignar');
         Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
     });
+
 require __DIR__.'/auth.php';
