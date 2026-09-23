@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cama;
+use App\Models\Servicio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,11 +18,16 @@ class CamaController extends Controller
 
         $camas = Cama::query()
             ->when($busqueda, function ($q) use ($busqueda) {
-                $q->where('codigo', 'like', "%{$busqueda}%")
-                  ->orWhere('habitacion', 'like', "%{$busqueda}%")
-                  ->orWhere('area', 'like', "%{$busqueda}%");
+                $q->where(function ($query) use ($busqueda) {
+                    $query->where('codigo', 'like', "%{$busqueda}%")
+                        ->orWhere('habitacion', 'like', "%{$busqueda}%")
+                        ->orWhere('area', 'like', "%{$busqueda}%");
+                });
             })
-            ->when($filtroEstado, fn($q) => $q->where('estado', $filtroEstado))
+            ->when(
+                $filtroEstado,
+                fn ($q) => $q->where('estado', $filtroEstado)
+            )
             ->orderBy('area')
             ->orderBy('piso')
             ->orderBy('codigo')
@@ -33,18 +39,34 @@ class CamaController extends Controller
             'total' => Cama::count(),
             'disponibles' => Cama::where('estado', 'disponible')->count(),
             'ocupadas' => Cama::where('estado', 'ocupada')->count(),
-            'mantenimiento' => Cama::whereIn('estado', ['mantenimiento', 'fuera_servicio'])->count(),
+            'mantenimiento' => Cama::whereIn(
+                'estado',
+                ['mantenimiento', 'fuera_servicio']
+            )->count(),
         ];
 
-        return view('camas.index', compact('camas', 'busqueda', 'filtroEstado', 'stats'));
+        // Servicios activos para el formulario de camas
+        $servicios = Servicio::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('camas.index', compact(
+            'camas',
+            'busqueda',
+            'filtroEstado',
+            'stats',
+            'servicios'
+        ));
     }
 
-   public function create(): View
-{
-    return view('camas.create', [
-        'servicios' => \App\Models\Servicio::where('activo', true)->orderBy('nombre')->get(),
-    ]);
-}
+    public function create(): View
+    {
+        $servicios = Servicio::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('camas.create', compact('servicios'));
+    }
 
     public function store(Request $request): RedirectResponse
     {
@@ -57,7 +79,8 @@ class CamaController extends Controller
 
         Cama::create($data);
 
-        return redirect()->route('camas.index')
+        return redirect()
+            ->route('camas.index')
             ->with('success', 'Cama registrada correctamente.');
     }
 
@@ -66,13 +89,17 @@ class CamaController extends Controller
         return view('camas.show', compact('cama'));
     }
 
-  public function edit(Cama $cama): View
-{
-    return view('camas.edit', [
-        'cama' => $cama,
-        'servicios' => \App\Models\Servicio::where('activo', true)->orderBy('nombre')->get(),
-    ]);
-}
+    public function edit(Cama $cama): View
+    {
+        $servicios = Servicio::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('camas.edit', [
+            'cama' => $cama,
+            'servicios' => $servicios,
+        ]);
+    }
 
     public function update(Request $request, Cama $cama): RedirectResponse
     {
@@ -85,7 +112,8 @@ class CamaController extends Controller
 
         $cama->update($data);
 
-        return redirect()->route('camas.index')
+        return redirect()
+            ->route('camas.index')
             ->with('success', 'Cama actualizada correctamente.');
     }
 
@@ -93,37 +121,115 @@ class CamaController extends Controller
     {
         $cama->delete();
 
-        return redirect()->route('camas.index')
+        return redirect()
+            ->route('camas.index')
             ->with('success', 'Cama eliminada correctamente.');
     }
 
     /**
-     * Cambia el estado de una cama desde el listado (AJAX o formulario rápido).
+     * Cambia el estado de una cama desde el listado.
      */
-    public function cambiarEstado(Request $request, Cama $cama): RedirectResponse
-    {
+    public function cambiarEstado(
+        Request $request,
+        Cama $cama
+    ): RedirectResponse {
         $request->validate([
-            'estado' => ['required', Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio'])],
+            'estado' => [
+                'required',
+                Rule::in([
+                    'disponible',
+                    'ocupada',
+                    'mantenimiento',
+                    'limpieza',
+                    'fuera_servicio',
+                ]),
+            ],
         ]);
 
-        $cama->update(['estado' => $request->estado]);
+        $cama->update([
+            'estado' => $request->estado,
+        ]);
 
-        return back()->with('success', 'Estado actualizado a: ' . $cama->estado_label);
+        return back()->with(
+            'success',
+            'Estado actualizado a: ' . $cama->estado_label
+        );
     }
 
-    private function validar(Request $request, ?int $id = null): array
-    {
+    private function validar(
+        Request $request,
+        ?int $id = null
+    ): array {
         return $request->validate([
-            'codigo' => ['required', 'string', 'max:50', Rule::unique('camas', 'codigo')->ignore($id)],
-            'nombre' => ['nullable', 'string', 'max:100'],
-            'piso' => ['nullable', 'string', 'max:50'],
-            'ala' => ['nullable', 'string', 'max:50'],
-            'habitacion' => ['nullable', 'string', 'max:50'],
-            'area' => ['nullable', 'string', 'max:100'],
-            'tipo' => ['required', Rule::in(['general', 'pediatrica', 'uci', 'aislamiento', 'recuperacion', 'urgencias'])],
-            'estado' => ['required', Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio'])],
-            'notas' => ['nullable', 'string'],
-            'servicio_id' => ['nullable', 'exists:servicios,id'],
+            'codigo' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('camas', 'codigo')->ignore($id),
+            ],
+
+            'nombre' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'piso' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'ala' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'habitacion' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'area' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'tipo' => [
+                'required',
+                Rule::in([
+                    'general',
+                    'pediatrica',
+                    'uci',
+                    'aislamiento',
+                    'recuperacion',
+                    'urgencias',
+                ]),
+            ],
+
+            'estado' => [
+                'required',
+                Rule::in([
+                    'disponible',
+                    'ocupada',
+                    'mantenimiento',
+                    'limpieza',
+                    'fuera_servicio',
+                ]),
+            ],
+
+            'notas' => [
+                'nullable',
+                'string',
+            ],
+
+            'servicio_id' => [
+                'nullable',
+                'exists:servicios,id',
+            ],
         ], [
             'codigo.required' => 'El código de la cama es obligatorio.',
             'codigo.unique' => 'Ya existe una cama con ese código.',

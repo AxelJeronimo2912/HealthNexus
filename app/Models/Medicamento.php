@@ -49,7 +49,10 @@ class Medicamento extends Model
     {
         return $this->hasMany(MovimientoInventario::class)->orderByDesc('created_at');
     }
-
+public function administraciones()
+{
+    return $this->hasMany(AdministracionMedicamento::class);
+}
     /**
      * ¿Tiene stock suficiente?
      */

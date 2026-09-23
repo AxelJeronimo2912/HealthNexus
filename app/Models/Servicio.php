@@ -77,5 +77,10 @@ class Servicio extends Model
         return "{$ini} — {$fin}";
     }
 
-    
+    public function especialidades()
+{
+    return $this->belongsToMany(Especialidad::class, 'especialidad_servicio')
+        ->withPivot(['id', 'activo'])
+        ->withTimestamps();
+}
 }

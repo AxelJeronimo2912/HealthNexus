@@ -12,7 +12,7 @@ class Cita extends Model
     protected $fillable = [
         'paciente_id', 'medico_id', 'turno_id', 'signo_vital_id', 'creado_por',
         'fecha_hora', 'duracion_minutos', 'estado', 'triage_al_momento',
-        'motivo', 'notas',
+        'motivo', 'notas','especialidad_id'
     ];
 
     protected $casts = [
@@ -79,4 +79,9 @@ class Cita extends Model
             default => 'bg-gray-100 text-gray-800',
         };
     }
+
+    public function especialidad()
+{
+    return $this->belongsTo(Especialidad::class);
+}
 }

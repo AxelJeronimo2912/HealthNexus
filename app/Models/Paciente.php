@@ -62,6 +62,10 @@ public function historialMedicos()
     return $this->hasMany(SignoVital::class);
 }
 
+public function administraciones()
+{
+    return $this->hasMany(AdministracionMedicamento::class)->orderByDesc('administrado_en');
+}
 public function asignacionesCama()
 {
     return $this->hasMany(CamaPaciente::class);
@@ -70,6 +74,12 @@ public function asignacionesCama()
 public function ultimoSignoVital()
 {
     return $this->hasOne(SignoVital::class)->latestOfMany();
+}
+
+
+public function admisiones()
+{
+    return $this->hasMany(Admision::class);
 }
 
 /**
@@ -86,6 +96,7 @@ public function consultas()
 {
     return $this->hasMany(Consulta::class);
 }
+
 
 public function seguimientos()
 {

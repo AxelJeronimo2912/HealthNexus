@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             MedicamentoSeeder::class,
             LoteSeeder::class,
             PacienteSeeder::class,
-            
+             EspecialidadSeeder::class,
         ]);
     }
 }

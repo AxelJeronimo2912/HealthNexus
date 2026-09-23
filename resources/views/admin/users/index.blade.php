@@ -33,6 +33,14 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($users as $user)
+                        @php
+                            $esMedico = $user->roles->contains(function ($rol) {
+                                $n = strtolower($rol->name);
+                                return str_contains($n, 'medic') ||
+                                    str_contains($n, 'doctor') ||
+                                    str_contains($n, 'médic');
+                            });
+                        @endphp
                         <tr>
                             <td class="px-4 py-3">
                                 @if ($user->foto_perfil)
@@ -60,13 +68,19 @@
                                     <span class="text-red-600 font-semibold">Inactivo</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-right text-sm space-x-2">
+                            <td class="px-4 py-3 text-right text-sm space-x-2 whitespace-nowrap">
                                 <a href="{{ route('admin.users.show', $user) }}"
                                     class="text-gray-600 hover:underline">Ver</a>
                                 <a href="{{ route('admin.users.edit', $user) }}"
                                     class="text-blue-600 hover:underline">Editar</a>
                                 <a href="{{ route('admin.users.turnos.index', $user) }}"
                                     class="text-purple-600 hover:underline">Turnos</a>
+
+                                @if ($esMedico)
+                                    <a href="{{ route('admin.users.especialidades', $user) }}"
+                                        class="text-indigo-600 hover:underline">Especialidades</a>
+                                @endif
+
                                 <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline"
                                     onsubmit="return confirm('¿Eliminar este colaborador?')">
                                     @csrf @method('DELETE')
