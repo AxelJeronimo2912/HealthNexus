@@ -6,7 +6,8 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-bold text-2xl text-slate-800 tracking-tight">Detalle de la Cita</h2>
-            <a href="{{ route('citas.index') }}" class="text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1">
+            <a href="{{ route('citas.index') }}"
+                class="text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1">
                 ← Volver a la agenda
             </a>
         </div>
@@ -22,12 +23,14 @@
     <div class="py-8 max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
         @if (session('success'))
-            <div class="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
+            <div
+                class="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
                 {{ session('success') }}
             </div>
         @endif
         @if (session('error'))
-            <div class="p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-lg shadow-sm font-medium text-sm">
+            <div
+                class="p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-lg shadow-sm font-medium text-sm">
                 {{ session('error') }}
             </div>
         @endif
@@ -37,7 +40,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estado actual</p>
-                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm {{ $cita->estado_color }}">
+                    <span
+                        class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm {{ $cita->estado_color }}">
                         {{ $cita->estado_label }}
                     </span>
                 </div>
@@ -64,7 +68,8 @@
                 </div>
                 <div class="col-span-2">
                     <dt class="text-xs text-slate-400">Triage al agendar:</dt>
-                    <dd class="font-semibold text-slate-800 mt-0.5">{{ $cita->triage_al_momento ? ucfirst($cita->triage_al_momento) : '—' }}</dd>
+                    <dd class="font-semibold text-slate-800 mt-0.5">
+                        {{ $cita->triage_al_momento ? ucfirst($cita->triage_al_momento) : '—' }}</dd>
                 </div>
             </dl>
         </div>
@@ -75,7 +80,13 @@
             <p class="text-lg font-bold text-slate-900">{{ $cita->medico->nombre_completo }}</p>
             @if ($cita->turno)
                 <p class="text-xs text-slate-500 mt-1">
-                    Turno: <span class="font-medium text-slate-700">{{ $cita->turno->nombre }}</span> ({{ $cita->turno->rango }})
+                    Turno: <span class="font-medium text-slate-700">{{ $cita->turno->nombre }}</span>
+                    ({{ $cita->turno->rango }})
+                </p>
+            @endif
+            @if ($cita->especialidad)
+                <p class="text-sm text-gray-500 mt-1">
+                    Especialidad: <strong>{{ $cita->especialidad->nombre }}</strong>
                 </p>
             @endif
         </div>
@@ -83,16 +94,19 @@
         {{-- CONSULTA: iniciar o ver --}}
         @if ($cita->consulta)
             {{-- Ya existe consulta --}}
-            <div class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-md border-l-4 border-purple-500 text-white">
+            <div
+                class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-md border-l-4 border-purple-500 text-white">
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-purple-300">Consulta registrada</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-purple-300">Consulta registrada
+                        </p>
                         <p class="font-bold text-lg mt-1 text-white">
                             {{ $cita->consulta->created_at->format('d/m/Y H:i') }}
                         </p>
                         <p class="text-xs text-slate-300 mt-1">
                             Estado:
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $cita->consulta->estado === 'finalizada' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300' }}">
+                            <span
+                                class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $cita->consulta->estado === 'finalizada' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300' }}">
                                 {{ ucfirst($cita->consulta->estado) }}
                             </span>
                         </p>
@@ -113,9 +127,11 @@
             </div>
         @elseif ($puedeIniciar && $signoValido)
             {{-- Todo listo para iniciar --}}
-            <div class="bg-gradient-to-r from-emerald-900/90 to-slate-900 p-6 rounded-2xl shadow-md border-l-4 border-emerald-400 text-white">
+            <div
+                class="bg-gradient-to-r from-emerald-900/90 to-slate-900 p-6 rounded-2xl shadow-md border-l-4 border-emerald-400 text-white">
                 <p class="text-sm text-emerald-100 mb-4">
-                    Signos vitales registrados el <strong class="text-white">{{ $signoReciente->created_at->format('d/m/Y H:i') }}</strong>.
+                    Signos vitales registrados el <strong
+                        class="text-white">{{ $signoReciente->created_at->format('d/m/Y H:i') }}</strong>.
                     El paciente está listo para iniciar la atención médica.
                 </p>
                 <a href="{{ route('consultas.iniciar', $cita) }}"
@@ -125,7 +141,8 @@
             </div>
         @elseif ($puedeIniciar && !$signoValido)
             {{-- Faltan signos vitales --}}
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500 border-y border-r border-slate-100">
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500 border-y border-r border-slate-100">
                 <p class="text-sm font-bold text-amber-800 mb-1 flex items-center gap-2">
                     ⚠️ Signos vitales requeridos
                 </p>
@@ -155,7 +172,8 @@
                 @endif
                 @if ($cita->notas)
                     <div class="pt-3 border-t border-slate-100">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1">Notas adicionales</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1">Notas adicionales
+                        </h4>
                         <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{{ $cita->notas }}</p>
                     </div>
                 @endif
@@ -167,17 +185,18 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Actualizar estado</h3>
             <div class="flex flex-wrap gap-2">
                 @foreach ([
-                    'confirmada' => 'Confirmar',
-                    'en_curso' => 'En curso',
-                    'atendida' => 'Marcar atendida',
-                    'no_asistio' => 'No asistió',
-                    'cancelada' => 'Cancelar',
-                ] as $estado => $label)
+        'confirmada' => 'Confirmar',
+        'en_curso' => 'En curso',
+        'atendida' => 'Marcar atendida',
+        'no_asistio' => 'No asistió',
+        'cancelada' => 'Cancelar',
+    ] as $estado => $label)
                     @if ($cita->estado !== $estado)
                         <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST" class="inline">
                             @csrf
                             <input type="hidden" name="estado" value="{{ $estado }}">
-                            <button class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all">
+                            <button
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all">
                                 {{ $label }}
                             </button>
                         </form>
@@ -192,7 +211,8 @@
                 <form action="{{ route('citas.destroy', $cita) }}" method="POST"
                     onsubmit="return confirm('¿Confirma que desea eliminar esta cita de forma permanente?')">
                     @csrf @method('DELETE')
-                    <button class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">Eliminar cita</button>
+                    <button class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">Eliminar
+                        cita</button>
                 </form>
             </div>
         @endif

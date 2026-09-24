@@ -85,6 +85,19 @@
             {{-- Médico --}}
             <div>
                 <label class="block text-sm font-medium">Médico *</label>
+
+                <div>
+                    <label class="block text-sm font-medium">Especialidad</label>
+                    <select name="especialidad_id" id="especialidad_id"
+                        class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                        <option value="">— Todas las especialidades —</option>
+                        @foreach ($especialidades as $esp)
+                            <option value="{{ $esp->id }}" @selected(old('especialidad_id') == $esp->id)>
+                                {{ $esp->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <select name="medico_id" id="medico_id" required
                     class="mt-1 w-full border-gray-300 rounded-md shadow-sm"
                     {{ old('paciente_id') ? '' : 'disabled' }}>

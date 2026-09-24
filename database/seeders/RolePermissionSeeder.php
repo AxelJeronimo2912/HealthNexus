@@ -26,6 +26,9 @@ class RolePermissionSeeder extends Seeder
             'agenda.ver',
             'existencias.ver',
             'servicios.ver',
+            'especialidades.ver',
+             'enfermeria.ver'
+            ,
         ]);
 
         // Enfermería: cuidados y monitoreo
@@ -41,6 +44,8 @@ class RolePermissionSeeder extends Seeder
             'existencias.ver',
             'movimientos.ver',
             'servicios.ver',
+             'admision.ver',
+            'especialidades.ver',
         ]);
 
         // Farmacia: inventario y dispensación

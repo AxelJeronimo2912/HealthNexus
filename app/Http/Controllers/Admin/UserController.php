@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
+use App\Models\Especialidad;
 
 class UserController extends Controller
 {
@@ -65,9 +66,11 @@ class UserController extends Controller
     }
 
     public function show(User $user): View
-    {
-        return view('admin.users.show', compact('user'));
-    }
+{
+    $user->load(['roles', 'especialidades', 'especialidadPrincipal']);
+
+    return view('admin.users.show', compact('user'));
+}
 
     public function edit(User $user): View
     {
@@ -145,4 +148,74 @@ class UserController extends Controller
             ->route('admin.users.show', $user)
             ->with('pin_generado', $pin);
     }
+
+    public function especialidades(User $user): View
+{
+    $user->load('especialidades');
+
+    $asignadas = $user->especialidades->pluck('id')->toArray();
+
+    $disponibles = Especialidad::whereNotIn('id', $asignadas)
+        ->where('activo', true)
+        ->orderBy('nombre')
+        ->get();
+
+    return view('admin.users.especialidades', compact('user', 'disponibles'));
+}
+
+public function asignarEspecialidad(Request $request, User $user): RedirectResponse
+{
+    $data = $request->validate([
+        'especialidad_id' => ['required', 'exists:especialidades,id'],
+        'es_principal' => ['boolean'],
+        'numero_cedula_especialidad' => ['nullable', 'string', 'max:50'],
+        'fecha_certificacion' => ['nullable', 'date'],
+    ]);
+
+    if ($user->especialidades()->wherePivot('especialidad_id', $data['especialidad_id'])->exists()) {
+        return back()->with('error', 'Esa especialidad ya está asignada al usuario.');
+    }
+
+    // Si es principal, quitar el flag de las demás
+    if (!empty($data['es_principal'])) {
+        \DB::table('especialidad_user')
+            ->where('user_id', $user->id)
+            ->update(['es_principal' => false]);
+    }
+
+    $user->especialidades()->attach($data['especialidad_id'], [
+        'es_principal' => !empty($data['es_principal']),
+        'numero_cedula_especialidad' => $data['numero_cedula_especialidad'] ?? null,
+        'fecha_certificacion' => $data['fecha_certificacion'] ?? null,
+        'activo' => true,
+    ]);
+
+    return back()->with('success', 'Especialidad asignada correctamente.');
+}
+
+public function quitarEspecialidad(User $user, $pivotId): RedirectResponse
+{
+    $user->especialidades()->newPivotStatement()
+        ->where('id', $pivotId)
+        ->where('user_id', $user->id)
+        ->delete();
+
+    return back()->with('success', 'Especialidad removida.');
+}
+
+public function marcarPrincipal(User $user, $pivotId): RedirectResponse
+{
+    // Quitar el flag principal de todas
+    \DB::table('especialidad_user')
+        ->where('user_id', $user->id)
+        ->update(['es_principal' => false]);
+
+    // Marcar la seleccionada como principal
+    \DB::table('especialidad_user')
+        ->where('id', $pivotId)
+        ->where('user_id', $user->id)
+        ->update(['es_principal' => true]);
+
+    return back()->with('success', 'Especialidad marcada como principal.');
+}
 }

@@ -106,11 +106,21 @@ public function trabajaEn($fecha, $hora = null): bool
             return true;
         }
     }
-
-
-
-
-
     return false;
+}
+
+public function especialidades()
+{
+    return $this->belongsToMany(Especialidad::class, 'especialidad_user')
+        ->withPivot(['id', 'es_principal', 'numero_cedula_especialidad', 'fecha_certificacion', 'activo'])
+        ->withTimestamps();
+}
+
+public function especialidadPrincipal()
+{
+    return $this->belongsToMany(Especialidad::class, 'especialidad_user')
+        ->withPivot(['id', 'es_principal'])
+        ->wherePivot('es_principal', true)
+        ->wherePivot('activo', true);
 }
 }

@@ -7,12 +7,13 @@ use App\Models\Municipio;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+
 class EstadosMunicipiosSeeder extends Seeder
 {
     public function run(): void
     {
 
-        // Desactivar llaves foráneas temporalmente
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Borrar todos los registros existentes
@@ -21,7 +22,6 @@ class EstadosMunicipiosSeeder extends Seeder
 
         // Reactivar llaves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         $datos = [
             'Aguascalientes' => ['Aguascalientes', 'Asientos', 'Calvillo', 'Cosío', 'El Llano', 'Jesús María', 'Pabellón de Arteaga', 'Rincón de Romos', 'San Francisco de los Romo', 'San José de Gracia', 'Tepezalá',],
             'Baja California' => ['Ensenada', 'Mexicali', 'Playas de Rosarito', 'Tecate', 'Tijuana'],
@@ -42,6 +42,7 @@ class EstadosMunicipiosSeeder extends Seeder
             'Morelos' => ['Amacuzac', 'Atlatlahucan', 'Axochiapan', 'Ayala', 'Coatetelco', 'Coatlán del Río', 'Cuautla', 'Cuernavaca', 'Emiliano Zapata', 'Hueyapan', 'Huitzilac', 'Jantetelco', 'Jiutepec', 'Jojutla', 'Jonacatepec de Leandro Valle', 'Mazatepec', 'Miacatlán', 'Ocuituco', 'Puente de Ixtla', 'Temixco', 'Temoac', 'Tepalcingo', 'Tepoztlán', 'Tetecala', 'Tetela del Volcán', 'Tlalnepantla', 'Tlaltizapán de Zapata', 'Tlaquiltenango', 'Tlayacapan', 'Totolapan', 'Xochitepec', 'Xoxocotla', 'Yautepec', 'Yecapixtla', 'Zacatepec', 'Zacualpan de Amilpas'],
             'Nayarit' => ['Acaponeta', 'Ahuacatlán', 'Amatlán de Cañas', 'Bahía de Banderas', 'Compostela', 'El Nayar', 'Huajicori', 'Ixtlán del Río', 'Jala', 'La Yesca', 'Rosamorada', 'Ruiz', 'San Blas', 'San Pedro Lagunillas', 'Santa María del Oro', 'Santiago Ixcuintla', 'Tecuala', 'Tepic', 'Tuxpan', 'Xalisco'],
             'Nuevo León' => ['Abasolo', 'Agualeguas', 'Los Aldamas', 'Allende', 'Anáhuac', 'Apodaca', 'Aramberri', 'Bustamante', 'Cadereyta Jiménez', 'El Carmen', 'Cerralvo', 'Ciénega de Flores', 'China', 'Doctor Arroyo', 'Doctor Coss', 'Doctor González', 'Galeana', 'García', 'General Bravo', 'General Escobedo', 'General Terán', 'General Treviño', 'General Zaragoza', 'General Zuazua', 'Guadalupe', 'Los Herreras', 'Higueras', 'Hualahuises', 'Iturbide', 'Juárez', 'Lampazos de Naranjo', 'Linares', 'Marín', 'Melchor Ocampo', 'Mier y Noriega', 'Mina', 'Montemorelos', 'Monterrey', 'Parás', 'Pesquería', 'Los Ramones', 'Rayones', 'Sabinas Hidalgo', 'Salinas Victoria', 'San Nicolás de los Garza', 'San Pedro Garza García', 'Santa Catarina', 'Santiago', 'Vallecillo', 'Villaldama'],
+
             'Oaxaca' => [
                 'Abejones',
                 'Acatlán de Pérez Figueroa',

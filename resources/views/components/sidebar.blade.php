@@ -2,7 +2,8 @@
     $user = auth()->user();
     $rol = $user->getRoleNames()->first();
 
-    $linkBase = 'group/link flex items-center px-3 py-2.5 rounded-xl hover:bg-[#7C3AED]/20 text-slate-300 hover:text-white transition-colors duration-150 min-w-[240px]';
+    $linkBase =
+        'group/link flex items-center px-3 py-2.5 rounded-xl hover:bg-[#7C3AED]/20 text-slate-300 hover:text-white transition-colors duration-150 min-w-[240px]';
     $linkActivo = 'bg-[#7C3AED]/30 text-white font-medium border-l-4 border-[#A78BFA]';
 @endphp
 
@@ -14,11 +15,13 @@
     <!-- HEADER / LOGO -->
     <div class="flex items-center justify-between h-16 px-4 border-b border-slate-800/60 min-w-[256px]">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
-            <div class="w-9 h-9 min-w-[36px] rounded-xl bg-[#7C3AED]/20 border border-[#A78BFA]/30 flex items-center justify-center text-[#A78BFA]">
+            <div
+                class="w-9 h-9 min-w-[36px] rounded-xl bg-[#7C3AED]/20 border border-[#A78BFA]/30 flex items-center justify-center text-[#A78BFA]">
                 <x-heroicon-s-heart class="w-5 h-5" />
             </div>
 
-            <span class="text-base font-bold text-white whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+            <span
+                class="text-base font-bold text-white whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                 HealthNexus
             </span>
         </a>
@@ -32,7 +35,8 @@
     <div class="px-4 py-3 border-b border-slate-800/60 text-xs min-w-[256px] flex items-center gap-3">
         <div class="w-2.5 h-2.5 rounded-full bg-[#10B981] shrink-0 shadow-sm shadow-[#10B981]/50"></div>
 
-        <div class="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">
+        <div
+            class="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">
             <p class="text-slate-400 text-[10px] uppercase tracking-wider leading-none">
                 Rol activo
             </p>
@@ -47,23 +51,27 @@
     <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-1 text-sm scrollbar-thin scrollbar-thumb-slate-700">
 
         {{-- PANEL --}}
-        <p class="px-3 pt-2 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+        <p
+            class="px-3 pt-2 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
             Panel
         </p>
 
         <a href="{{ route('dashboard') }}"
             class="{{ $linkBase }} {{ request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') ? $linkActivo : '' }}">
             <x-heroicon-o-home class="w-5 h-5 shrink-0 text-[#A78BFA]" />
-            <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+            <span
+                class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                 Dashboard
             </span>
         </a>
 
 
         {{-- GESTION HOSPITALARIA --}}
-        @canany(['pacientes.ver', 'admision.ver', 'servicios.ver', 'especialidades.ver', 'citas.ver', 'turnos.ver', 'camas.ver'])
+        @canany(['pacientes.ver', 'admision.ver', 'servicios.ver', 'especialidades.ver', 'citas.ver', 'turnos.ver',
+            'camas.ver'])
 
-            <p class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <p
+                class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Gestion Hospitalaria
             </p>
 
@@ -71,18 +79,18 @@
                 <a href="{{ route('pacientes.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('admin.pacientes.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-user-group class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Pacientes
                     </span>
                 </a>
             @endcan
 
             @can('admision.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-clipboard-document-check class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Admision
-                    </span>
+                <a href="{{ route('admisiones.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('admisiones.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-clipboard-document-check class="w-5 h-5" />
+                    <span class="ml-2">Admisión</span>
                 </a>
             @endcan
 
@@ -90,18 +98,18 @@
                 <a href="{{ route('servicios.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('servicios.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-building-office-2 class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Servicios
                     </span>
                 </a>
             @endcan
 
             @can('especialidades.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-academic-cap class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Especialidades
-                    </span>
+                <a href="{{ route('especialidades.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('especialidades.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-academic-cap class="w-5 h-5" />
+                    <span class="ml-2">Especialidades</span>
                 </a>
             @endcan
 
@@ -109,7 +117,8 @@
                 <a href="{{ route('citas.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('citas.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-calendar-days class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Citas
                     </span>
                 </a>
@@ -119,7 +128,8 @@
                 <a href="{{ route('admin.turnos.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('admin.turnos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clock class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Turnos
                     </span>
                 </a>
@@ -129,7 +139,8 @@
                 <a href="{{ route('camas.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('camas.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-home-modern class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Camas
                     </span>
                 </a>
@@ -140,15 +151,16 @@
 
         {{-- AGENDA MEDICA --}}
         @can('agenda.ver')
-
-            <p class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <p
+                class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Agenda
             </p>
 
             <a href="{{ route('agenda.index') }}"
                 class="{{ $linkBase }} {{ request()->routeIs('agenda.index') ? $linkActivo : '' }}">
                 <x-heroicon-o-calendar-days class="w-5 h-5 shrink-0" />
-                <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                <span
+                    class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                     Calendario de Citas
                 </span>
             </a>
@@ -156,18 +168,19 @@
             <a href="{{ route('agenda.create') }}"
                 class="{{ $linkBase }} {{ request()->routeIs('agenda.create') ? $linkActivo : '' }}">
                 <x-heroicon-o-plus-circle class="w-5 h-5 shrink-0" />
-                <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                <span
+                    class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                     Nueva Cita
                 </span>
             </a>
-
         @endcan
 
 
         {{-- ATENCION CLINICA --}}
         @canany(['expediente.ver', 'consultas.ver', 'enfermeria.ver', 'seguimiento.ver', 'signos-vitales.ver'])
 
-            <p class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <p
+                class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Atencion Clinica
             </p>
 
@@ -175,7 +188,8 @@
                 <a href="{{ route('expedientes.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('expedientes.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-document-text class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Expediente
                     </span>
                 </a>
@@ -185,18 +199,24 @@
                 <a href="{{ route('citas.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('citas.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Consultas
                     </span>
                 </a>
             @endcan
 
             @can('enfermeria.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-heart class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Enfermeria
-                    </span>
+                <a href="{{ route('enfermeria.notas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('enfermeria.notas.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-heart class="w-5 h-5" />
+                    <span class="ml-2">Notas de Enfermería</span>
+                </a>
+
+                <a href="{{ route('enfermeria.administraciones.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('enfermeria.administraciones.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-beaker class="w-5 h-5" />
+                    <span class="ml-2">Administrar Medicamentos</span>
                 </a>
             @endcan
 
@@ -204,7 +224,8 @@
                 <a href="{{ route('seguimientos.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('seguimientos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-chart-bar class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Seguimiento
                     </span>
                 </a>
@@ -214,7 +235,8 @@
                 <a href="{{ route('signos-vitales.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('signos-vitales.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-heart class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Signos Vitales
                     </span>
                 </a>
@@ -226,7 +248,8 @@
         {{-- FARMACIA E INVENTARIO --}}
         @canany(['medicamentos.ver', 'dispensaciones.ver', 'existencias.ver', 'movimientos.ver', 'prediccion.ver'])
 
-            <p class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <p
+                class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Farmacia e Inventario
             </p>
 
@@ -234,7 +257,8 @@
                 <a href="{{ route('medicamentos.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('medicamentos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-beaker class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Medicamentos
                     </span>
                 </a>
@@ -244,7 +268,8 @@
                 <a href="{{ route('dispensaciones.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('dispensaciones.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Recetas
                     </span>
                 </a>
@@ -254,7 +279,8 @@
                 <a href="{{ route('existencias.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('existencias.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-archive-box class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Existencias
                     </span>
                 </a>
@@ -264,18 +290,18 @@
                 <a href="{{ route('movimientos.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('movimientos.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-arrow-path class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Movimientos
                     </span>
                 </a>
             @endcan
 
             @can('prediccion.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-cpu-chip class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Prediccion IA
-                    </span>
+                <a href="{{ route('prediccion.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('prediccion.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-cpu-chip class="w-5 h-5" />
+                    <span class="ml-2">Predicción IA</span>
                 </a>
             @endcan
 
@@ -285,7 +311,8 @@
         {{-- SEGURIDAD E INTELIGENCIA --}}
         @canany(['usuarios.ver', 'roles.ver', 'dispositivos.ver', 'auditoria.ver', 'asistente.ver', 'alertas.ver'])
 
-            <p class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <p
+                class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Seguridad e Inteligencia
             </p>
 
@@ -293,7 +320,8 @@
                 <a href="{{ route('admin.users.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('admin.users.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-users class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Usuarios
                     </span>
                 </a>
@@ -303,25 +331,26 @@
                 <a href="{{ route('admin.roles.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('admin.roles.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-shield-check class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Roles y Permisos
                     </span>
                 </a>
             @endcan
 
             @can('dispositivos.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-device-phone-mobile class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Dispositivos
-                    </span>
+                <a href="{{ route('dispositivos.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('dispositivos.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-device-phone-mobile class="w-5 h-5" />
+                    <span class="ml-2">Dispositivos</span>
                 </a>
             @endcan
 
             @can('auditoria.ver')
                 <a href="#" class="{{ $linkBase }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Auditoria
                     </span>
                 </a>
@@ -330,7 +359,8 @@
             @can('asistente.ver')
                 <a href="#" class="{{ $linkBase }}">
                     <x-heroicon-o-sparkles class="w-5 h-5 shrink-0" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Asistente IA
                     </span>
                 </a>
@@ -339,7 +369,8 @@
             @can('alertas.ver')
                 <a href="#" class="{{ $linkBase }}">
                     <x-heroicon-o-bell-alert class="w-5 h-5 shrink-0 text-[#FBBF24]" />
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Alertas Inteligentes
                     </span>
                 </a>
@@ -360,7 +391,8 @@
 
                 <x-heroicon-o-arrow-right-on-rectangle class="w-5 h-5 shrink-0 text-[#EF4444]" />
 
-                <span class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                <span
+                    class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                     Cerrar sesion
                 </span>
             </button>
@@ -371,8 +403,7 @@
 </aside>
 
 <!-- BOTON MOVIL -->
-<button
-    @click="abierto = true"
+<button @click="abierto = true"
     class="fixed top-3 left-3 z-40 lg:hidden bg-[#172554] text-white p-2 rounded-xl shadow-lg border border-[#172554]/50">
 
     <x-heroicon-o-bars-3 class="w-5 h-5" />

@@ -19,6 +19,11 @@ use App\Http\Controllers\DispensacionController;
 use App\Http\Controllers\SeguimientoController;
  use App\Http\Controllers\MovimientoController;
     use App\Http\Controllers\ServicioController;
+    use App\Http\Controllers\EspecialidadController;
+    use App\Http\Controllers\NotaEnfermeriaController;
+    use App\Http\Controllers\AdministracionMedicamentoController;
+    use App\Http\Controllers\PrediccionController;
+    use App\Http\Controllers\DispositivoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,7 +100,16 @@ Route::middleware(['auth', 'role:administrador'])
             ->name('users.turnos.destroy');
         Route::post('users/{user}/turnos/{pivotId}/toggle', [AsignacionTurnoController::class, 'toggle'])
             ->name('users.turnos.toggle');
-    });
+
+            Route::get('users/{user}/especialidades', [UserController::class, 'especialidades'])
+            ->name('users.especialidades');
+            Route::post('users/{user}/especialidades', [UserController::class, 'asignarEspecialidad'])
+            ->name('users.especialidades.asignar');
+            Route::delete('users/{user}/especialidades/{pivotId}', [UserController::class, 'quitarEspecialidad'])
+            ->name('users.especialidades.quitar');
+            Route::post('users/{user}/especialidades/{pivotId}/principal', [UserController::class, 'marcarPrincipal'])
+            ->name('users.especialidades.principal');
+            });
 
 
 Route::middleware(['auth', 'permission:medicamentos.ver'])
@@ -261,5 +275,106 @@ Route::middleware(['auth', 'permission:servicios.ver'])
         Route::get('/{servicio}/personal', [ServicioController::class, 'personal'])->name('personal');
         Route::post('/{servicio}/personal', [ServicioController::class, 'asignarPersonal'])->name('personal.asignar');
         Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
+    });
+
+
+
+
+Route::middleware(['auth', 'permission:especialidades.ver'])
+    ->prefix('especialidades')
+    ->name('especialidades.')
+    ->group(function () {
+        Route::get('/', [EspecialidadController::class, 'index'])->name('index');
+        Route::get('/crear', [EspecialidadController::class, 'create'])->name('create');
+        Route::post('/', [EspecialidadController::class, 'store'])->name('store');
+        Route::get('/{especialidad}', [EspecialidadController::class, 'show'])->name('show');
+        Route::get('/{especialidad}/editar', [EspecialidadController::class, 'edit'])->name('edit');
+        Route::put('/{especialidad}', [EspecialidadController::class, 'update'])->name('update');
+        Route::delete('/{especialidad}', [EspecialidadController::class, 'destroy'])->name('destroy');
+
+        // Médicos
+        Route::get('/{especialidad}/medicos', [EspecialidadController::class, 'medicos'])->name('medicos');
+        Route::post('/{especialidad}/medicos', [EspecialidadController::class, 'asignarMedico'])->name('medicos.asignar');
+        Route::delete('/{especialidad}/medicos/{pivotId}', [EspecialidadController::class, 'quitarMedico'])->name('medicos.quitar');
+
+        // Servicios
+        Route::get('/{especialidad}/servicios', [EspecialidadController::class, 'servicios'])->name('servicios');
+        Route::post('/{especialidad}/servicios', [EspecialidadController::class, 'asignarServicio'])->name('servicios.asignar');
+        Route::delete('/{especialidad}/servicios/{pivotId}', [EspecialidadController::class, 'quitarServicio'])->name('servicios.quitar');
+    });
+
+
+
+Route::middleware(['auth', 'permission:enfermeria.ver'])
+    ->prefix('enfermeria/notas')
+    ->name('enfermeria.notas.')
+    ->group(function () {
+        Route::get('/', [NotaEnfermeriaController::class, 'index'])->name('index');
+        Route::get('/crear', [NotaEnfermeriaController::class, 'create'])->name('create');
+        Route::post('/', [NotaEnfermeriaController::class, 'store'])->name('store');
+        Route::get('/{nota}', [NotaEnfermeriaController::class, 'show'])->name('show');
+        Route::delete('/{nota}', [NotaEnfermeriaController::class, 'destroy'])->name('destroy');
+    });
+
+
+
+
+Route::middleware(['auth', 'permission:enfermeria.ver'])
+    ->prefix('enfermeria/administraciones')
+    ->name('enfermeria.administraciones.')
+    ->group(function () {
+        Route::get('/', [AdministracionMedicamentoController::class, 'index'])->name('index');
+        Route::get('/crear', [AdministracionMedicamentoController::class, 'create'])->name('create');
+        Route::post('/', [AdministracionMedicamentoController::class, 'store'])->name('store');
+        Route::get('/{administracion}', [AdministracionMedicamentoController::class, 'show'])->name('show');
+        Route::delete('/{administracion}', [AdministracionMedicamentoController::class, 'destroy'])->name('destroy');
+    });
+
+
+
+Route::middleware(['auth', 'permission:prediccion.ver'])
+    ->prefix('prediccion')
+    ->name('prediccion.')
+    ->group(function () {
+        Route::get('/', [PrediccionController::class, 'index'])->name('index');
+        Route::get('/{medicamento}', [PrediccionController::class, 'show'])->name('show');
+    });
+
+
+
+
+Route::middleware(['auth', 'permission:dispositivos.ver'])
+    ->prefix('dispositivos')
+    ->name('dispositivos.')
+    ->group(function () {
+        Route::get('/', [DispositivoController::class, 'index'])->name('index');
+        Route::get('/{dispositivo}', [DispositivoController::class, 'show'])->name('show');
+
+        // Solo admin
+        Route::middleware('role:administrador')->group(function () {
+            Route::post('/{dispositivo}/confiar', [DispositivoController::class, 'confiar'])->name('confiar');
+            Route::post('/{dispositivo}/reactivar', [DispositivoController::class, 'reactivar'])->name('reactivar');
+            Route::delete('/{dispositivo}', [DispositivoController::class, 'destroy'])->name('destroy');
+        });
+
+        // Cualquier usuario puede bloquear sus propios dispositivos
+        Route::post('/{dispositivo}/bloquear', [DispositivoController::class, 'bloquear'])->name('bloquear');
+    });
+
+
+    use App\Http\Controllers\AdmisionController;
+
+Route::middleware(['auth', 'permission:admision.ver'])
+    ->prefix('admisiones')
+    ->name('admisiones.')
+    ->group(function () {
+        Route::get('/', [AdmisionController::class, 'index'])->name('index');
+        Route::get('/crear', [AdmisionController::class, 'create'])->name('create');
+        Route::post('/', [AdmisionController::class, 'store'])->name('store');
+        Route::get('/{admision}', [AdmisionController::class, 'show'])->name('show');
+        Route::post('/{admision}/asignar', [AdmisionController::class, 'asignar'])->name('asignar');
+        Route::post('/{admision}/derivar', [AdmisionController::class, 'derivar'])->name('derivar');
+        Route::get('/{admision}/pase-salida', [AdmisionController::class, 'paseSalida'])->name('pase-salida');
+        Route::delete('/{admision}', [AdmisionController::class, 'destroy'])->name('destroy');
     });
 require __DIR__.'/auth.php';

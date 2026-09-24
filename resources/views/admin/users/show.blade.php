@@ -110,6 +110,74 @@
                 </div>
             @endif
 
+
+            {{-- ESPECIALIDADES --}}
+            @php
+                $esMedico = $user->roles->contains(function ($rol) {
+                    $n = strtolower($rol->name);
+                    return str_contains($n, 'medic') || str_contains($n, 'doctor') || str_contains($n, 'médic');
+                });
+            @endphp
+
+            @if ($esMedico)
+                <div class="border-t pt-4 mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">Especialidades médicas</p>
+                        <a href="{{ route('admin.users.especialidades', $user) }}"
+                            class="text-xs text-blue-600 hover:underline">Gestionar →</a>
+                    </div>
+
+                    @if ($user->especialidades->isEmpty())
+                        <p class="text-sm text-gray-500">Sin especialidades asignadas.</p>
+                    @else
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->especialidades as $esp)
+                                <span
+                                    class="px-3 py-1 rounded text-sm
+                        {{ $esp->pivot->es_principal ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-blue-50 text-blue-800' }}">
+                                    {{ $esp->nombre }}
+                                    @if ($esp->pivot->es_principal)
+                                        ★
+                                    @endif
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif{{-- ESPECIALIDADES --}}
+            @php
+                $esMedico = $user->roles->contains(function ($rol) {
+                    $n = strtolower($rol->name);
+                    return str_contains($n, 'medic') || str_contains($n, 'doctor') || str_contains($n, 'médic');
+                });
+            @endphp
+
+            @if ($esMedico)
+                <div class="border-t pt-4 mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">Especialidades médicas</p>
+                        <a href="{{ route('admin.users.especialidades', $user) }}"
+                            class="text-xs text-blue-600 hover:underline">Gestionar →</a>
+                    </div>
+
+                    @if ($user->especialidades->isEmpty())
+                        <p class="text-sm text-gray-500">Sin especialidades asignadas.</p>
+                    @else
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->especialidades as $esp)
+                                <span
+                                    class="px-3 py-1 rounded text-sm
+                        {{ $esp->pivot->es_principal ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-blue-50 text-blue-800' }}">
+                                    {{ $esp->nombre }}
+                                    @if ($esp->pivot->es_principal)
+                                        ★
+                                    @endif
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
             <div class="pt-4 flex space-x-2">
                 <a href="{{ route('admin.users.edit', $user) }}"
                     class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">Editar</a>

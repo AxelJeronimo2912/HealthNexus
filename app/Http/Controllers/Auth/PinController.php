@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Services\DispositivoService;
 
 class PinController extends Controller
 {
@@ -51,6 +52,7 @@ class PinController extends Controller
 
         // PIN correcto
         Auth::login($user, $request->session()->get(self::SESSION_REMEMBER, false));
+DispositivoService::registrarDesdeRequest($request, $user->id);
 
         $request->session()->forget([self::SESSION_USER_ID, self::SESSION_REMEMBER]);
         $request->session()->regenerate();

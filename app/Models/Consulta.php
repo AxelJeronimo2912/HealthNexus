@@ -18,7 +18,8 @@ class Consulta extends Model
         'receta_libre', 'notas', 'estado', 'finalizada_en',
         'diagnostico_principal_id', 'diagnostico_secundario_id',
         'dispensada', 'dispensada_en', 'dispensada_por', 'notas_dispensacion',
-    ];
+        'especialidad_id'
+        ];
 
     protected $casts = [
     
@@ -89,4 +90,10 @@ class Consulta extends Model
     {
         return $this->belongsTo(User::class, 'dispensada_por');
     }
+
+
+    public function especialidad()
+{
+    return $this->belongsTo(Especialidad::class);
+}
 }

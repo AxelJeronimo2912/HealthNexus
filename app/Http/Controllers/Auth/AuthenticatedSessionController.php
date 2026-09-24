@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Services\DispositivoService;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -22,7 +23,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-  public function store(LoginRequest $request): RedirectResponse
+ public function store(LoginRequest $request): RedirectResponse
 {
     try {
         $request->authenticate();
@@ -34,6 +35,11 @@ class AuthenticatedSessionController extends Controller
 
     $user = $request->user();
 
+    if ($user) {
+        DispositivoService::registrarDesdeRequest($request, $user->id);
+    }
+
+    // Ahora sí, redirigir según el rol
     if (\App\Support\RoleHelper::tieneRol($user, 'administrador')) {
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
