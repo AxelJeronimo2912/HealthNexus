@@ -23,7 +23,7 @@ return [
             'titulo' => 'Gestión Hospitalaria',
             'items' => [
                 ['permiso' => 'pacientes.ver',      'label' => 'Pacientes',      'icono' => 'user-group',               'ruta' => 'pacientes.index'],
-                ['permiso' => 'admision.ver',       'label' => 'Admisión',       'icono' => 'clipboard-document-check', 'ruta' => '#'],
+                ['permiso' => 'admision.ver', 'label' => 'Admisión', 'icono' => 'clipboard-document-check', 'ruta' => 'admisiones.index'],
                 ['permiso' => 'servicios.ver', 'label' => 'Servicios', 'icono' => 'building-office-2', 'ruta' => 'servicios.index'],
                 ['permiso' => 'especialidades.ver', 'label' => 'Especialidades', 'icono' => 'academic-cap', 'ruta' => 'especialidades.index'],
                 ['permiso' => 'citas.ver', 'label' => 'Citas', 'icono' => 'calendar-days', 'ruta' => 'citas.index'],
@@ -76,9 +76,8 @@ return [
             'items' => [
                 ['permiso' => 'usuarios.ver',     'label' => 'Usuarios',             'icono' => 'users',                   'ruta' => 'admin.users.index'],
                 ['permiso' => 'roles.ver',        'label' => 'Roles y Permisos',     'icono' => 'shield-check',            'ruta' => 'admin.roles.index'],
-['permiso' => 'dispositivos.ver', 'label' => 'Dispositivos', 'icono' => 'device-phone-mobile', 'ruta' => 'dispositivos.index'],                ['permiso' => 'auditoria.ver',    'label' => 'Auditoría',            'icono' => 'clipboard-document-list', 'ruta' => '#'],
-                ['permiso' => 'asistente.ver',    'label' => 'Asistente IA',         'icono' => 'sparkles',                'ruta' => '#'],
-                ['permiso' => 'alertas.ver',      'label' => 'Alertas Inteligentes', 'icono' => 'bell-alert',              'ruta' => '#'],
+                ['permiso' => 'auditoria.ver', 'label' => 'Auditoría', 'icono' => 'clipboard-document-list', 'ruta' => 'auditoria.index'],
+                ['permiso' => 'asistente.ver', 'label' => 'Asistente IA', 'icono' => 'sparkles', 'ruta' => 'asistente.index'],                ['permiso' => 'alertas.ver',      'label' => 'Alertas Inteligentes', 'icono' => 'bell-alert',              'ruta' => '#'],
             ],
         ],
     ],

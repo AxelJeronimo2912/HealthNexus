@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Consulta extends Model
 {
+     use Auditable;
     protected $table = 'consultas';
 
     protected $fillable = [
@@ -52,6 +54,11 @@ class Consulta extends Model
     public function medico()
     {
         return $this->belongsTo(User::class, 'medico_id');
+    }
+
+     public static function moduloAuditoria(): string
+    {
+        return 'consultas';
     }
 
     public function medicamentos()
