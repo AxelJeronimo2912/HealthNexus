@@ -11,17 +11,19 @@ return new class extends Migration
         Schema::create('dispositivos', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-            // Huella única del dispositivo (hash)
+            // Huella única del dispositivo
             $table->string('huella', 64)->unique();
 
             // Datos del dispositivo
-            $table->string('nombre')->nullable();            
-            $table->string('tipo')->nullable();              
-            $table->string('sistema_operativo')->nullable();  
-            $table->string('navegador')->nullable();         
-            $table->string('user_agent', 500)->nullable();    
+            $table->string('nombre')->nullable();
+            $table->string('tipo')->nullable();
+            $table->string('sistema_operativo')->nullable();
+            $table->string('navegador')->nullable();
+            $table->string('user_agent', 500)->nullable();
 
             // Datos de red
             $table->string('ip_registro', 45)->nullable();
@@ -33,11 +35,14 @@ return new class extends Migration
             $table->boolean('confiable')->default(false);
             $table->boolean('activo')->default(true);
             $table->timestamp('aprobado_en')->nullable();
-            $table->foreignId('aprobado_por')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('aprobado_por')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             // Uso
             $table->timestamp('ultimo_acceso')->nullable();
-            $table->integer('total_accesos')->default(0);
+            $table->unsignedInteger('total_accesos')->default(0);
 
             $table->timestamps();
 
