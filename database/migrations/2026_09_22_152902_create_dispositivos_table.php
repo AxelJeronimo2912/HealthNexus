@@ -8,43 +8,34 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('admisiones', function (Blueprint $table) {
+        Schema::create('dispositivos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('paciente_id')->constrained('pacientes')->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
-            // Datos de la admisión
-            $table->string('folio')->unique();              // ADM-20260922-001
-            $table->dateTime('fecha_hora_llegada');
-            $table->enum('tipo', ['urgencias', 'consulta_externa', 'hospitalizacion', 'traslado']);
-            $table->enum('triage', ['rojo', 'naranja', 'amarillo', 'verde', 'azul'])->nullable();
-            $table->text('motivo')->nullable();
-            $table->text('diagnostico_presuntivo')->nullable();
+            $table->string('huella')->index();
+            $table->string('nombre')->nullable();
+            $table->string('tipo')->nullable();
+            $table->string('sistema_operativo')->nullable();
+            $table->string('navegador')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->string('ip_registro', 45)->nullable();
+            $table->string('ip_ultimo_acceso', 45)->nullable();
+            $table->string('ciudad')->nullable();
+            $table->string('pais')->nullable();
 
-            // Estado
-            $table->enum('estado', ['en_espera', 'atendido', 'hospitalizado', 'derivado', 'alta', 'fallecido'])
-                ->default('en_espera');
-
-            // Si fue derivado
-            $table->foreignId('hospital_derivado_id')->nullable()->constrained('hospitales')->nullOnDelete();
-            $table->dateTime('fecha_derivacion')->nullable();
-            $table->text('motivo_derivacion')->nullable();
-            $table->string('pase_salida_pdf')->nullable();  // ruta del PDF generado
-
-            // Si fue hospitalizado
-            $table->foreignId('cama_id')->nullable()->constrained('camas')->nullOnDelete();
-            $table->foreignId('medico_id')->nullable()->constrained('users')->nullOnDelete();
-
-            $table->text('notas')->nullable();
+            $table->boolean('confiable')->default(false);
+            $table->boolean('activo')->default(true);
+            $table->dateTime('aprobado_en')->nullable();
+            $table->foreignId('aprobado_por')->nullable()->constrained('users')->nullOnDelete();
+            $table->dateTime('ultimo_acceso')->nullable();
+            $table->unsignedInteger('total_accesos')->default(0);
 
             $table->timestamps();
-
-            $table->index(['fecha_hora_llegada', 'estado']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('admisiones');
+        Schema::dropIfExists('dispositivos');
     }
 };
