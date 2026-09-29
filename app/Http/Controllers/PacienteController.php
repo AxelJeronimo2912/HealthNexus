@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class PacienteController extends Controller
 {
-    
+
     private function reglas(?Paciente $paciente = null): array
     {
         return [
@@ -185,7 +185,7 @@ class PacienteController extends Controller
         ];
     }
 
-   
+
     /**
      * Normaliza la entrada antes de validar:
      * - trim en strings; "" → null
@@ -286,7 +286,7 @@ class PacienteController extends Controller
         return $validator;
     }
 
-  
+
     public function index(): View
     {
         $pacientes = Paciente::with(['estado', 'municipio'])
