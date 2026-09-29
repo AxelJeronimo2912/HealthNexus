@@ -11,143 +11,127 @@ use Illuminate\View\View;
 
 class PacienteController extends Controller
 {
-    /**
-     * Reglas de validación compartidas entre store y update.
-     * TODOS los campos son obligatorios.
-     */
-   private function reglas(?Paciente $paciente = null): array
-{
-    return [
-        // ==================== IDENTIDAD ====================
-        'nombre' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
-        'apellido_paterno' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
-        'apellido_materno' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
-        'fecha_nacimiento' => ['required', 'date', 'before:today', 'after:1900-01-01'],
-        'sexo' => ['required', 'in:hombre,mujer,otro'],
-        'estado_civil' => ['required', 'string', 'in:Soltero,Casado,Divorciado,Viudo,Unión Libre'],
-        'nacionalidad' => ['required', 'string', 'in:MEXICANA,EXTRANJERA'],
 
-        // --- Condicionales según nacionalidad ---
-        'estado_nacimiento' => ['required_if:nacionalidad,MEXICANA', 'nullable', 'string', 'max:100'],
-        'curp' => [
-            'required_if:nacionalidad,MEXICANA',
-            'nullable',
-            'string',
-            'size:18',
-            'regex:/^[A-ZÑ&]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/',
-            $paciente
-                ? 'unique:pacientes,curp,' . $paciente->id
-                : 'unique:pacientes,curp',
-        ],
-        'pais_nacimiento' => ['required_if:nacionalidad,EXTRANJERA', 'nullable', 'string', 'max:100'],
-        'pasaporte' => ['required_if:nacionalidad,EXTRANJERA', 'nullable', 'string', 'max:50'],
+    private function reglas(?Paciente $paciente = null): array
+    {
+        return [
+            // ==================== IDENTIDAD ====================
+            'nombre' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
+            'apellido_paterno' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
+            'apellido_materno' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s\'-]+$/'],
+            'fecha_nacimiento' => ['required', 'date', 'before:today', 'after:1900-01-01'],
+            'sexo' => ['required', 'in:hombre,mujer,otro'],
+            'estado_civil' => ['required', 'string', 'in:Soltero,Casado,Divorciado,Viudo,Unión Libre'],
+            'nacionalidad' => ['required', 'string', 'in:MEXICANA,EXTRANJERA'],
 
-        // ==================== CONTACTO ====================
-        'telefono_principal' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
-        'correo_electronico' => ['required', 'email:rfc,dns', 'max:255'],
-        'ocupacion' => ['required', 'string', 'max:100'],
-        'responsable_nombre' => ['required', 'string', 'max:150'],
+            // --- Condicionales según nacionalidad ---
+            'estado_nacimiento' => ['required_if:nacionalidad,MEXICANA', 'nullable', 'string', 'max:100'],
+            'curp' => [
+                'required_if:nacionalidad,MEXICANA',
+                'nullable',
+                'string',
+                'size:18',
+                $paciente
+                    ? 'unique:pacientes,curp,' . $paciente->id
+                    : 'unique:pacientes,curp',
+            ],
+            'pais_nacimiento' => ['required_if:nacionalidad,EXTRANJERA', 'nullable', 'string', 'max:100'],
+            'pasaporte' => ['required_if:nacionalidad,EXTRANJERA', 'nullable', 'string', 'max:50'],
 
-        // ==================== SALUD ====================
-        'tipo_sanguineo' => ['required', 'string', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-        'alergias' => ['required', 'string', 'max:1000'],
-        'enfermedades_cronicas' => ['required', 'string', 'max:2000'],
+            // ==================== CONTACTO ====================
+            'telefono_principal' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
+            'correo_electronico' => ['required', 'email:rfc', 'max:255'],
+            'ocupacion' => ['required', 'string', 'max:100'],
+            'responsable_nombre' => ['required', 'string', 'max:150'],
 
-        // ==================== DOMICILIO ====================
-        'estado_id' => ['required', 'exists:estados,id'],
-        'municipio_id' => ['required', 'exists:municipios,id'],
-        'colonia' => ['required', 'string', 'max:100'],
-        'calle' => ['required', 'string', 'max:150'],
-        'numero_exterior' => ['required', 'string', 'max:20'],
-        'numero_interior' => ['required', 'string', 'max:20'],
+            // ==================== SALUD ====================
+            'tipo_sanguineo' => ['required', 'string', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'alergias' => ['required', 'string', 'max:1000'],
+            'enfermedades_cronicas' => ['required', 'string', 'max:2000'],
 
-        // ==================== ESTADO ====================
-        'activo' => ['boolean'],
-    ];
-}
+            // ==================== DOMICILIO ====================
+            'estado_id' => ['required', 'exists:estados,id'],
+            'municipio_id' => ['required', 'integer'], // se valida cruce con estado_id en after()
+            'colonia' => ['required', 'string', 'max:100'],
+            'calle' => ['required', 'string', 'max:150'],
+            'numero_exterior' => ['required', 'string', 'max:20'],
+            'numero_interior' => ['required', 'string', 'max:20'],
 
-    /**
-     * Mensajes personalizados en español.
-     */
+            // ==================== ESTADO ====================
+            'activo' => ['sometimes', 'boolean'],
+        ];
+    }
+
     private function mensajes(): array
     {
         return [
-            // ==================== NOMBRE ====================
+            // Nombre
             'nombre.required' => 'El nombre del paciente es obligatorio.',
             'nombre.min' => 'El nombre debe tener al menos 2 caracteres.',
             'nombre.max' => 'El nombre no debe superar los 100 caracteres.',
             'nombre.regex' => 'El nombre solo puede contener letras, espacios, apóstrofes y guiones.',
 
-            // ==================== APELLIDO PATERNO ====================
+            // Apellido paterno
             'apellido_paterno.required' => 'El apellido paterno es obligatorio.',
             'apellido_paterno.min' => 'El apellido paterno debe tener al menos 2 caracteres.',
             'apellido_paterno.max' => 'El apellido paterno no debe superar los 100 caracteres.',
             'apellido_paterno.regex' => 'El apellido paterno solo puede contener letras, espacios, apóstrofes y guiones.',
 
-            // ==================== APELLIDO MATERNO ====================
+            // Apellido materno
             'apellido_materno.required' => 'El apellido materno es obligatorio.',
             'apellido_materno.min' => 'El apellido materno debe tener al menos 2 caracteres.',
             'apellido_materno.max' => 'El apellido materno no debe superar los 100 caracteres.',
             'apellido_materno.regex' => 'El apellido materno solo puede contener letras, espacios, apóstrofes y guiones.',
 
-            // ==================== FECHA NACIMIENTO ====================
+            // Fecha nacimiento
             'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nacimiento.date' => 'Ingresa una fecha de nacimiento válida.',
             'fecha_nacimiento.before' => 'La fecha de nacimiento debe ser anterior a hoy.',
             'fecha_nacimiento.after' => 'La fecha de nacimiento no puede ser anterior a 1900.',
 
-            // ==================== SEXO ====================
+            // Sexo
             'sexo.required' => 'Selecciona el sexo del paciente.',
             'sexo.in' => 'El sexo debe ser hombre, mujer u otro.',
 
-            // ==================== ESTADO CIVIL ====================
+            // Estado civil
             'estado_civil.required' => 'Selecciona el estado civil.',
             'estado_civil.in' => 'El estado civil seleccionado no es válido.',
+
+            // Condicionales
             'estado_nacimiento.required_if' => 'El estado de nacimiento es obligatorio para nacionalidad mexicana.',
-            'curp.required_if' => 'El CURP es obligatorio para nacionalidad mexicana.',
-            'pais_nacimiento.required_if' => 'El país de nacimiento es obligatorio para nacionalidad extranjera.',
-            'pasaporte.required_if' => 'El pasaporte es obligatorio para nacionalidad extranjera.',
-            // ==================== NACIONALIDAD ====================
-            'nacionalidad.required' => 'La nacionalidad es obligatoria.',
-            'nacionalidad.in' => 'La nacionalidad debe ser MEXICANA o EXTRANJERA.',
-
-            // ==================== PAÍS NACIMIENTO ====================
-            'pais_nacimiento.required' => 'El país de nacimiento es obligatorio.',
-            'pais_nacimiento.max' => 'El país de nacimiento no debe superar los 100 caracteres.',
-
-            // ==================== ESTADO NACIMIENTO ====================
-            'estado_nacimiento.required' => 'El estado de nacimiento es obligatorio.',
             'estado_nacimiento.max' => 'El estado de nacimiento no debe superar los 100 caracteres.',
-
-            // ==================== CURP ====================
-            'curp.required' => 'El CURP es obligatorio.',
+            'curp.required_if' => 'El CURP es obligatorio para nacionalidad mexicana.',
             'curp.size' => 'El CURP debe tener exactamente 18 caracteres.',
             'curp.regex' => 'El formato del CURP no es válido. Ejemplo: XXXX000000HNEXXX09.',
             'curp.unique' => 'Este CURP ya está registrado para otro paciente.',
-
-            // ==================== PASAPORTE ====================
-            'pasaporte.required' => 'El pasaporte es obligatorio.',
+            'pais_nacimiento.required_if' => 'El país de nacimiento es obligatorio para nacionalidad extranjera.',
+            'pais_nacimiento.max' => 'El país de nacimiento no debe superar los 100 caracteres.',
+            'pasaporte.required_if' => 'El pasaporte es obligatorio para nacionalidad extranjera.',
             'pasaporte.max' => 'El pasaporte no debe superar los 50 caracteres.',
 
-            // ==================== TELÉFONO ====================
+            // Nacionalidad
+            'nacionalidad.required' => 'La nacionalidad es obligatoria.',
+            'nacionalidad.in' => 'La nacionalidad debe ser MEXICANA o EXTRANJERA.',
+
+            // Teléfono
             'telefono_principal.required' => 'El teléfono principal es obligatorio.',
             'telefono_principal.max' => 'El teléfono no debe superar los 20 caracteres.',
             'telefono_principal.regex' => 'El teléfono solo puede contener números, espacios, +, -, y paréntesis.',
 
-            // ==================== CORREO ====================
+            // Correo
             'correo_electronico.required' => 'El correo electrónico es obligatorio.',
             'correo_electronico.email' => 'Ingresa un correo electrónico válido.',
             'correo_electronico.max' => 'El correo no debe superar los 255 caracteres.',
 
-            // ==================== OCUPACIÓN ====================
+            // Ocupación
             'ocupacion.required' => 'La ocupación es obligatoria.',
             'ocupacion.max' => 'La ocupación no debe superar los 100 caracteres.',
 
-            // ==================== RESPONSABLE ====================
+            // Responsable
             'responsable_nombre.required' => 'El nombre del responsable es obligatorio.',
             'responsable_nombre.max' => 'El nombre del responsable no debe superar los 150 caracteres.',
 
-            // ==================== SALUD ====================
+            // Salud
             'tipo_sanguineo.required' => 'Selecciona el tipo sanguíneo.',
             'tipo_sanguineo.in' => 'El tipo sanguíneo debe ser uno de: A+, A-, B+, B-, AB+, AB-, O+, O-.',
             'alergias.required' => 'La lista de alergias es obligatoria.',
@@ -155,11 +139,11 @@ class PacienteController extends Controller
             'enfermedades_cronicas.required' => 'La lista de enfermedades crónicas es obligatoria.',
             'enfermedades_cronicas.max' => 'La lista de enfermedades crónicas no debe superar los 2000 caracteres.',
 
-            // ==================== DOMICILIO ====================
+            // Domicilio
             'estado_id.required' => 'Selecciona un estado.',
             'estado_id.exists' => 'El estado seleccionado no es válido.',
             'municipio_id.required' => 'Selecciona un municipio.',
-            'municipio_id.exists' => 'El municipio seleccionado no es válido.',
+            'municipio_id.integer' => 'El municipio seleccionado no es válido.',
             'colonia.required' => 'La colonia es obligatoria.',
             'colonia.max' => 'La colonia no debe superar los 100 caracteres.',
             'calle.required' => 'La calle es obligatoria.',
@@ -171,9 +155,6 @@ class PacienteController extends Controller
         ];
     }
 
-    /**
-     * Nombres legibles de los campos.
-     */
     private function atributos(): array
     {
         return [
@@ -204,8 +185,62 @@ class PacienteController extends Controller
         ];
     }
 
+
     /**
-     * Determina si el request está pidiendo JSON.
+     * Normaliza la entrada antes de validar:
+     * - trim en strings; "" → null
+     * - CURP / pasaporte / nacionalidad en mayúsculas
+     * - correo en minúsculas
+     * - activo → bool
+     */
+    private function normalizar(array $input): array
+    {
+        foreach ($input as $key => $value) {
+            if (is_string($value)) {
+                $value = trim($value);
+                $input[$key] = $value === '' ? null : $value;
+            }
+        }
+
+        if (!empty($input['curp'])) {
+            $input['curp'] = strtoupper($input['curp']);
+        }
+        if (!empty($input['pasaporte'])) {
+            $input['pasaporte'] = strtoupper($input['pasaporte']);
+        }
+        if (!empty($input['nacionalidad'])) {
+            $input['nacionalidad'] = strtoupper($input['nacionalidad']);
+        }
+        if (!empty($input['correo_electronico'])) {
+            $input['correo_electronico'] = strtolower($input['correo_electronico']);
+        }
+
+        $input['activo'] = filter_var(
+            $input['activo'] ?? false,
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        return $input;
+    }
+
+    /**
+     * Limpia los campos que no corresponden a la nacionalidad elegida.
+     */
+    private function limpiarSegunNacionalidad(array $data): array
+    {
+        if (($data['nacionalidad'] ?? null) === 'MEXICANA') {
+            $data['pais_nacimiento'] = null;
+            $data['pasaporte'] = null;
+        } else {
+            $data['estado_nacimiento'] = null;
+            $data['curp'] = null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Determina si el request espera JSON.
      */
     private function esperaJson(Request $request): bool
     {
@@ -214,6 +249,43 @@ class PacienteController extends Controller
             || $request->header('Accept') === 'application/json'
             || $request->header('X-Requested-With') === 'XMLHttpRequest';
     }
+
+    /**
+     * Construye el Validator con reglas, mensajes, atributos
+     * y validación cruzada municipio ↔ estado.
+     */
+    private function validarPaciente(Request $request, ?Paciente $paciente = null)
+    {
+        $request->merge($this->normalizar($request->all()));
+
+        $validator = Validator::make(
+            $request->all(),
+            $this->reglas($paciente),
+            $this->mensajes(),
+            $this->atributos()
+        );
+
+        $validator->after(function ($v) use ($request) {
+            $estadoId = $request->input('estado_id');
+            $municipioId = $request->input('municipio_id');
+
+            if ($estadoId && $municipioId) {
+                $pertenece = Municipio::where('id', $municipioId)
+                    ->where('estado_id', $estadoId)
+                    ->exists();
+
+                if (! $pertenece) {
+                    $v->errors()->add(
+                        'municipio_id',
+                        'El municipio seleccionado no pertenece al estado indicado.'
+                    );
+                }
+            }
+        });
+
+        return $validator;
+    }
+
 
     public function index(): View
     {
@@ -256,12 +328,7 @@ class PacienteController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make(
-            $request->all(),
-            $this->reglas(),
-            $this->mensajes(),
-            $this->atributos()
-        );
+        $validator = $this->validarPaciente($request);
 
         if ($validator->fails()) {
             if ($this->esperaJson($request)) {
@@ -274,16 +341,30 @@ class PacienteController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $data = $validator->validated();
+        $data = $this->limpiarSegunNacionalidad($validator->validated());
         $data['activo'] = $request->boolean('activo');
 
-        $paciente = Paciente::create($data);
+        try {
+            $paciente = Paciente::create($data);
+        } catch (\Throwable $e) {
+            report($e);
+
+            if ($this->esperaJson($request)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No se pudo registrar el paciente. Intenta nuevamente.',
+                ], 500);
+            }
+
+            return back()->withInput()
+                ->with('error', 'No se pudo registrar el paciente. Intenta nuevamente.');
+        }
 
         if ($this->esperaJson($request)) {
             return response()->json([
                 'ok' => true,
                 'mensaje' => 'Paciente registrado correctamente.',
-                'paciente' => $paciente,
+                'paciente' => $paciente->load(['estado', 'municipio']),
             ], 201);
         }
 
@@ -293,6 +374,7 @@ class PacienteController extends Controller
 
     public function show(Paciente $paciente): View
     {
+        $paciente->load(['estado', 'municipio']);
         return view('pacientes.show', compact('paciente'));
     }
 
@@ -301,18 +383,15 @@ class PacienteController extends Controller
         return view('pacientes.edit', [
             'paciente' => $paciente,
             'estados' => Estado::orderBy('nombre')->get(),
-            'municipios' => Municipio::where('estado_id', $paciente->estado_id)->orderBy('nombre')->get(),
+            'municipios' => Municipio::where('estado_id', $paciente->estado_id)
+                ->orderBy('nombre')
+                ->get(),
         ]);
     }
 
     public function update(Request $request, Paciente $paciente)
     {
-        $validator = Validator::make(
-            $request->all(),
-            $this->reglas($paciente),
-            $this->mensajes(),
-            $this->atributos()
-        );
+        $validator = $this->validarPaciente($request, $paciente);
 
         if ($validator->fails()) {
             if ($this->esperaJson($request)) {
@@ -325,16 +404,30 @@ class PacienteController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $data = $validator->validated();
+        $data = $this->limpiarSegunNacionalidad($validator->validated());
         $data['activo'] = $request->boolean('activo');
 
-        $paciente->update($data);
+        try {
+            $paciente->update($data);
+        } catch (\Throwable $e) {
+            report($e);
+
+            if ($this->esperaJson($request)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No se pudo actualizar el paciente. Intenta nuevamente.',
+                ], 500);
+            }
+
+            return back()->withInput()
+                ->with('error', 'No se pudo actualizar el paciente. Intenta nuevamente.');
+        }
 
         if ($this->esperaJson($request)) {
             return response()->json([
                 'ok' => true,
                 'mensaje' => 'Paciente actualizado correctamente.',
-                'paciente' => $paciente,
+                'paciente' => $paciente->fresh()->load(['estado', 'municipio']),
             ], 200);
         }
 
@@ -344,9 +437,22 @@ class PacienteController extends Controller
 
     public function destroy(Paciente $paciente)
     {
-        $paciente->delete();
+        try {
+            $paciente->delete();
+        } catch (\Throwable $e) {
+            report($e);
 
-        if (request()->wantsJson() || request()->ajax()) {
+            if ($this->esperaJson(request())) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No se pudo eliminar el paciente.',
+                ], 500);
+            }
+
+            return back()->with('error', 'No se pudo eliminar el paciente.');
+        }
+
+        if ($this->esperaJson(request())) {
             return response()->json([
                 'ok' => true,
                 'mensaje' => 'Paciente eliminado correctamente.',

@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Cita extends Model
 {
+        use Auditable;
+
     protected $table = 'citas';
 
     protected $fillable = [

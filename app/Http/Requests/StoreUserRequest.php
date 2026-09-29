@@ -29,7 +29,6 @@ class StoreUserRequest extends FormRequest
                 'required',
                 'string',
                 'size:18',
-                'regex:/^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/i',
                 'unique:users,curp',
             ],
 

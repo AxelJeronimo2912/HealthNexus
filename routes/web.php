@@ -1,9 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\PhenotypingController;
+use App\Http\Controllers\Admin\IaMedicaController;
+
+use App\Http\Controllers\Medico\DashboardController as MedicoDashboardController;
+use App\Http\Controllers\Enfermeria\DashboardController as EnfermeriaDashboardController;
+use App\Http\Controllers\Farmacia\DashboardController as FarmaciaDashboardController;
+
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\CamaController;
@@ -17,13 +25,17 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ExistenciaController;
 use App\Http\Controllers\DispensacionController;
 use App\Http\Controllers\SeguimientoController;
- use App\Http\Controllers\MovimientoController;
-    use App\Http\Controllers\ServicioController;
-    use App\Http\Controllers\EspecialidadController;
-    use App\Http\Controllers\NotaEnfermeriaController;
-    use App\Http\Controllers\AdministracionMedicamentoController;
-    use App\Http\Controllers\PrediccionController;
-    use App\Http\Controllers\DispositivoController;
+use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\EspecialidadController;
+use App\Http\Controllers\NotaEnfermeriaController;
+use App\Http\Controllers\AdministracionMedicamentoController;
+use App\Http\Controllers\PrediccionController;
+use App\Http\Controllers\DispositivoController;
+use App\Http\Controllers\AdmisionController;
+use App\Http\Controllers\AsistenteController;
+use App\Http\Controllers\AlertaController;
+use App\Http\Controllers\AuditoriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,14 +51,24 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard genérico: redirige según el rol
+| Dashboard genérico: redirige según el rol (por PREFIJO)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->get('/dashboard', function () {
     $user = auth()->user();
+    $rol = strtolower(trim($user->getRoleNames()->first() ?? ''));
 
-    if ($user->hasRole('administrador')) {
+    if (str_starts_with($rol, 'admin')) {
         return redirect()->route('admin.dashboard');
+    }
+    if ($rol === 'm' || str_starts_with($rol, 'medic')) {
+        return redirect()->route('medico.dashboard');
+    }
+    if (str_starts_with($rol, 'enferm')) {
+        return redirect()->route('enfermeria.dashboard');
+    }
+    if (str_starts_with($rol, 'farmac')) {
+        return redirect()->route('farmacia.dashboard');
     }
 
     return view('dashboard');
@@ -69,15 +91,25 @@ Route::middleware(['auth', 'permission:pacientes.ver'])
 
 /*
 |--------------------------------------------------------------------------
-| Rutas del Administrador (solo rol administrador)
+| Rutas del ADMINISTRADOR (acepta admin, administrador, admin general...)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:administrador'])
+Route::middleware(['auth', 'rol.prefijo:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
         // Dashboard del admin
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/sla-data', [DashboardController::class, 'slaData'])->name('sla-data');
+        Route::get('/dwh-data', [DashboardController::class, 'dwhData'])->name('dwh-data');
+
+        // Endpoints de modales
+        Route::get('/fenotipado-data', [PhenotypingController::class, 'data'])
+            ->name('fenotipado-data');
+        Route::get('/ia-medica-data', [IaMedicaController::class, 'data'])
+            ->name('ia-medica-data');
+        Route::post('/ia-medica-predecir', [IaMedicaController::class, 'predecir'])
+            ->name('ia-medica-predecir');
 
         // Usuarios
         Route::resource('users', UserController::class);
@@ -87,6 +119,7 @@ Route::middleware(['auth', 'role:administrador'])
         // Roles y permisos
         Route::resource('roles', RoleController::class);
 
+        // Turnos
         Route::resource('turnos', TurnoController::class);
 
         // Asignaciones de turnos por usuario
@@ -101,31 +134,75 @@ Route::middleware(['auth', 'role:administrador'])
         Route::post('users/{user}/turnos/{pivotId}/toggle', [AsignacionTurnoController::class, 'toggle'])
             ->name('users.turnos.toggle');
 
-            Route::get('users/{user}/especialidades', [UserController::class, 'especialidades'])
+        // Especialidades por usuario
+        Route::get('users/{user}/especialidades', [UserController::class, 'especialidades'])
             ->name('users.especialidades');
-            Route::post('users/{user}/especialidades', [UserController::class, 'asignarEspecialidad'])
+        Route::post('users/{user}/especialidades', [UserController::class, 'asignarEspecialidad'])
             ->name('users.especialidades.asignar');
-            Route::delete('users/{user}/especialidades/{pivotId}', [UserController::class, 'quitarEspecialidad'])
+        Route::delete('users/{user}/especialidades/{pivotId}', [UserController::class, 'quitarEspecialidad'])
             ->name('users.especialidades.quitar');
-            Route::post('users/{user}/especialidades/{pivotId}/principal', [UserController::class, 'marcarPrincipal'])
+        Route::post('users/{user}/especialidades/{pivotId}/principal', [UserController::class, 'marcarPrincipal'])
             ->name('users.especialidades.principal');
-            });
+    });
 
+/*
+|--------------------------------------------------------------------------
+| Rutas del MÉDICO (acepta medico, medico a, m...)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'rol.prefijo:medic,m'])
+    ->prefix('medico')
+    ->name('medico.')
+    ->group(function () {
+        Route::get('/dashboard', [MedicoDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
 
+/*
+|--------------------------------------------------------------------------
+| Rutas de ENFERMERÍA (acepta enfermeria, enfermeria pediatria...)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'rol.prefijo:enferm'])
+    ->prefix('enfermeria')
+    ->name('enfermeria.')
+    ->group(function () {
+        Route::get('/dashboard', [EnfermeriaDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de FARMACIA (acepta farmacia, farmacia central...)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'rol.prefijo:farmac'])
+    ->prefix('farmacia')
+    ->name('farmacia.')
+    ->group(function () {
+        Route::get('/dashboard', [FarmaciaDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Medicamentos
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:medicamentos.ver'])
     ->group(function () {
         Route::resource('medicamentos', MedicamentoController::class);
-        
     });
 
-
-    Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
+Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
     ->middleware(['auth', 'permission:medicamentos.ver'])
     ->name('medicamentos.entrada');
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Expedientes
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:expediente.ver'])
     ->prefix('expedientes')
     ->name('expedientes.')
@@ -133,7 +210,6 @@ Route::middleware(['auth', 'permission:expediente.ver'])
         Route::get('/', [ExpedienteController::class, 'index'])->name('index');
         Route::get('/{paciente}', [ExpedienteController::class, 'show'])->name('show');
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -147,13 +223,11 @@ Route::middleware(['auth', 'permission:camas.ver'])
             ->name('camas.cambiar-estado');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Signos Vitales
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'permission:signos-vitales.ver'])
     ->group(function () {
         Route::resource('signos-vitales', SignoVitalController::class);
@@ -165,11 +239,10 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
 
 /*
 |--------------------------------------------------------------------------
-| Módulo de agenda
+| Módulo de Agenda
 |--------------------------------------------------------------------------
 */
-
-    Route::middleware(['auth', 'permission:agenda.ver'])
+Route::middleware(['auth', 'permission:agenda.ver'])
     ->prefix('agenda')
     ->name('agenda.')
     ->group(function () {
@@ -181,8 +254,11 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
         Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Citas
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:citas.ver'])
     ->prefix('citas')
     ->name('citas.')
@@ -193,9 +269,11 @@ Route::middleware(['auth', 'permission:citas.ver'])
         Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
     });
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Consultas
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:consultas.ver'])
     ->prefix('consultas')
     ->name('consultas.')
@@ -209,20 +287,26 @@ Route::middleware(['auth', 'permission:consultas.ver'])
         Route::get('/{consulta}/receta/pdf', [ConsultaController::class, 'pdfReceta'])->name('receta.pdf');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Existencias
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:existencias.ver'])
     ->prefix('existencias')
     ->name('existencias.')
     ->group(function () {
         Route::get('/', [ExistenciaController::class, 'index'])->name('index');
         Route::get('/lotes', [ExistenciaController::class, 'lotes'])->name('lotes');
-        Route::post('/movimientos', [ExistenciaController::class, 'storeMovimiento'])->name('movimientos.store'); 
+        Route::post('/movimientos', [ExistenciaController::class, 'storeMovimiento'])->name('movimientos.store');
         Route::get('/{medicamento}', [ExistenciaController::class, 'show'])->name('show');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Dispensaciones
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:dispensaciones.ver'])
     ->prefix('dispensaciones')
     ->name('dispensaciones.')
@@ -233,9 +317,11 @@ Route::middleware(['auth', 'permission:dispensaciones.ver'])
         Route::post('/{consulta}/revertir', [DispensacionController::class, 'revertir'])->name('revertir');
     });
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Seguimientos
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:seguimiento.ver'])
     ->prefix('seguimientos')
     ->name('seguimientos.')
@@ -247,8 +333,11 @@ Route::middleware(['auth', 'permission:seguimiento.ver'])
         Route::delete('/{seguimiento}', [SeguimientoController::class, 'destroy'])->name('destroy');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Movimientos
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:movimientos.ver'])
     ->prefix('movimientos')
     ->name('movimientos.')
@@ -257,8 +346,11 @@ Route::middleware(['auth', 'permission:movimientos.ver'])
         Route::get('/{movimiento}', [MovimientoController::class, 'show'])->name('show');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Servicios
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:servicios.ver'])
     ->prefix('servicios')
     ->name('servicios.')
@@ -277,9 +369,11 @@ Route::middleware(['auth', 'permission:servicios.ver'])
         Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
     });
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Especialidades
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:especialidades.ver'])
     ->prefix('especialidades')
     ->name('especialidades.')
@@ -303,8 +397,11 @@ Route::middleware(['auth', 'permission:especialidades.ver'])
         Route::delete('/{especialidad}/servicios/{pivotId}', [EspecialidadController::class, 'quitarServicio'])->name('servicios.quitar');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Notas de Enfermería
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:enfermeria.ver'])
     ->prefix('enfermeria/notas')
     ->name('enfermeria.notas.')
@@ -316,9 +413,11 @@ Route::middleware(['auth', 'permission:enfermeria.ver'])
         Route::delete('/{nota}', [NotaEnfermeriaController::class, 'destroy'])->name('destroy');
     });
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Administración de Medicamentos (enfermería)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:enfermeria.ver'])
     ->prefix('enfermeria/administraciones')
     ->name('enfermeria.administraciones.')
@@ -330,8 +429,11 @@ Route::middleware(['auth', 'permission:enfermeria.ver'])
         Route::delete('/{administracion}', [AdministracionMedicamentoController::class, 'destroy'])->name('destroy');
     });
 
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Predicción
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:prediccion.ver'])
     ->prefix('prediccion')
     ->name('prediccion.')
@@ -340,9 +442,11 @@ Route::middleware(['auth', 'permission:prediccion.ver'])
         Route::get('/{medicamento}', [PrediccionController::class, 'show'])->name('show');
     });
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Dispositivos
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:dispositivos.ver'])
     ->prefix('dispositivos')
     ->name('dispositivos.')
@@ -350,8 +454,8 @@ Route::middleware(['auth', 'permission:dispositivos.ver'])
         Route::get('/', [DispositivoController::class, 'index'])->name('index');
         Route::get('/{dispositivo}', [DispositivoController::class, 'show'])->name('show');
 
-        // Solo admin
-        Route::middleware('role:administrador')->group(function () {
+        // Solo admin (acepta admin, administrador, admin general...)
+        Route::middleware('rol.prefijo:admin')->group(function () {
             Route::post('/{dispositivo}/confiar', [DispositivoController::class, 'confiar'])->name('confiar');
             Route::post('/{dispositivo}/reactivar', [DispositivoController::class, 'reactivar'])->name('reactivar');
             Route::delete('/{dispositivo}', [DispositivoController::class, 'destroy'])->name('destroy');
@@ -361,9 +465,11 @@ Route::middleware(['auth', 'permission:dispositivos.ver'])
         Route::post('/{dispositivo}/bloquear', [DispositivoController::class, 'bloquear'])->name('bloquear');
     });
 
-
-    use App\Http\Controllers\AdmisionController;
-
+/*
+|--------------------------------------------------------------------------
+| Módulo de Admisiones
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'permission:admision.ver'])
     ->prefix('admisiones')
     ->name('admisiones.')
@@ -377,4 +483,54 @@ Route::middleware(['auth', 'permission:admision.ver'])
         Route::get('/{admision}/pase-salida', [AdmisionController::class, 'paseSalida'])->name('pase-salida');
         Route::delete('/{admision}', [AdmisionController::class, 'destroy'])->name('destroy');
     });
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Asistente IA
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/asistente',                  [AsistenteController::class, 'index'])            ->name('asistente.index');
+    Route::get('/asistente-lista',            [AsistenteController::class, 'lista'])            ->name('asistente.lista');
+    Route::get('/asistente/{conversacion}',   [AsistenteController::class, 'ver'])              ->name('asistente.ver');
+    Route::post('/asistente/nueva',           [AsistenteController::class, 'nuevaConversacion'])->name('asistente.nueva');
+    Route::post('/asistente/enviar',          [AsistenteController::class, 'enviar'])           ->name('asistente.enviar');
+    Route::delete('/asistente/{conversacion}',[AsistenteController::class, 'destruir'])        ->name('asistente.destruir');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Alertas
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'permission:alertas.ver'])
+    ->prefix('alertas')
+    ->name('alertas.')
+    ->group(function () {
+        Route::get('/', [AlertaController::class, 'index'])->name('index');
+        Route::post('/generar', [AlertaController::class, 'generar'])->name('generar');
+        Route::post('/{alerta}/vista', [AlertaController::class, 'marcarVista'])->name('vista');
+        Route::post('/{alerta}/resolver', [AlertaController::class, 'resolver'])->name('resolver');
+        Route::post('/{alerta}/descartar', [AlertaController::class, 'descartar'])->name('descartar');
+        Route::get('/contar', [AlertaController::class, 'contar'])->name('contar');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Auditoría (acepta admin, administrador, admin general...)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'rol.prefijo:admin'])
+    ->prefix('auditoria')
+    ->name('auditoria.')
+    ->group(function () {
+        Route::get('/', [AuditoriaController::class, 'index'])->name('index');
+        Route::get('/{log}', [AuditoriaController::class, 'show'])->name('show');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de autenticación
+|--------------------------------------------------------------------------
+*/
 require __DIR__.'/auth.php';

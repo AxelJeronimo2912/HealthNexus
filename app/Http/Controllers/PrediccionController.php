@@ -25,7 +25,6 @@ class PrediccionController extends Controller
     $agotamiento = $medicamentos->map(function ($med) {
         $pred = PrediccionService::prediccionAgotamiento($med);
 
-        // 👇 Calcular el consumo diario (promedio ponderado)
         $consumoDiario = PrediccionService::predecir($med, 30)['prediccion_diaria_base'];
 
         return [

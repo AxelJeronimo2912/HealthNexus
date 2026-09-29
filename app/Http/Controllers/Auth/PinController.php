@@ -52,7 +52,8 @@ class PinController extends Controller
 
         // PIN correcto
         Auth::login($user, $request->session()->get(self::SESSION_REMEMBER, false));
-DispositivoService::registrarDesdeRequest($request, $user->id);
+
+        DispositivoService::registrarDesdeRequest($request, $user->id);
 
         $request->session()->forget([self::SESSION_USER_ID, self::SESSION_REMEMBER]);
         $request->session()->regenerate();
