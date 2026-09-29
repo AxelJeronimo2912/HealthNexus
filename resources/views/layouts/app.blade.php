@@ -12,7 +12,7 @@
     </style>
 
     <title>{{ config('app.name', 'HealthNexus') }}</title>
-
+    <link rel="icon" href="{{ asset('images/logo-healthnexus.png') }}" type="image/png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 

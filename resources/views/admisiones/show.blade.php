@@ -19,7 +19,7 @@
             <div class="p-3 bg-red-100 text-red-800 rounded">{{ session('error') }}</div>
         @endif
 
-        {{-- DATOS DEL PACIENTE --}}
+        {{-- ==================== DATOS DEL PACIENTE ==================== --}}
         <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-start">
                 <div>
@@ -40,18 +40,24 @@
             <dl class="grid grid-cols-2 gap-3 text-sm mt-4">
                 <dt class="font-semibold">Tipo:</dt>
                 <dd>{{ $admision->tipo_label }}</dd>
+
                 <dt class="font-semibold">Triage:</dt>
                 <dd>{{ $admision->triage ? ucfirst($admision->triage) : '—' }}</dd>
+
                 <dt class="font-semibold">Motivo:</dt>
                 <dd>{{ $admision->motivo ?? '—' }}</dd>
+
                 <dt class="font-semibold">Diagnóstico presuntivo:</dt>
                 <dd>{{ $admision->diagnostico_presuntivo ?? '—' }}</dd>
+
                 <dt class="font-semibold">Llegada:</dt>
                 <dd>{{ $admision->fecha_hora_llegada->format('d/m/Y H:i') }}</dd>
+
                 @if ($admision->medico)
                     <dt class="font-semibold">Médico asignado:</dt>
                     <dd>Dr. {{ $admision->medico->nombre_completo }}</dd>
                 @endif
+
                 @if ($admision->cama)
                     <dt class="font-semibold">Cama:</dt>
                     <dd>{{ $admision->cama->codigo }} — {{ $admision->cama->area }}</dd>
@@ -59,7 +65,7 @@
             </dl>
         </div>
 
-        {{-- HOSPITALIZAR --}}
+        {{-- ==================== HOSPITALIZAR ==================== --}}
         @if ($admision->estado === 'en_espera' && $camasDisponibles->count() > 0 && $medicosDisponibles->count() > 0)
             <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
                 <h3 class="font-bold text-gray-800 mb-3">✓ Hospitalizar paciente</h3>
@@ -97,7 +103,7 @@
             </div>
         @endif
 
-        {{-- DERIVAR --}}
+        {{-- ==================== DERIVAR ==================== --}}
         @if (in_array($admision->estado, ['en_espera', 'hospitalizado']))
             <div class="bg-white p-6 rounded-lg shadow border-l-4 border-orange-500">
                 <div class="flex items-start justify-between mb-3">
@@ -172,19 +178,23 @@
             </div>
         @endif
 
-        {{-- YA DERIVADO --}}
+        {{-- ==================== YA DERIVADO ==================== --}}
         @if ($admision->estado === 'derivado')
             <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
                 <h3 class="font-bold text-gray-800 mb-3">Paciente derivado</h3>
                 <dl class="grid grid-cols-2 gap-3 text-sm">
                     <dt class="font-semibold">Hospital destino:</dt>
                     <dd>{{ $admision->hospitalDerivado?->nombre ?? '—' }}</dd>
+
                     <dt class="font-semibold">Dirección:</dt>
                     <dd>{{ $admision->hospitalDerivado?->direccion ?? '—' }}</dd>
+
                     <dt class="font-semibold">Teléfono:</dt>
                     <dd>{{ $admision->hospitalDerivado?->telefono ?? '—' }}</dd>
+
                     <dt class="font-semibold">Fecha:</dt>
                     <dd>{{ $admision->fecha_derivacion?->format('d/m/Y H:i') }}</dd>
+
                     <dt class="font-semibold">Motivo:</dt>
                     <dd class="col-span-2">{{ $admision->motivo_derivacion ?? '—' }}</dd>
                 </dl>
@@ -198,99 +208,151 @@
         @endif
     </div>
 
-    {{-- MAPA --}}
-    @if (in_array($admision->estado, ['en_espera', 'hospitalizado']))
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const hospitalActual = {
-                    lat: {{ $hospitalActual['lat'] }},
-                    lng: {{ $hospitalActual['lng'] }},
-                    nombre: '{{ $hospitalActual['nombre'] }}'
-                };
+    {{-- ==================== SCRIPTS ==================== --}}
+    @push('scripts')
+        @if (in_array($admision->estado, ['en_espera', 'hospitalizado']))
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // ---------- Datos del servidor ----------
+                    const hospitalActual = {
+                        lat: {{ $hospitalActual['lat'] }},
+                        lng: {{ $hospitalActual['lng'] }},
+                        nombre: @json($hospitalActual['nombre']),
+                    };
+                    const hospitales = @json($hospitales);
 
-                const hospitales = @json($hospitales);
+                    // ---------- Mapa base ----------
+                    const map = L.map('mapa').setView([hospitalActual.lat, hospitalActual.lng], 12);
 
-                const map = L.map('mapa').setView([hospitalActual.lat, hospitalActual.lng], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19,
+                    }).addTo(map);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19,
-                }).addTo(map);
+                    // ---------- Iconos ----------
+                    const iconoActual = L.divIcon({
+                        html: '<div style="background:#2563EB; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+                        className: '',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10],
+                    });
 
-                const iconoActual = L.divIcon({
-                    html: '<div style="background:#2563EB; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
-                    className: '',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10],
-                });
+                    const iconoHospital = L.divIcon({
+                        html: '<div style="background:#DC2626; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+                        className: '',
+                        iconSize: [18, 18],
+                        iconAnchor: [9, 9],
+                    });
 
-                L.marker([hospitalActual.lat, hospitalActual.lng], {
-                        icon: iconoActual
-                    })
-                    .addTo(map)
-                    .bindPopup(`<strong>${hospitalActual.nombre}</strong><br><small>Hospital actual</small>`);
+                    const iconoSeleccionado = L.divIcon({
+                        html: '<div style="background:#F59E0B; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>',
+                        className: '',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12],
+                    });
 
-                const iconoHospital = L.divIcon({
-                    html: '<div style="background:#DC2626; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
-                    className: '',
-                    iconSize: [18, 18],
-                    iconAnchor: [9, 9],
-                });
-
-                const iconoSeleccionado = L.divIcon({
-                    html: '<div style="background:#F59E0B; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>',
-                    className: '',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12],
-                });
-
-                let marcadorSeleccionado = null;
-
-                hospitales.forEach(h => {
-                    const marker = L.marker([h.latitud, h.longitud], {
-                            icon: iconoHospital
+                    L.marker([hospitalActual.lat, hospitalActual.lng], {
+                            icon: iconoActual
                         })
                         .addTo(map)
-                        .bindPopup(`
-                            <div style="max-width:220px;">
-                                <strong>${h.nombre}</strong><br>
-                                <small>${h.direccion ?? ''}</small><br>
-                                <small>${h.distancia} km</small><br>
-                                <button onclick="seleccionarHospital(${h.id})"
-                                        style="margin-top:6px; padding:4px 10px; background:#F97316; color:white; border:none; border-radius:4px; cursor:pointer;">
-                                    Seleccionar
-                                </button>
-                            </div>
-                        `);
+                        .bindPopup(`<strong>${hospitalActual.nombre}</strong><br><small>Hospital actual</small>`);
 
-                    marker.on('click', () => seleccionarHospital(h.id));
-                });
+                    // ---------- Marcadores de hospitales ----------
+                    let marcadorSeleccionado = null;
 
-                window.seleccionarHospital = function(id) {
-                    const h = hospitales.find(x => x.id === id);
-                    if (!h) return;
+                    hospitales.forEach(h => {
+                        const marker = L.marker([h.latitud, h.longitud], {
+                                icon: iconoHospital
+                            })
+                            .addTo(map)
+                            .bindPopup(`
+                                <div style="max-width:220px;">
+                                    <strong>${h.nombre}</strong><br>
+                                    <small>${h.direccion ?? ''}</small><br>
+                                    <small>${h.distancia} km</small><br>
+                                    <button onclick="seleccionarHospital(${h.id})"
+                                            style="margin-top:6px; padding:4px 10px; background:#F97316; color:white; border:none; border-radius:4px; cursor:pointer;">
+                                        Seleccionar
+                                    </button>
+                                </div>
+                            `);
 
-                    document.getElementById('hospital_derivado_id').value = h.id;
-                    document.getElementById('hospital_nombre').value = h.nombre;
-                    document.getElementById('btn-derivar').disabled = false;
+                        marker.on('click', () => seleccionarHospital(h.id));
+                    });
 
-                    map.setView([h.latitud, h.longitud], 14);
+                    window.seleccionarHospital = function(id) {
+                        const h = hospitales.find(x => x.id === id);
+                        if (!h) return;
 
-                    if (marcadorSeleccionado) map.removeLayer(marcadorSeleccionado);
+                        document.getElementById('hospital_derivado_id').value = h.id;
+                        document.getElementById('hospital_nombre').value = h.nombre;
+                        document.getElementById('btn-derivar').disabled = false;
 
-                    marcadorSeleccionado = L.marker([h.latitud, h.longitud], {
-                            icon: iconoSeleccionado
-                        })
-                        .addTo(map);
-                };
+                        map.setView([h.latitud, h.longitud], 14);
 
-                document.querySelectorAll('.hospital-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        seleccionarHospital(parseInt(card.dataset.id));
+                        if (marcadorSeleccionado) map.removeLayer(marcadorSeleccionado);
+                        marcadorSeleccionado = L.marker([h.latitud, h.longitud], {
+                                icon: iconoSeleccionado
+                            })
+                            .addTo(map);
+                    };
+
+                    document.querySelectorAll('.hospital-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            seleccionarHospital(parseInt(card.dataset.id));
+                        });
+                    });
+
+                    // ---------- Envío AJAX del form de derivación ----------
+                    const formDerivar = document.getElementById('form-derivar');
+                    if (!formDerivar) return;
+
+                    const btnDerivar = document.getElementById('btn-derivar');
+
+                    formDerivar.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+
+                        btnDerivar.disabled = true;
+                        const textoOriginal = btnDerivar.textContent;
+                        btnDerivar.textContent = 'Derivando...';
+
+                        try {
+                            const res = await fetch(formDerivar.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .content,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: new FormData(formDerivar),
+                            });
+
+                            const json = await res.json().catch(() => ({}));
+
+                            if (!res.ok || !json.ok) {
+                                const mensaje = json.errors ?
+                                    Object.values(json.errors).flat().join('\n') :
+                                    (json.message || 'No se pudo derivar al paciente.');
+                                alert(mensaje);
+                                return;
+                            }
+
+                            // ✅ Abrir el PDF en pestaña nueva
+                            window.open(json.pase_url, '_blank', 'noopener,noreferrer');
+
+                            // Recargar la vista actual para reflejar el estado "derivado"
+                            window.location.reload();
+                        } catch (err) {
+                            alert('Error de red. Intenta de nuevo.');
+                        } finally {
+                            btnDerivar.disabled = false;
+                            btnDerivar.textContent = textoOriginal;
+                        }
                     });
                 });
-            });
-        </script>
-    @endif
+            </script>
+        @endif
+    @endpush
 </x-app-layout>

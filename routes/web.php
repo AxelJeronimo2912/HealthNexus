@@ -264,11 +264,13 @@ Route::middleware(['auth', 'permission:citas.ver'])
     ->name('citas.')
     ->group(function () {
         Route::get('/', [CitaController::class, 'index'])->name('index');
+
+        Route::get('/historial', [CitaController::class, 'historial'])->name('historial');
+
         Route::get('/{cita}', [CitaController::class, 'show'])->name('show');
         Route::post('/{cita}/estado', [CitaController::class, 'cambiarEstado'])->name('cambiar-estado');
         Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Consultas
@@ -312,11 +314,11 @@ Route::middleware(['auth', 'permission:dispensaciones.ver'])
     ->name('dispensaciones.')
     ->group(function () {
         Route::get('/', [DispensacionController::class, 'index'])->name('index');
+        Route::get('/historial', [DispensacionController::class, 'historial'])->name('historial');
         Route::get('/{consulta}', [DispensacionController::class, 'show'])->name('show');
         Route::post('/{consulta}/dispensar', [DispensacionController::class, 'dispensar'])->name('dispensar');
         Route::post('/{consulta}/revertir', [DispensacionController::class, 'revertir'])->name('revertir');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Seguimientos
@@ -477,6 +479,8 @@ Route::middleware(['auth', 'permission:admision.ver'])
         Route::get('/', [AdmisionController::class, 'index'])->name('index');
         Route::get('/crear', [AdmisionController::class, 'create'])->name('create');
         Route::post('/', [AdmisionController::class, 'store'])->name('store');
+        Route::post('/paciente-rapido', [AdmisionController::class, 'storePacienteRapido'])
+            ->name('paciente-rapido');
         Route::get('/{admision}', [AdmisionController::class, 'show'])->name('show');
         Route::post('/{admision}/asignar', [AdmisionController::class, 'asignar'])->name('asignar');
         Route::post('/{admision}/derivar', [AdmisionController::class, 'derivar'])->name('derivar');
