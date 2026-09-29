@@ -50,7 +50,8 @@ class RolePermissionSeeder extends Seeder
              'admision.ver',
             'especialidades.ver',
              'asistente.ver',
-             'alertas.ver'
+             'alertas.ver',
+             'cuentas.ver'
         ]);
 
         // Farmacia: inventario y dispensación

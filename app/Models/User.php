@@ -31,7 +31,12 @@ use Notifiable, HasRoles, HasFactory, Auditable;
     {
         return 'pacientes';
     }
-
+public function servicios()
+{
+    return $this->belongsToMany(Servicio::class)
+        ->withPivot(['rol_en_servicio', 'fecha_inicio', 'activo'])
+        ->withTimestamps();
+}
     protected function casts(): array
     {
         return [

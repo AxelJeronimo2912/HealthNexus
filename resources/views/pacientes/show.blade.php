@@ -92,9 +92,37 @@
             @endif
         </div>
 
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <div class="flex justify-between items-center gap-3 pt-4 border-t border-slate-100 flex-wrap">
+            <div class="flex gap-2 flex-wrap">
+                {{-- Ver cuenta --}}
+                @can('cuentas.ver')
+                    <a href="{{ route('cuentas.paciente', $paciente) }}"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4 1.343 4 3-1.79 3-4 3m0-12V4m0 16v-4m9-4a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Ver cuenta
+                    </a>
+                @endcan
+
+                {{-- Expediente médico --}}
+                @can('expediente.ver')
+                    <a href="{{ route('expedientes.show', $paciente) }}"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Expediente médico
+                    </a>
+                @endcan
+            </div>
+
             <button type="button" @click="cerrarModal()"
-                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">Cerrar</button>
+                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">
+                Cerrar
+            </button>
         </div>
     </div>
 @else
@@ -203,6 +231,10 @@
                     <a href="{{ route('pacientes.index') }}"
                         class="px-4 py-2 bg-gray-100 rounded-md text-sm">Volver</a>
                 </div>
+                <a href="{{ route('cuentas.paciente', $paciente) }}"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium">
+                    Ver cuenta
+                </a>
             </div>
         </div>
     </x-app-layout>

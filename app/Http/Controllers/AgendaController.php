@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-
+use App\Models\Servicio;
 class AgendaController extends Controller
 {
     public function index(Request $request): View
@@ -52,7 +52,6 @@ class AgendaController extends Controller
         'canceladas' => $citas->where('estado', 'cancelada')->count(),
     ];
 
-    // 👇 PACIENTES DISPONIBLES PARA EL MODAL
     $pacientesQuery = Paciente::whereHas('signosVitales', function ($q) {
             $q->whereIn('id', function ($sub) {
                 $sub->selectRaw('MAX(id)')
@@ -60,11 +59,9 @@ class AgendaController extends Controller
                     ->groupBy('paciente_id');
             });
         })
-        // Excluir si tiene cita activa
         ->whereDoesntHave('citas', function ($q) {
             $q->whereIn('estado', ['programada', 'confirmada', 'en_curso']);
         })
-        // 👇 Excluir si YA tiene una consulta finalizada (Opción C)
         ->whereDoesntHave('consultas', function ($q) {
             $q->where('estado', 'finalizada');
         })
@@ -84,7 +81,6 @@ class AgendaController extends Controller
 
     $pacientes = $pacientesQuery->get();
 
-    // Especialidades
     $especialidades = Especialidad::where('activo', true)
         ->orderBy('nombre')
         ->get();
@@ -114,9 +110,9 @@ class AgendaController extends Controller
         return view('agenda.dia', compact('fecha', 'citas'));
     }
 
-  public function create(Request $request): View
+ public function create(Request $request): View
 {
-    $user = auth()->user();
+    $user    = auth()->user();
     $esAdmin = $user->hasRole('administrador');
     $esMedico = $this->esMedico($user);
 
@@ -128,11 +124,9 @@ class AgendaController extends Controller
                     ->groupBy('paciente_id');
             });
         })
-        // ✅ Excluir si tiene cita activa
         ->whereDoesntHave('citas', function ($q) {
             $q->whereIn('estado', ['programada', 'confirmada', 'en_curso']);
         })
-        // ✅ Excluir si YA fue atendido Y no hay signos vitales posteriores
         ->whereDoesntHave('citas', function ($q) {
             $q->where('estado', 'atendida')
               ->whereRaw('citas.updated_at >= (
@@ -141,7 +135,6 @@ class AgendaController extends Controller
                   WHERE signos_vitales.paciente_id = citas.paciente_id
               )');
         })
-        // ✅ Excluir si YA tiene consulta finalizada Y no hay signos vitales posteriores
         ->whereDoesntHave('consultas', function ($q) {
             $q->where('estado', 'finalizada')
               ->whereRaw('consultas.created_at >= (
@@ -156,7 +149,7 @@ class AgendaController extends Controller
         ])
         ->orderBy('apellido_paterno');
 
-    if (!$esAdmin && $esMedico) {
+    if (! $esAdmin && $esMedico) {
         $query->where(function ($q) use ($user) {
             $q->whereHas('citas', fn($sub) => $sub->where('medico_id', $user->id))
               ->orWhereHas('consultas', fn($sub) => $sub->where('medico_id', $user->id))
@@ -170,11 +163,17 @@ class AgendaController extends Controller
         ->orderBy('nombre')
         ->get();
 
+    $servicios = Servicio::where('activo', true)
+    ->where('precio', '>', 0)     
+    ->orderBy('nombre')
+    ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
+
     return view('agenda.create', [
-        'pacientes' => $pacientes,
-        'especialidades' => $especialidades,
+        'pacientes'         => $pacientes,
+        'especialidades'    => $especialidades,
+        'servicios'         => $servicios,       // ← nuevo
         'fechaSeleccionada' => $request->input('fecha', now()->format('Y-m-d')),
-        'horaSeleccionada' => $request->input('hora', '09:00'),
+        'horaSeleccionada'  => $request->input('hora', '09:00'),
     ]);
 }
 
@@ -185,6 +184,7 @@ class AgendaController extends Controller
             'medico_id' => ['required', 'exists:users,id'],
             'especialidad_id' => ['nullable', 'exists:especialidades,id'],
             'fecha' => ['required', 'date'],
+                'servicio_id'      => ['nullable', 'exists:servicios,id'],  
             'hora' => ['required', 'date_format:H:i'],
             'duracion_minutos' => ['required', 'integer', 'min:15', 'max:180'],
             'motivo' => ['nullable', 'string'],
@@ -275,6 +275,7 @@ class AgendaController extends Controller
             'paciente_id' => $paciente->id,
             'medico_id' => $medico->id,
             'especialidad_id' => $data['especialidad_id'] ?? null,
+            'servicio_id'       => $data['servicio_id'] ?? null,   
             'turno_id' => $turno?->id,
             'signo_vital_id' => $ultimoSigno?->id,
             'creado_por' => auth()->id(),
@@ -305,108 +306,122 @@ class AgendaController extends Controller
      * Endpoint AJAX: médicos disponibles.
      */
     public function medicosDisponibles(Request $request): JsonResponse
-    {
-        try {
-            $request->validate([
-                'fecha' => ['required', 'date'],
-                'hora' => ['required', 'date_format:H:i'],
-                'paciente_id' => ['nullable', 'exists:pacientes,id'],
-                'especialidad_id' => ['nullable', 'exists:especialidades,id'],
-            ]);
+{
+    try {
+        $request->validate([
+            'fecha'           => ['required', 'date'],
+            'hora'            => ['required', 'date_format:H:i'],
+            'paciente_id'     => ['nullable', 'exists:pacientes,id'],
+            'especialidad_id' => ['nullable', 'exists:especialidades,id'],
+            'servicio_id'     => ['nullable', 'exists:servicios,id'],   // ← nuevo
+        ]);
 
-            $fecha = Carbon::parse($request->fecha);
+        $fecha = Carbon::parse($request->fecha);
 
-            if ($fecha->isBefore(today())) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'No se pueden agendar citas en fechas pasadas.',
-                ], 422);
-            }
-
-            $hora = $request->hora;
-            $esHoy = $fecha->isToday();
-
-            $inicio = Carbon::parse("{$fecha->toDateString()} {$hora}");
-            $fin = $inicio->copy()->addMinutes(30);
-
-            // 1. Query base: candidatos con rol médico
-            $candidatosQuery = User::query()
-                ->whereHas('roles', function ($q) {
-                    $q->whereRaw('LOWER(name) LIKE ?', ['%medic%'])
-                      ->orWhereRaw('LOWER(name) LIKE ?', ['%doctor%'])
-                      ->orWhereRaw('LOWER(name) LIKE ?', ['%médic%']);
-                })
-                ->where('activo', true);
-
-            // 2. Filtro por especialidad (usa whereHas porque es query, no colección)
-            if ($request->filled('especialidad_id')) {
-                $candidatosQuery->whereHas('especialidades', function ($q) use ($request) {
-                    $q->where('especialidades.id', $request->especialidad_id)
-                      ->where('especialidad_user.activo', true);
-                });
-            }
-
-            // 3. Obtener la colección
-            $candidatos = $candidatosQuery->get();
-
-            // 4. Filtrar por turno
-            $disponibles = $candidatos->filter(function ($m) use ($fecha, $hora) {
-                try {
-                    return $m->trabajaEn($fecha->toDateString(), $hora);
-                } catch (\Throwable $e) {
-                    \Log::warning('trabajaEn error médico ' . $m->id . ': ' . $e->getMessage());
-                    return false;
-                }
-            });
-
-            // 5. Marcar como ocupados
-            $conEstado = $disponibles->map(function ($m) use ($inicio, $fin) {
-                $ocupado = Cita::where('medico_id', $m->id)
-                    ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
-                    ->where(function ($q) use ($inicio, $fin) {
-                        $q->whereBetween('fecha_hora', [$inicio, $fin])
-                          ->orWhere(function ($sub) use ($inicio) {
-                              $sub->where('fecha_hora', '<', $inicio)
-                                  ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$inicio]);
-                          });
-                    })
-                    ->exists();
-
-                return [
-                    'id' => $m->id,
-                    'nombre' => $m->nombre_completo ?: $m->name,
-                    'rol' => $m->getRoleNames()->first() ?? 'sin rol',
-                    'especialidades' => $m->especialidades->pluck('nombre')->toArray(),
-                    'ocupado' => $ocupado,
-                ];
-            });
-
-            // 6. Bloqueo paciente → médico (solo futuro)
-            $final = $conEstado;
-
-            if (!$esHoy && $request->filled('paciente_id')) {
-                $asignacion = PacienteMedico::where('paciente_id', $request->paciente_id)
-                    ->where('activo', true)
-                    ->first();
-
-                if ($asignacion) {
-                    $final = $final->where('id', $asignacion->medico_id);
-                }
-            }
-
-            return response()->json($final->values());
-        } catch (\Throwable $e) {
-            \Log::error('Error en medicosDisponibles: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-
+        if ($fecha->isBefore(today())) {
             return response()->json([
-                'error' => true,
-                'message' => $e->getMessage(),
-            ], 500);
+                'error'   => true,
+                'message' => 'No se pueden agendar citas en fechas pasadas.',
+            ], 422);
         }
+
+        $hora  = $request->hora;
+        $esHoy = $fecha->isToday();
+
+        $inicio = Carbon::parse("{$fecha->toDateString()} {$hora}");
+        $fin    = $inicio->copy()->addMinutes(30);
+
+        // 1. Query base: candidatos con rol médico
+        $candidatosQuery = User::query()
+            ->whereHas('roles', function ($q) {
+                $q->whereRaw('LOWER(name) LIKE ?', ['%medic%'])
+                  ->orWhereRaw('LOWER(name) LIKE ?', ['%doctor%'])
+                  ->orWhereRaw('LOWER(name) LIKE ?', ['%médic%']);
+            })
+            ->where('activo', true);
+
+        // 2. Filtro por especialidad
+        if ($request->filled('especialidad_id')) {
+            $candidatosQuery->whereHas('especialidades', function ($q) use ($request) {
+                $q->where('especialidades.id', $request->especialidad_id)
+                  ->where('especialidad_user.activo', true);
+            });
+        }
+
+        // 3. Filtro por servicio (pivot servicio_user) ← nuevo
+        if ($request->filled('servicio_id')) {
+            $candidatosQuery->whereHas('servicios', function ($q) use ($request) {
+                $q->where('servicios.id', $request->servicio_id)
+                  ->where('servicio_user.activo', true);   // ajusta si tu pivot no tiene 'activo'
+            });
+        }
+
+        // 4. Cargar relaciones necesarias para evitar N+1
+        $candidatosQuery->with(['especialidades', 'servicios', 'roles']);
+
+        // 5. Obtener la colección
+        $candidatos = $candidatosQuery->get();
+
+        // 6. Filtrar por turno
+        $disponibles = $candidatos->filter(function ($m) use ($fecha, $hora) {
+            try {
+                return $m->trabajaEn($fecha->toDateString(), $hora);
+            } catch (\Throwable $e) {
+                \Log::warning('trabajaEn error médico ' . $m->id . ': ' . $e->getMessage());
+                return false;
+            }
+        });
+
+        // 7. Marcar como ocupados
+        $conEstado = $disponibles->map(function ($m) use ($inicio, $fin) {
+            $ocupado = Cita::where('medico_id', $m->id)
+                ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
+                ->where(function ($q) use ($inicio, $fin) {
+                    $q->whereBetween('fecha_hora', [$inicio, $fin])
+                      ->orWhere(function ($sub) use ($inicio) {
+                          $sub->where('fecha_hora', '<', $inicio)
+                              ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$inicio]);
+                      });
+                })
+                ->exists();
+
+            return [
+                'id'              => $m->id,
+                'nombre'          => $m->nombre_completo ?: $m->name,
+                'rol'             => $m->getRoleNames()->first() ?? 'sin rol',
+                'especialidades'  => $m->especialidades->pluck('nombre')->toArray(),
+                'servicios'       => $m->servicios->pluck('nombre')->toArray(),   // ← nuevo
+                'servicio_ids'    => $m->servicios->pluck('id')->toArray(),       // ← nuevo (útil para depurar)
+                'ocupado'         => $ocupado,
+            ];
+        });
+
+        // 8. Bloqueo paciente → médico (solo futuro)
+        $final = $conEstado;
+
+        if (!$esHoy && $request->filled('paciente_id')) {
+            $asignacion = PacienteMedico::where('paciente_id', $request->paciente_id)
+                ->where('activo', true)
+                ->first();
+
+            if ($asignacion) {
+                $final = $final->where('id', $asignacion->medico_id);
+            }
+        }
+
+        return response()->json($final->values());
+    } catch (\Throwable $e) {
+        \Log::error('Error en medicosDisponibles: ' . $e->getMessage(), [
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return response()->json([
+            'error'   => true,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
     /**
      * Endpoint AJAX: pacientes disponibles.

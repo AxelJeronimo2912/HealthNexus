@@ -37,7 +37,8 @@ class PermissionSeeder extends Seeder
             'agenda.ver',
             'prediccion.ver',
             'enfermeria.ver',
-
+            'cuentas.ver',
+            
             // Seguridad e Inteligencia
             'usuarios.ver',
             'roles.ver',
