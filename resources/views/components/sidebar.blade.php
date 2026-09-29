@@ -87,7 +87,7 @@
 
         {{-- GESTION HOSPITALARIA --}}
         @canany(['pacientes.ver', 'admision.ver', 'servicios.ver', 'especialidades.ver', 'citas.ver', 'turnos.ver',
-            'camas.ver'])
+            'camas.ver', 'cuentas.ver'])
 
             <p
                 class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
@@ -167,6 +167,16 @@
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Camas
+                    </span>
+                </a>
+            @endcan
+            @can('cuentas.ver')
+                <a href="{{ route('cuentas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('cuentas.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-banknotes class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Cuentas por cobrar
                     </span>
                 </a>
             @endcan

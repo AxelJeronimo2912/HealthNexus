@@ -10,7 +10,7 @@ class Servicio extends Model
 
     protected $fillable = [
         'codigo', 'nombre', 'tipo', 'ubicacion', 'piso', 'ala',
-        'hora_apertura', 'hora_cierre', 'abierto_24h', 'capacidad',
+        'hora_apertura', 'hora_cierre', 'abierto_24h', 'capacidad','precio','precio_descripcion',     
         'extension_telefonica', 'descripcion', 'notas', 'activo',
     ];
 
@@ -18,6 +18,8 @@ class Servicio extends Model
         'abierto_24h' => 'boolean',
         'activo' => 'boolean',
         'capacidad' => 'integer',
+        'precio'      => 'decimal:2',   
+
     ];
 
     // ---------------- Relaciones ----------------
@@ -29,6 +31,11 @@ class Servicio extends Model
         ->withTimestamps();
 }
 
+
+public function getPrecioFormateadoAttribute(): string
+{
+    return '$' . number_format((float) $this->precio, 2);
+}
     public function camas()
     {
         return $this->hasMany(Cama::class);

@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\IaMedicaController;
 use App\Http\Controllers\Medico\DashboardController as MedicoDashboardController;
 use App\Http\Controllers\Enfermeria\DashboardController as EnfermeriaDashboardController;
 use App\Http\Controllers\Farmacia\DashboardController as FarmaciaDashboardController;
-
+use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\CamaController;
@@ -371,7 +371,28 @@ Route::middleware(['auth', 'permission:servicios.ver'])
         Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
     });
 
+
+
+    /*
+|--------------------------------------------------------------------------
+| Módulo de Cuentas (cargos por paciente)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'permission:cuentas.ver'])
+    ->group(function () {
+        Route::get('cuentas', [CuentaController::class, 'index'])->name('cuentas.index');  // ← NUEVO
+
+        Route::get('pacientes/{paciente}/cuenta', [CuentaController::class, 'delPaciente'])
+            ->name('cuentas.paciente');
+
+        Route::delete('cuenta-items/{item}', [CuentaController::class, 'destroyItem'])
+            ->name('cuentas.items.destroy');
+
+        Route::post('cuentas/{cuenta}/cerrar', [CuentaController::class, 'cerrar'])
+            ->name('cuentas.cerrar');
+    });
 /*
+
 |--------------------------------------------------------------------------
 | Módulo de Especialidades
 |--------------------------------------------------------------------------

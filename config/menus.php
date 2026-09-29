@@ -29,7 +29,8 @@ return [
                 ['permiso' => 'citas.ver', 'label' => 'Citas', 'icono' => 'calendar-days', 'ruta' => 'citas.index'],
                 ['permiso' => 'turnos.ver',         'label' => 'Turnos',         'icono' => 'clock',                    'ruta' => 'admin.turnos.index'],
                 ['permiso' => 'camas.ver',          'label' => 'Camas',          'icono' => 'home-modern',              'ruta' => 'camas.index'],
-            ],
+             ['permiso' => 'cuentas.ver',        'label' => 'Cuentas por cobrar', 'icono' => 'banknotes', 'ruta' => 'cuentas.index'],
+                ],
         ],
 
         /*

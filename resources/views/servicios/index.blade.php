@@ -74,7 +74,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ubicación</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horario</th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Personal</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Camas</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Precio</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>
@@ -103,10 +103,21 @@
                                     {{ $servicio->users_count }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-sm text-center">
-                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                    {{ $servicio->camas_count }}
-                                </span>
+                            <td class="px-4 py-3 text-sm text-right">
+                                @if ((float) $servicio->precio > 0)
+                                    <span class="font-semibold text-gray-800">
+                                        {{ $servicio->precio_formateado }}
+                                    </span>
+                                    @if ($servicio->precio_descripcion)
+                                        <span class="block text-xs text-gray-500">
+                                            {{ $servicio->precio_descripcion }}
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                                        Sin costo
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 @if ($servicio->activo)

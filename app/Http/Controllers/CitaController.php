@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\Cuenta;      
+use App\Models\Servicio;
 
 class CitaController extends Controller
 {
@@ -67,19 +69,52 @@ class CitaController extends Controller
     /**
      * Cambia el estado de una cita.
      */
-    public function cambiarEstado(Request $request, Cita $cita): RedirectResponse
-    {
-        $this->autorizarAcceso($cita);
+   public function cambiarEstado(Request $request, Cita $cita): RedirectResponse
+{
+    $this->autorizarAcceso($cita);
 
-        $request->validate([
-            'estado' => ['required', 'in:programada,confirmada,en_curso,atendida,cancelada,no_asistio'],
-        ]);
+    $request->validate([
+        'estado' => ['required', 'in:programada,confirmada,en_curso,atendida,cancelada,no_asistio'],
+    ]);
 
-        $cita->update(['estado' => $request->estado]);
+    $estadoAnterior = $cita->estado;
+    $nuevoEstado    = $request->estado;
 
-        return back()->with('success', 'Estado actualizado: ' . $cita->estado_label);
+    $cita->update(['estado' => $nuevoEstado]);
+
+    if ($nuevoEstado === 'atendida' && $estadoAnterior !== 'atendida') {
+        $this->cobrarServicioDeCita($cita);
     }
 
+    return back()->with('success', 'Estado actualizado: ' . $cita->estado_label);
+}
+
+    protected function cobrarServicioDeCita(Cita $cita): void
+{
+    $servicio = $cita->servicio;
+
+    if (! $servicio || (float) $servicio->precio <= 0) {
+        return;
+    }
+
+    $cuenta = $cita->paciente->obtenerCuentaAbierta();
+
+    // Evitar duplicados: ya cobrado para esta cita
+    $yaCobrado = $cuenta->items()->where('cita_id', $cita->id)->exists();
+    if ($yaCobrado) {
+        return;
+    }
+
+    $cuenta->items()->create([
+        'servicio_id'     => $servicio->id,
+        'cita_id'         => $cita->id,
+        'user_id'         => auth()->id(),
+        'concepto'        => $servicio->nombre,
+        'cantidad'        => 1,
+        'precio_unitario' => $servicio->precio,
+        'notas'           => 'Generado automáticamente al atender la cita #' . $cita->id,
+    ]);
+}
     /**
      * Elimina una cita (solo admin).
      */
