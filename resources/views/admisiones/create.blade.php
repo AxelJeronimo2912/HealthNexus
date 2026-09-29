@@ -8,41 +8,51 @@
             id="form-admision">
             @csrf
 
-            {{-- Paciente --}}
+            {{-- ================= Paciente ================= --}}
             <div>
                 <label class="block text-sm font-medium">Paciente *</label>
-                <select name="paciente_id" id="paciente_id" required
-                    class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
-                    <option value="">— Selecciona un paciente —</option>
-                    @foreach ($pacientes as $p)
-                        @php
-                            $signo = $p->signosVitales->first();
-                            $triageLabel = match ($signo?->triage) {
-                                'rojo' => '🔴 Rojo',
-                                'naranja' => '🟠 Naranja',
-                                'amarillo' => '🟡 Amarillo',
-                                'verde' => '🟢 Verde',
-                                'azul' => '🔵 Azul',
-                                default => '— Sin triage',
-                            };
-                        @endphp
-                        <option value="{{ $p->id }}" data-triage="{{ $signo?->triage ?? '' }}"
-                            @selected(old('paciente_id') == $p->id)>
-                            {{ $p->nombre_completo }} — {{ $triageLabel }}
-                            @if ($signo)
-                                ({{ $signo->created_at->format('d/m/Y') }})
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
+                <div class="flex gap-2 mt-1">
+                    <select name="paciente_id" id="paciente_id" required
+                        class="w-full border-gray-300 rounded-md shadow-sm">
+                        <option value="">— Selecciona un paciente —</option>
+                        @foreach ($pacientes as $p)
+                            @php
+                                $signo = $p->signosVitales->first();
+                                $triageLabel = match ($signo?->triage) {
+                                    'rojo' => '🔴 Rojo',
+                                    'naranja' => '🟠 Naranja',
+                                    'amarillo' => '🟡 Amarillo',
+                                    'verde' => '🟢 Verde',
+                                    'azul' => '🔵 Azul',
+                                    default => '— Sin triage',
+                                };
+                            @endphp
+                            <option value="{{ $p->id }}" data-triage="{{ $signo?->triage ?? '' }}"
+                                data-triage-fecha="{{ $signo?->created_at?->format('d/m/Y') ?? '' }}"
+                                @selected(old('paciente_id') == $p->id)>
+                                {{ $p->nombre_completo }} — {{ $triageLabel }}
+                                @if ($signo)
+                                    ({{ $signo->created_at->format('d/m/Y') }})
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <button type="button" id="btn-nuevo-paciente" title="Registrar paciente nuevo (modo urgencias)"
+                        class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm whitespace-nowrap">
+                        + Nuevo
+                    </button>
+                </div>
                 @error('paciente_id')
                     <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Triage actual del paciente --}}
+            {{-- ================= Triage actual del paciente ================= --}}
             <div id="panel-triage" class="hidden p-3 rounded border bg-gray-50">
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Triage registrado en el último signo vital</p>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">
+                    Triage registrado en el último signo vital
+                </p>
                 <p id="triage-actual" class="text-lg font-semibold mt-1">—</p>
                 <p id="triage-fecha" class="text-xs text-gray-500"></p>
             </div>
@@ -59,7 +69,7 @@
                     </select>
                 </div>
 
-                {{-- Triage (se preselecciona automáticamente) --}}
+                {{-- Triage --}}
                 <div>
                     <label class="block text-sm font-medium">Triage</label>
                     <select name="triage" id="triage" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
@@ -76,7 +86,7 @@
                 </div>
             </div>
 
-            {{-- Motivo --}}
+            {{-- ================= Motivo ================= --}}
             <div>
                 <label class="block text-sm font-medium">Motivo de la admisión *</label>
                 <textarea name="motivo" rows="3" required placeholder="Razón por la que llega el paciente..."
@@ -86,23 +96,25 @@
                 @enderror
             </div>
 
-            {{-- Diagnóstico presuntivo --}}
+            {{-- ================= Diagnóstico presuntivo ================= --}}
             <div>
                 <label class="block text-sm font-medium">Diagnóstico presuntivo</label>
                 <textarea name="diagnostico_presuntivo" rows="2" placeholder="Diagnóstico inicial (si se conoce)"
                     class="mt-1 w-full border-gray-300 rounded-md shadow-sm">{{ old('diagnostico_presuntivo') }}</textarea>
             </div>
 
-            {{-- Notas --}}
+            {{-- ================= Notas ================= --}}
             <div>
                 <label class="block text-sm font-medium">Notas adicionales</label>
                 <textarea name="notas" rows="2" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">{{ old('notas') }}</textarea>
             </div>
 
-            {{-- Botones --}}
+            {{-- ================= Botones ================= --}}
             <div class="flex justify-between items-center pt-4 border-t">
                 <a href="{{ route('admisiones.index') }}"
-                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">Cancelar</a>
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm">
+                    Cancelar
+                </a>
                 <button type="submit"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
                     Registrar Admisión
@@ -111,7 +123,10 @@
         </form>
     </div>
 
-    {{-- Script para actualizar el triage dinámicamente --}}
+    {{-- ================= Modal de registro rápido ================= --}}
+    @include('admisiones.partials._modal-paciente-rapido')
+
+    {{-- ================= Scripts ================= --}}
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -137,28 +152,36 @@
                     azul: 'bg-blue-100 text-blue-800 border-blue-300',
                 };
 
+                function limpiarColoresPanel() {
+                    Object.values(colores).forEach(c => panelTriage.classList.remove(...c.split(' ')));
+                }
+
                 function actualizarTriage() {
                     const opt = selectPaciente.options[selectPaciente.selectedIndex];
                     const triage = opt?.dataset?.triage;
+                    const fecha = opt?.dataset?.triageFecha;
 
                     if (!triage) {
                         panelTriage.classList.add('hidden');
+                        triageFecha.textContent = '';
                         return;
                     }
 
                     panelTriage.classList.remove('hidden');
                     triageActual.textContent = labels[triage] || triage;
+                    triageFecha.textContent = fecha ? `Registrado el ${fecha}` : '';
 
-                    // Quitar colores previos
-                    Object.values(colores).forEach(c => panelTriage.classList.remove(...c.split(' ')));
-                    // Aplicar color
+                    limpiarColoresPanel();
                     panelTriage.classList.add(...colores[triage].split(' '));
 
-                    // Preseleccionar el triage en el select si el usuario no ha elegido uno
+                    // Preseleccionar el triage si el usuario no lo ha tocado manualmente
                     if (!selectTriage.dataset.touched) {
                         selectTriage.value = triage;
                     }
                 }
+
+                // Exponer para que el modal pueda refrescar el panel tras crear un paciente
+                window.actualizarTriageAdmision = actualizarTriage;
 
                 // Detectar cambio manual del triage
                 selectTriage.addEventListener('change', function() {
@@ -169,7 +192,14 @@
 
                 // Al cargar, si hay un paciente preseleccionado (old), actualizar
                 if (selectPaciente.value) actualizarTriage();
+
+                // Reaccionar cuando el modal crea un paciente nuevo
+                document.addEventListener('paciente-rapido:creado', () => {
+                    actualizarTriage();
+                });
             });
         </script>
+
+        @include('admisiones.partials._scripts-paciente-rapido')
     @endpush
 </x-app-layout>

@@ -11,9 +11,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 
 class AdmisionController extends Controller
 {
+
     public function index(Request $request): View
     {
         $fecha = $request->input('fecha', today()->format('Y-m-d'));
@@ -53,12 +55,17 @@ class AdmisionController extends Controller
     }
 
     public function create(): View
-    {
-        $pacientes = Paciente::orderBy('apellido_paterno')->get();
+{
+    $pacientes = Paciente::query()
+        ->with(['signosVitales' => function ($q) {
+            $q->latest('created_at')->limit(1);
+        }])
+        ->orderByDesc('id')
+        ->limit(200)
+        ->get();
 
-        return view('admisiones.create', compact('pacientes'));
-    }
-
+    return view('admisiones.create', compact('pacientes'));
+}
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -139,23 +146,32 @@ class AdmisionController extends Controller
         return back()->with('success', 'Paciente hospitalizado correctamente.');
     }
 
-    public function derivar(Request $request, Admision $admision): RedirectResponse
-    {
-        $data = $request->validate([
-            'hospital_derivado_id' => ['required', 'exists:hospitales,id'],
-            'motivo_derivacion' => ['required', 'string'],
-        ]);
+   
+public function derivar(Request $request, Admision $admision): RedirectResponse|JsonResponse
+{
+    $data = $request->validate([
+        'hospital_derivado_id' => ['required', 'exists:hospitales,id'],
+        'motivo_derivacion'    => ['required', 'string'],
+    ]);
 
-        $admision->update([
-            'hospital_derivado_id' => $data['hospital_derivado_id'],
-            'fecha_derivacion' => now(),
-            'motivo_derivacion' => $data['motivo_derivacion'],
-            'estado' => 'derivado',
-        ]);
+    $admision->update([
+        'hospital_derivado_id' => $data['hospital_derivado_id'],
+        'fecha_derivacion'     => now(),
+        'motivo_derivacion'    => $data['motivo_derivacion'],
+        'estado'               => 'derivado',
+    ]);
 
-        return redirect()->route('admisiones.pase-salida', $admision)
-            ->with('success', 'Paciente derivado. Generando pase de salida...');
+    if ($request->wantsJson() || $request->ajax()) {
+        return response()->json([
+            'ok'       => true,
+            'mensaje'  => 'Paciente derivado.',
+            'pase_url' => route('admisiones.pase-salida', $admision),
+        ]);
     }
+
+    return redirect()->route('admisiones.pase-salida', $admision)
+        ->with('success', 'Paciente derivado. Generando pase de salida...');
+}
 
     public function paseSalida(Admision $admision)
     {
@@ -194,4 +210,51 @@ class AdmisionController extends Controller
         return redirect()->route('admisiones.index')
             ->with('success', 'Admisión eliminada.');
     }
+
+    public function storePacienteRapido(Request $request)
+{
+    $data = $request->validate([
+        'nombre'                => ['required', 'string', 'min:2', 'max:100'],
+        'apellido_paterno'      => ['required', 'string', 'min:2', 'max:100'],
+        'apellido_materno'      => ['nullable', 'string', 'max:100'],
+        'fecha_nacimiento'      => ['required', 'date', 'before:today', 'after:1900-01-01'],
+        'sexo'                  => ['required', 'in:hombre,mujer,otro'],
+        'telefono_principal'    => ['nullable', 'string', 'max:20'],
+        'tipo_sanguineo'        => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+        'alergias'              => ['nullable', 'string', 'max:1000'],
+        'enfermedades_cronicas' => ['nullable', 'string', 'max:2000'],
+    ]);
+
+    $data = array_merge([
+        'apellido_materno'      => 'S/A',
+        'alergias'              => 'Se desconoce',
+        'enfermedades_cronicas' => 'Se desconoce',
+        'nacionalidad'          => 'MEXICANA',
+        'estado_civil'          => 'Soltero',
+        'ocupacion'             => 'No especificada',
+        'responsable_nombre'    => 'No especificado',
+        'correo_electronico'    => 'pendiente_' . uniqid() . '@urgencias.local',
+        'activo'                => true,
+    ], $data);
+
+    try {
+        $paciente = Paciente::create($data);
+    } catch (\Throwable $e) {
+        report($e);
+        return response()->json([
+            'ok'      => false,
+            'message' => 'No se pudo registrar el paciente.',
+        ], 500);
+    }
+
+    return response()->json([
+        'ok'       => true,
+        'mensaje'  => 'Paciente registrado.',
+        'paciente' => [
+            'id'              => $paciente->id,
+            'nombre_completo' => $paciente->nombre_completo,
+            'triage'          => null,
+        ],
+    ], 201);
+}
 }

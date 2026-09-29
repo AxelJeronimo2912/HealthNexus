@@ -24,7 +24,9 @@ class CitaController extends Controller
             : Carbon::today();
 
         $query = Cita::with(['paciente', 'medico', 'turno', 'signoVital'])
-            ->whereDate('fecha_hora', $fecha);
+            ->whereDate('fecha_hora', $fecha)
+            ->whereIn('estado', ['programada', 'confirmada', 'en_curso']);
+
 
         // Médico solo ve sus citas
         if ($this->esMedico($user) && !$user->hasRole('administrador')) {
@@ -116,4 +118,29 @@ class CitaController extends Controller
                 || str_contains($n, 'médic');
         });
     }
+
+    /**
+ * Historial completo de citas (para el modal).
+ * Médico: solo las suyas. Admin: todas.
+ */
+public function historial(Request $request): View
+{
+    $user = auth()->user();
+
+    $query = Cita::with(['paciente', 'medico'])
+        ->whereIn('estado', ['atendida', 'cancelada', 'no_asistio'])
+        ->orderByDesc('fecha_hora');
+
+    if ($this->esMedico($user) && !$user->hasRole('administrador')) {
+        $query->where('medico_id', $user->id);
+    }
+
+    if ($request->filled('paciente_id')) {
+        $query->where('paciente_id', $request->paciente_id);
+    }
+
+    $historial = $query->paginate(15);
+
+    return view('citas.partials.historial-modal', compact('historial'));
+}
 }
