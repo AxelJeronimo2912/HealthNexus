@@ -380,16 +380,21 @@ Route::middleware(['auth', 'permission:servicios.ver'])
 */
 Route::middleware(['auth', 'permission:cuentas.ver'])
     ->group(function () {
-        Route::get('cuentas', [CuentaController::class, 'index'])->name('cuentas.index');  // ← NUEVO
+        Route::get('cuentas', [CuentaController::class, 'index'])->name('cuentas.index');
+        Route::get('pacientes/{paciente}/cuenta', [CuentaController::class, 'delPaciente'])->name('cuentas.paciente');
 
-        Route::get('pacientes/{paciente}/cuenta', [CuentaController::class, 'delPaciente'])
-            ->name('cuentas.paciente');
+        Route::post('cuentas/{cuenta}/items', [CuentaController::class, 'agregarItem'])->name('cuentas.items.store');
+        Route::delete('cuenta-items/{item}', [CuentaController::class, 'destroyItem'])->name('cuentas.items.destroy');
 
-        Route::delete('cuenta-items/{item}', [CuentaController::class, 'destroyItem'])
-            ->name('cuentas.items.destroy');
+        Route::post('cuentas/{cuenta}/pagos', [CuentaController::class, 'registrarPago'])->name('cuentas.pagos.store');
+        Route::post('pagos/{pago}/cancelar', [CuentaController::class, 'cancelarPago'])->name('cuentas.pagos.cancelar');
+        Route::get('pagos/{pago}/recibo', [CuentaController::class, 'recibo'])->name('cuentas.pagos.recibo');
 
-        Route::post('cuentas/{cuenta}/cerrar', [CuentaController::class, 'cerrar'])
-            ->name('cuentas.cerrar');
+        Route::post('cuentas/{cuenta}/descuento', [CuentaController::class, 'aplicarDescuento'])->name('cuentas.descuento');
+
+        Route::post('cuentas/{cuenta}/cerrar', [CuentaController::class, 'cerrar'])->name('cuentas.cerrar');
+        Route::get('cuentas/{cuenta}/pdf', [CuentaController::class, 'pdf'])->name('cuentas.pdf');
+
     });
 /*
 

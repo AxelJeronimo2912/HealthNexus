@@ -11,13 +11,14 @@ class CuentaItem extends Model
 
     protected $fillable = [
         'cuenta_id', 'servicio_id', 'cita_id', 'user_id',
-        'concepto', 'cantidad', 'precio_unitario', 'importe', 'notas',
+        'concepto', 'cantidad', 'precio_unitario', 'importe', 'notas','descuento', 'motivo_descuento',
     ];
 
     protected $casts = [
         'cantidad'        => 'integer',
         'precio_unitario' => 'decimal:2',
         'importe'         => 'decimal:2',
+        'descuento' => 'decimal:2',
     ];
 
     public function cuenta(): BelongsTo
@@ -36,17 +37,18 @@ class CuentaItem extends Model
     }
 
     protected static function booted(): void
-    {
-        static::saving(function (CuentaItem $item) {
-            $item->importe = $item->cantidad * (float) $item->precio_unitario;
-        });
+{
+    static::saving(function (CuentaItem $item) {
+        $bruto = $item->cantidad * (float) $item->precio_unitario;
+        $item->importe = max(0, $bruto - (float) ($item->descuento ?? 0));
+    });
 
-        static::saved(function (CuentaItem $item) {
-            $item->cuenta?->recalcular();
-        });
+    static::saved(function (CuentaItem $item) {
+        $item->cuenta?->recalcular();
+    });
 
-        static::deleted(function (CuentaItem $item) {
-            $item->cuenta?->recalcular();
-        });
-    }
+    static::deleted(function (CuentaItem $item) {
+        $item->cuenta?->recalcular();
+    });
+}
 }
