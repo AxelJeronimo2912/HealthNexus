@@ -11,17 +11,26 @@ class Cuenta extends Model
     protected $table = 'cuentas';
 
     protected $fillable = [
-        'paciente_id', 'folio', 'estado',
-        'subtotal', 'total', 'pagado', 'saldo',
-        'cerrada_en', 'notas',
+        'paciente_id',
+        'folio',
+        'estado',              // ← CLAVE: sin esto, update() no guarda el estado
+        'subtotal',
+        'descuento_global',
+        'motivo_descuento',
+        'total',
+        'pagado',
+        'saldo',
+        'cerrada_en',
+        'notas',
     ];
 
     protected $casts = [
-        'subtotal'   => 'decimal:2',
-        'total'      => 'decimal:2',
-        'pagado'     => 'decimal:2',
-        'saldo'      => 'decimal:2',
-        'cerrada_en' => 'datetime',
+        'subtotal'         => 'decimal:2',
+        'descuento_global' => 'decimal:2',
+        'total'            => 'decimal:2',
+        'pagado'           => 'decimal:2',
+        'saldo'            => 'decimal:2',
+        'cerrada_en'       => 'datetime',
     ];
 
     public function paciente(): BelongsTo
@@ -34,26 +43,52 @@ class Cuenta extends Model
         return $this->hasMany(CuentaItem::class);
     }
 
-    /**
-     * Genera un folio único del tipo CTA-YYYYMMDD-NNN.
-     */
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
+    }
+
+    /** Solo pagos aplicados (no cancelados) */
+    public function pagosAplicados(): HasMany
+    {
+        return $this->hasMany(Pago::class)->where('estado', 'aplicado');
+    }
+
     public static function generarFolio(): string
     {
-        $hoy = now()->format('Ymd');
+        $hoy    = now()->format('Ymd');
         $conteo = static::whereDate('created_at', today())->count() + 1;
         return 'CTA-' . $hoy . '-' . str_pad($conteo, 3, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Recalcula subtotal, total y saldo a partir de los items.
+     * Recalcula subtotal, total, pagado y saldo.
+     * Cierra la cuenta automáticamente si el saldo queda en 0.
      */
     public function recalcular(): void
     {
+        // 1. Suma de items (con descuentos por item ya aplicados en CuentaItem)
         $subtotal = (float) $this->items()->sum('importe');
 
+        // 2. Descuento global
+        $descuentoGlobal = (float) ($this->descuento_global ?? 0);
+        $total = max(0, $subtotal - $descuentoGlobal);
+
+        // 3. Solo sumar pagos APLICADOS (no cancelados)
+        $pagado = (float) $this->pagosAplicados()->sum('monto');
+
+        // 4. Actualizar
         $this->subtotal = $subtotal;
-        $this->total    = $subtotal;
-        $this->saldo    = $subtotal - (float) $this->pagado;
+        $this->total    = $total;
+        $this->pagado   = $pagado;
+        $this->saldo    = $total - $pagado;
+
+        // 5. 🎯 Cierre automático si el saldo llega a 0 (o menos)
+        if ($this->estado === 'abierta' && $this->saldo <= 0) {
+            $this->estado     = 'cerrada';
+            $this->cerrada_en = now();
+        }
+
         $this->save();
     }
 
