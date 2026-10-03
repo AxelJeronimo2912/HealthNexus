@@ -1,5 +1,41 @@
 @php $c = $consulta ?? null; @endphp
 
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+    .ts-wrapper.single .ts-control,
+    .ts-wrapper .ts-control {
+        border: 1px solid #d1d5db;
+        /* gray-300 */
+        border-radius: 0.375rem;
+        /* rounded-md */
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        padding: 0.45rem 0.75rem;
+        min-height: 38px;
+        font-size: 0.875rem;
+    }
+
+    .ts-wrapper.focus .ts-control {
+        border-color: #3b82f6;
+        /* blue-500 */
+        box-shadow: 0 0 0 3px rgb(59 130 246 / 0.25);
+    }
+
+    .ts-dropdown {
+        border-radius: 0.375rem;
+        border: 1px solid #d1d5db;
+        font-size: 0.875rem;
+    }
+
+    .ts-dropdown .option.active {
+        background-color: #eff6ff;
+        /* blue-50 */
+        color: #1e3a8a;
+        /* blue-900 */
+    }
+</style>
+
 {{-- DATOS DEL PACIENTE --}}
 <section class="bg-blue-50 p-4 rounded-lg">
     <h3 class="text-lg font-bold text-blue-900 mb-3">Datos del paciente</h3>
@@ -148,10 +184,12 @@
         </div>
     </div>
 
+    {{-- ====== DIAGNÓSTICOS CON AUTOCOMPLETADO ====== --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium">Diagnóstico principal (CIE-10)</label>
-            <select name="diagnostico_principal_id" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+            <select name="diagnostico_principal_id" id="diag-principal"
+                class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
                 <option value="">— Buscar o seleccionar —</option>
                 @foreach ($diagnosticos as $d)
                     <option value="{{ $d->id }}" @selected(old('diagnostico_principal_id', $c?->diagnostico_principal_id) == $d->id)>
@@ -165,7 +203,8 @@
         </div>
         <div>
             <label class="block text-sm font-medium">Diagnóstico secundario (CIE-10)</label>
-            <select name="diagnostico_secundario_id" class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
+            <select name="diagnostico_secundario_id" id="diag-secundario"
+                class="mt-1 w-full border-gray-300 rounded-md shadow-sm">
                 <option value="">— Buscar o seleccionar —</option>
                 @foreach ($diagnosticos as $d)
                     <option value="{{ $d->id }}" @selected(old('diagnostico_secundario_id', $c?->diagnostico_secundario_id) == $d->id)>
@@ -173,6 +212,9 @@
                     </option>
                 @endforeach
             </select>
+            @error('diagnostico_secundario_id')
+                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
     </div>
 </section>
@@ -245,9 +287,10 @@
     </div>
 </section>
 
-{{-- JS: IMC automático + agregar/quitar medicamentos + dictado por voz --}}
+{{-- JS: IMC automático + medicamentos + dictado por voz + TomSelect --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
         // ===== IMC automático =====
         const peso = document.getElementById('peso');
         const talla = document.getElementById('talla');
@@ -262,16 +305,41 @@
                 imc.value = '';
             }
         }
-
         if (peso) peso.addEventListener('input', calcularImc);
         if (talla) talla.addEventListener('input', calcularImc);
         calcularImc();
 
-        // ===== Dictado por voz (solo campos con [data-voz]) =====
+        // ===== Autoacompletado de diagnósticos (Tom Select) =====
+        if (typeof TomSelect !== 'undefined') {
+            const configDiag = {
+                placeholder: 'Escribe código o nombre...',
+                maxOptions: 300,
+                allowEmptyOption: true,
+                searchField: ['text'],
+                sortField: [{
+                        field: '$score'
+                    } // respeta orden por relevancia
+                ],
+                render: {
+                    option: function(data, escape) {
+                        return `<div class="py-1">${escape(data.text)}</div>`;
+                    },
+                    item: function(data, escape) {
+                        return `<div>${escape(data.text)}</div>`;
+                    },
+                    no_results: function() {
+                        return '<div class="p-2 text-gray-500 text-sm">Sin resultados</div>';
+                    }
+                }
+            };
+            new TomSelect('#diag-principal', configDiag);
+            new TomSelect('#diag-secundario', configDiag);
+        }
+
+        // ===== Dictado por voz =====
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-            // Navegador sin soporte: ocultar botones de micrófono
             document.querySelectorAll('[data-dictar]').forEach(btn => btn.style.display = 'none');
             return;
         }
