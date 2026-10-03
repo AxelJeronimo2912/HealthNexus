@@ -2,26 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cuenta extends Model
 {
+    use Auditable;
+
     protected $table = 'cuentas';
 
     protected $fillable = [
-        'paciente_id',
-        'folio',
-        'estado',              // ← CLAVE: sin esto, update() no guarda el estado
-        'subtotal',
-        'descuento_global',
-        'motivo_descuento',
-        'total',
-        'pagado',
-        'saldo',
-        'cerrada_en',
-        'notas',
+        'paciente_id', 'folio', 'estado',
+        'subtotal', 'descuento_global', 'motivo_descuento',
+        'total', 'pagado', 'saldo', 'cerrada_en', 'notas',
     ];
 
     protected $casts = [
@@ -33,6 +28,23 @@ class Cuenta extends Model
         'cerrada_en'       => 'datetime',
     ];
 
+    /* ---------- Auditoría ---------- */
+    public static function moduloAuditoria(): string
+    {
+        return 'cuentas';
+    }
+
+    /**
+     * `recalcular()` guarda la cuenta muchas veces (subtotal, total, pagado,
+     * saldo cambian). No queremos inundar auditoría con cada recálculo.
+     * Solo dejamos que el controlador registre los eventos semánticos.
+     */
+    public function silenciarCambiosAutomaticos(): bool
+    {
+        return true;
+    }
+
+    /* ---------- Relaciones ---------- */
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class);
@@ -48,12 +60,12 @@ class Cuenta extends Model
         return $this->hasMany(Pago::class);
     }
 
-    /** Solo pagos aplicados (no cancelados) */
     public function pagosAplicados(): HasMany
     {
         return $this->hasMany(Pago::class)->where('estado', 'aplicado');
     }
 
+    /* ---------- Lógica ---------- */
     public static function generarFolio(): string
     {
         $hoy    = now()->format('Ymd');
@@ -61,29 +73,18 @@ class Cuenta extends Model
         return 'CTA-' . $hoy . '-' . str_pad($conteo, 3, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Recalcula subtotal, total, pagado y saldo.
-     * Cierra la cuenta automáticamente si el saldo queda en 0.
-     */
     public function recalcular(): void
     {
-        // 1. Suma de items (con descuentos por item ya aplicados en CuentaItem)
-        $subtotal = (float) $this->items()->sum('importe');
-
-        // 2. Descuento global
+        $subtotal        = (float) $this->items()->sum('importe');
         $descuentoGlobal = (float) ($this->descuento_global ?? 0);
-        $total = max(0, $subtotal - $descuentoGlobal);
+        $total           = max(0, $subtotal - $descuentoGlobal);
+        $pagado          = (float) $this->pagosAplicados()->sum('monto');
 
-        // 3. Solo sumar pagos APLICADOS (no cancelados)
-        $pagado = (float) $this->pagosAplicados()->sum('monto');
-
-        // 4. Actualizar
         $this->subtotal = $subtotal;
         $this->total    = $total;
         $this->pagado   = $pagado;
         $this->saldo    = $total - $pagado;
 
-        // 5. 🎯 Cierre automático si el saldo llega a 0 (o menos)
         if ($this->estado === 'abierta' && $this->saldo <= 0) {
             $this->estado     = 'cerrada';
             $this->cerrada_en = now();
@@ -92,6 +93,7 @@ class Cuenta extends Model
         $this->save();
     }
 
+    /* ---------- Accessors ---------- */
     public function getTotalFormateadoAttribute(): string
     {
         return '$' . number_format((float) $this->total, 2);
@@ -105,10 +107,10 @@ class Cuenta extends Model
     public function getEstadoColorAttribute(): string
     {
         return match ($this->estado) {
-            'abierta'  => 'bg-amber-100 text-amber-800',
-            'cerrada'  => 'bg-emerald-100 text-emerald-800',
-            'cancelada'=> 'bg-rose-100 text-rose-800',
-            default    => 'bg-slate-100 text-slate-800',
+            'abierta'   => 'bg-amber-100 text-amber-800',
+            'cerrada'   => 'bg-emerald-100 text-emerald-800',
+            'cancelada' => 'bg-rose-100 text-rose-800',
+            default     => 'bg-slate-100 text-slate-800',
         };
     }
 }

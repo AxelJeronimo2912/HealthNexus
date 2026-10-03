@@ -1,6 +1,5 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ============ Referencias del DOM ============
         const pacienteSelect = document.getElementById('paciente_id');
         const medicoSelect = document.getElementById('medico_id');
         const especialidadSelect = document.getElementById('especialidad_id');
@@ -11,7 +10,6 @@
         const avisoBloqueo = document.getElementById('aviso-bloqueo');
         const loadingMedicos = document.getElementById('loading-medicos');
 
-        // ============ Detectar médico asignado al paciente ============
         function obtenerMedicoAsignado() {
             if (!pacienteSelect) return {
                 id: null,
@@ -39,13 +37,11 @@
             const especialidadId = especialidadSelect?.value || '';
             const servicioId = servicioSelect?.value || '';
 
-            // ⛔ Regla 1: se requieren fecha y hora
             if (!fecha || !hora) {
                 resetMedicoSelect('— Selecciona paciente, fecha y hora —');
                 return;
             }
 
-            // ⛔ Regla 2: se requiere al menos especialidad o servicio
             if (!especialidadId && !servicioId) {
                 resetMedicoSelect('— Selecciona una especialidad o servicio —');
                 return;

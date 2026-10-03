@@ -6,9 +6,6 @@ use App\Services\AuditoriaService;
 
 trait Auditable
 {
-    /**
-     * Boot del trait: registra los eventos del modelo.
-     */
     public static function bootAuditable(): void
     {
         static::created(function ($model) {
@@ -16,19 +13,39 @@ trait Auditable
         });
 
         static::updated(function ($model) {
-            $antes = $model->getOriginal();
-            AuditoriaService::actualizado($model, static::moduloAuditoria(), $antes);
-        });
+    $cambios = collect($model->getChanges())->except(['updated_at'])->toArray();
+
+    if (empty($cambios)) {
+        return;
+    }
+
+    // Silenciar cambios automáticos (ej. recalcular() de Cuenta)
+    if (
+        method_exists($model, 'silenciarCambiosAutomaticos')
+        && $model->silenciarCambiosAutomaticos()
+    ) {
+        return;
+    }
+
+    // Silenciar solo cambio de estado
+    if (
+        method_exists($model, 'silenciarCambioEstadoAuditoria')
+        && $model->silenciarCambioEstadoAuditoria()
+        && count($cambios) === 1
+        && array_key_exists('estado', $cambios)
+    ) {
+        return;
+    }
+
+    $antes = collect($model->getOriginal())->only(array_keys($cambios))->toArray();
+    AuditoriaService::actualizado($model, static::moduloAuditoria(), $antes);
+});
 
         static::deleted(function ($model) {
             AuditoriaService::eliminado($model, static::moduloAuditoria());
         });
     }
 
-    /**
-     * Nombre del módulo para la auditoría.
-     * Sobrescribe este método en el modelo si quieres un nombre específico.
-     */
     public static function moduloAuditoria(): string
     {
         return strtolower(class_basename(static::class)) . 's';

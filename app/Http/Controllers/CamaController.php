@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 
 class CamaController extends Controller
 {
@@ -118,44 +120,83 @@ class CamaController extends Controller
     }
 
     public function destroy(Cama $cama): RedirectResponse
-    {
-        $cama->delete();
+{
+    if ($cama->pacienteActual()->exists()) {
+        AuditoriaService::registrar(
+            AuditEvent::ACCESO_DENEGADO,
+            'camas',
+            "Intento de eliminar la cama {$cama->etiqueta} bloqueado por tener un paciente asignado",
+            $cama
+        );
 
-        return redirect()
-            ->route('camas.index')
-            ->with('success', 'Cama eliminada correctamente.');
+        return back()->with('error', 'No puedes eliminar una cama con un paciente asignado.');
     }
+
+    if ($cama->estado === 'ocupada') {
+        AuditoriaService::registrar(
+            AuditEvent::ACCESO_DENEGADO,
+            'camas',
+            "Intento de eliminar la cama {$cama->etiqueta} bloqueado porque está marcada como ocupada",
+            $cama
+        );
+
+        return back()->with('error', 'No puedes eliminar una cama marcada como ocupada.');
+    }
+
+    $cama->delete(); // el trait registra 'deleted'
+
+    return redirect()
+        ->route('camas.index')
+        ->with('success', 'Cama eliminada correctamente.');
+}
 
     /**
      * Cambia el estado de una cama desde el listado.
      */
-    public function cambiarEstado(
-        Request $request,
-        Cama $cama
-    ): RedirectResponse {
-        $request->validate([
-            'estado' => [
-                'required',
-                Rule::in([
-                    'disponible',
-                    'ocupada',
-                    'mantenimiento',
-                    'limpieza',
-                    'fuera_servicio',
-                ]),
-            ],
-        ]);
+    public function cambiarEstado(Request $request, Cama $cama): RedirectResponse
+{
+    $request->validate([
+        'estado' => [
+            'required',
+            Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio']),
+        ],
+    ]);
 
-        $cama->update([
-            'estado' => $request->estado,
-        ]);
+    $estadoAnterior = $cama->estado;
+    $nuevoEstado    = $request->estado;
 
-        return back()->with(
-            'success',
-            'Estado actualizado a: ' . $cama->estado_label
-        );
+    if ($estadoAnterior === $nuevoEstado) {
+        return back()->with('info', 'La cama ya estaba en ese estado.');
     }
 
+    $cama->update(['estado' => $nuevoEstado]);
+
+    // ── Evento semántico según el estado destino ──
+    $evento = match ($nuevoEstado) {
+        'ocupada'        => AuditEvent::ASIGNACION_CAMA,
+        'disponible'     => AuditEvent::LIBERACION_CAMA,
+        'mantenimiento',
+        'limpieza',
+        'fuera_servicio' => AuditEvent::HOSPITALIZACION,
+        default          => AuditEvent::UPDATED,
+    };
+
+    AuditoriaService::registrar(
+        $evento,
+        'camas',
+        "Cama {$cama->etiqueta} cambió de '{$estadoAnterior}' a '{$nuevoEstado}'",
+        $cama,
+        ['estado' => $estadoAnterior],
+        ['estado' => $nuevoEstado],
+        [
+            'cama_id'      => $cama->id,
+            'cama_codigo'  => $cama->codigo,
+            'servicio_id'  => $cama->servicio_id,
+        ]
+    );
+
+    return back()->with('success', 'Estado actualizado a: ' . $cama->estado_label);
+}
     private function validar(
         Request $request,
         ?int $id = null

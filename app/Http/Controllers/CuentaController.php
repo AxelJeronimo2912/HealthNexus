@@ -11,7 +11,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 class CuentaController extends Controller
 {
     /* =========================================================
@@ -95,205 +96,292 @@ class CuentaController extends Controller
      |  AGREGAR CARGO (servicio o manual)
      ========================================================= */
     public function agregarItem(Request $request, Cuenta $cuenta): RedirectResponse
-    {
-        if ($cuenta->estado !== 'abierta') {
-            return back()->with('error', 'No puedes modificar una cuenta cerrada.');
-        }
-
-        $data = $request->validate([
-            'servicio_id'      => ['nullable', 'exists:servicios,id'],
-            'concepto'         => ['required', 'string', 'max:200'],
-            'cantidad'         => ['required', 'integer', 'min:1', 'max:999'],
-            'precio_unitario'  => ['required', 'numeric', 'min:0'],
-            'descuento'        => ['nullable', 'numeric', 'min:0'],
-            'motivo_descuento' => ['nullable', 'string', 'max:200'],
-            'notas'            => ['nullable', 'string'],
-        ]);
-
-        // Validar que el descuento no supere el subtotal de la línea
-        $subtotalLinea = $data['cantidad'] * (float) $data['precio_unitario'];
-        $descuento     = (float) ($data['descuento'] ?? 0);
-
-        if ($descuento > $subtotalLinea) {
-            return back()->with('error',
-                'El descuento no puede superar el subtotal de la línea ($' .
-                number_format($subtotalLinea, 2) . ').'
-            )->withInput();
-        }
-
-        $cuenta->items()->create([
-            'servicio_id'      => $data['servicio_id'] ?? null,
-            'user_id'          => auth()->id(),
-            'concepto'         => $data['concepto'],
-            'cantidad'         => $data['cantidad'],
-            'precio_unitario'  => $data['precio_unitario'],
-            'descuento'        => $descuento,
-            'motivo_descuento' => $data['motivo_descuento'] ?? null,
-            'notas'            => $data['notas'] ?? null,
-        ]);
-
-        return back()->with('success', 'Cargo agregado a la cuenta.');
+{
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'No puedes modificar una cuenta cerrada.');
     }
 
+    $data = $request->validate([
+        'servicio_id'      => ['nullable', 'exists:servicios,id'],
+        'concepto'         => ['required', 'string', 'max:200'],
+        'cantidad'         => ['required', 'integer', 'min:1', 'max:999'],
+        'precio_unitario'  => ['required', 'numeric', 'min:0'],
+        'descuento'        => ['nullable', 'numeric', 'min:0'],
+        'motivo_descuento' => ['nullable', 'string', 'max:200'],
+        'notas'            => ['nullable', 'string'],
+    ]);
+
+    $subtotalLinea = $data['cantidad'] * (float) $data['precio_unitario'];
+    $descuento     = (float) ($data['descuento'] ?? 0);
+
+    if ($descuento > $subtotalLinea) {
+        return back()->with('error',
+            'El descuento no puede superar el subtotal de la línea ($' .
+            number_format($subtotalLinea, 2) . ').'
+        )->withInput();
+    }
+
+    $item = $cuenta->items()->create([
+        'servicio_id'      => $data['servicio_id'] ?? null,
+        'user_id'          => auth()->id(),
+        'concepto'         => $data['concepto'],
+        'cantidad'         => $data['cantidad'],
+        'precio_unitario'  => $data['precio_unitario'],
+        'descuento'        => $descuento,
+        'motivo_descuento' => $data['motivo_descuento'] ?? null,
+        'notas'            => $data['notas'] ?? null,
+    ]);
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_CARGO_AGREGADO,
+        'cuentas',
+        "Cargo agregado a cuenta {$cuenta->folio}: {$item->concepto} (x{$item->cantidad})",
+        $cuenta,
+        [],
+        [
+            'item_id'         => $item->id,
+            'concepto'        => $item->concepto,
+            'cantidad'        => $item->cantidad,
+            'precio_unitario' => (float) $item->precio_unitario,
+            'descuento'       => $descuento,
+        ]
+    );
+
+    return back()->with('success', 'Cargo agregado a la cuenta.');
+}
     /* =========================================================
      |  ELIMINAR CARGO
      ========================================================= */
-    public function destroyItem(CuentaItem $item): RedirectResponse
-    {
-        if ($item->cuenta->estado !== 'abierta') {
-            return back()->with('error', 'No puedes modificar una cuenta cerrada.');
-        }
+   public function destroyItem(CuentaItem $item): RedirectResponse
+{
+    $cuenta = $item->cuenta;
 
-        $item->delete();
-
-        return back()->with('success', 'Cargo eliminado.');
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'No puedes modificar una cuenta cerrada.');
     }
+
+    // Guardar snapshot antes del delete
+    $snapshot = [
+        'item_id'         => $item->id,
+        'concepto'        => $item->concepto,
+        'cantidad'        => $item->cantidad,
+        'precio_unitario' => (float) $item->precio_unitario,
+        'importe'         => (float) $item->importe,
+    ];
+
+    $item->delete();
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_CARGO_ELIMINADO,
+        'cuentas',
+        "Cargo eliminado de cuenta {$cuenta->folio}: {$snapshot['concepto']}",
+        $cuenta,
+        $snapshot,
+        []
+    );
+
+    return back()->with('success', 'Cargo eliminado.');
+}
 
     /* =========================================================
      |  APLICAR DESCUENTO GLOBAL
      ========================================================= */
-    public function aplicarDescuento(Request $request, Cuenta $cuenta): RedirectResponse
-    {
-        if ($cuenta->estado !== 'abierta') {
-            return back()->with('error', 'No puedes modificar una cuenta cerrada.');
-        }
-
-        $data = $request->validate([
-            'descuento_global' => ['required', 'numeric', 'min:0'],
-            'motivo_descuento' => ['nullable', 'string', 'max:200'],
-        ]);
-
-        if ((float) $data['descuento_global'] > (float) $cuenta->subtotal) {
-            return back()->with('error',
-                'El descuento no puede superar el subtotal de la cuenta ($' .
-                number_format((float) $cuenta->subtotal, 2) . ').'
-            )->withInput();
-        }
-
-        $cuenta->update([
-            'descuento_global' => $data['descuento_global'],
-            'motivo_descuento' => $data['motivo_descuento'] ?? null,
-        ]);
-
-        $cuenta->recalcular();
-
-        // Si el descuento dejó el total en 0, se cierra automáticamente
-        $this->cerrarSiSaldoCero($cuenta);
-
-        return back()->with('success', 'Descuento aplicado.');
+ public function aplicarDescuento(Request $request, Cuenta $cuenta): RedirectResponse
+{
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'No puedes modificar una cuenta cerrada.');
     }
+
+    $data = $request->validate([
+        'descuento_global' => ['required', 'numeric', 'min:0'],
+        'motivo_descuento' => ['nullable', 'string', 'max:200'],
+    ]);
+
+    if ((float) $data['descuento_global'] > (float) $cuenta->subtotal) {
+        return back()->with('error',
+            'El descuento no puede superar el subtotal de la cuenta ($' .
+            number_format((float) $cuenta->subtotal, 2) . ').'
+        )->withInput();
+    }
+
+    $antes = (float) $cuenta->descuento_global;
+
+    $cuenta->update([
+        'descuento_global' => $data['descuento_global'],
+        'motivo_descuento' => $data['motivo_descuento'] ?? null,
+    ]);
+
+    $cuenta->recalcular();
+    $this->cerrarSiSaldoCero($cuenta);
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_DESCUENTO,
+        'cuentas',
+        "Descuento global aplicado a cuenta {$cuenta->folio}: $" .
+        number_format((float) $data['descuento_global'], 2),
+        $cuenta,
+        ['descuento_global' => $antes],
+        ['descuento_global' => (float) $data['descuento_global']],
+        ['motivo' => $data['motivo_descuento'] ?? null]
+    );
+
+    return back()->with('success', 'Descuento aplicado.');
+}
 
     /* =========================================================
      |  REGISTRAR PAGO
      ========================================================= */
     public function registrarPago(Request $request, Cuenta $cuenta): RedirectResponse
-    {
-        if ($cuenta->estado !== 'abierta') {
-            return back()->with('error', 'No puedes registrar pagos en una cuenta cerrada.');
-        }
-
-        $data = $request->validate([
-            'monto'      => ['required', 'numeric', 'min:0.01'],
-            'metodo'     => ['required', 'in:efectivo,tarjeta,transferencia,otro'],
-            'referencia' => ['nullable', 'string', 'max:100'],
-            'pagado_en'  => ['nullable', 'date'],
-            'notas'      => ['nullable', 'string'],
-        ]);
-
-        // No permitir pagar más que el saldo pendiente
-        if ((float) $data['monto'] > (float) $cuenta->saldo) {
-            return back()->with('error',
-                'El monto no puede superar el saldo pendiente ($' .
-                number_format((float) $cuenta->saldo, 2) . ').'
-            )->withInput();
-        }
-
-        $pago = $cuenta->pagos()->create([
-            'user_id'    => auth()->id(),
-            'folio'      => Pago::generarFolio(),
-            'monto'      => $data['monto'],
-            'metodo'     => $data['metodo'],
-            'referencia' => $data['referencia'] ?? null,
-            'pagado_en'  => $data['pagado_en'] ?? now(),
-            'notas'      => $data['notas'] ?? null,
-            'estado'     => 'aplicado',
-        ]);
-
-        // El evento saved en Pago recalcula la cuenta automáticamente
-        $cuenta->refresh();
-
-        // 🎯 CIERRE AUTOMÁTICO: si el saldo llegó a 0, cerramos la cuenta
-        $cerrada = $this->cerrarSiSaldoCero($cuenta);
-
-        $mensaje = $cerrada
-            ? "Pago registrado. Folio: {$pago->folio}. ✅ Cuenta cerrada automáticamente."
-            : "Pago registrado. Folio: {$pago->folio}. Saldo pendiente: $" .
-              number_format((float) $cuenta->saldo, 2);
-
-        return back()->with('success', $mensaje);
+{
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'No puedes registrar pagos en una cuenta cerrada.');
     }
 
+    $data = $request->validate([
+        'monto'      => ['required', 'numeric', 'min:0.01'],
+        'metodo'     => ['required', 'in:efectivo,tarjeta,transferencia,otro'],
+        'referencia' => ['nullable', 'string', 'max:100'],
+        'pagado_en'  => ['nullable', 'date'],
+        'notas'      => ['nullable', 'string'],
+    ]);
+
+    if ((float) $data['monto'] > (float) $cuenta->saldo) {
+        return back()->with('error',
+            'El monto no puede superar el saldo pendiente ($' .
+            number_format((float) $cuenta->saldo, 2) . ').'
+        )->withInput();
+    }
+
+    $pago = $cuenta->pagos()->create([
+        'user_id'    => auth()->id(),
+        'folio'      => Pago::generarFolio(),
+        'monto'      => $data['monto'],
+        'metodo'     => $data['metodo'],
+        'referencia' => $data['referencia'] ?? null,
+        'pagado_en'  => $data['pagado_en'] ?? now(),
+        'notas'      => $data['notas'] ?? null,
+        'estado'     => 'aplicado',
+    ]);
+
+    $cuenta->refresh();
+    $cerrada = $this->cerrarSiSaldoCero($cuenta);
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_PAGO,
+        'cuentas',
+        "Pago registrado en cuenta {$cuenta->folio}: {$pago->folio} por $" .
+        number_format((float) $pago->monto, 2) . " ({$pago->metodo})",
+        $cuenta,
+        [],
+        [],
+        [
+            'pago_id'   => $pago->id,
+            'folio'     => $pago->folio,
+            'monto'     => (float) $pago->monto,
+            'metodo'    => $pago->metodo,
+            'referencia'=> $pago->referencia,
+            'cerro_cuenta' => $cerrada,
+        ]
+    );
+
+    $mensaje = $cerrada
+        ? "Pago registrado. Folio: {$pago->folio}.  Cuenta cerrada automáticamente."
+        : "Pago registrado. Folio: {$pago->folio}. Saldo pendiente: $" .
+          number_format((float) $cuenta->saldo, 2);
+
+    return back()->with('success', $mensaje);
+}
     /* =========================================================
      |  CANCELAR PAGO
      ========================================================= */
-    public function cancelarPago(Request $request, Pago $pago): RedirectResponse
-    {
-        if ($pago->estado === 'cancelado') {
-            return back()->with('error', 'Este pago ya estaba cancelado.');
-        }
-
-        // Si la cuenta ya está cerrada, no se puede cancelar el pago
-        // (habría que reabrir la cuenta primero)
-        if ($pago->cuenta->estado !== 'abierta') {
-            return back()->with('error',
-                'No puedes cancelar pagos de una cuenta cerrada. Reabre la cuenta primero.'
-            );
-        }
-
-        $data = $request->validate([
-            'motivo_cancelacion' => ['required', 'string', 'max:500'],
-        ]);
-
-        $pago->update([
-            'estado'             => 'cancelado',
-            'motivo_cancelacion' => $data['motivo_cancelacion'],
-            'cancelado_en'       => now(),
-            'cancelado_por'      => auth()->id(),
-        ]);
-
-        $pago->cuenta->recalcular();
-
-        return back()->with('success', 'Pago cancelado.');
+  public function cancelarPago(Request $request, Pago $pago): RedirectResponse
+{
+    if ($pago->estado === 'cancelado') {
+        return back()->with('error', 'Este pago ya estaba cancelado.');
     }
+
+    if ($pago->cuenta->estado !== 'abierta') {
+        return back()->with('error',
+            'No puedes cancelar pagos de una cuenta cerrada. Reabre la cuenta primero.'
+        );
+    }
+
+    $data = $request->validate([
+        'motivo_cancelacion' => ['required', 'string', 'max:500'],
+    ]);
+
+    $pago->update([
+        'estado'             => 'cancelado',
+        'motivo_cancelacion' => $data['motivo_cancelacion'],
+        'cancelado_en'       => now(),
+        'cancelado_por'      => auth()->id(),
+    ]);
+
+    $pago->cuenta->recalcular();
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_PAGO_CANCELADO,
+        'cuentas',
+        "Pago cancelado {$pago->folio} de cuenta {$pago->cuenta->folio}. Motivo: {$data['motivo_cancelacion']}",
+        $pago->cuenta,
+        ['estado' => 'aplicado'],
+        ['estado' => 'cancelado'],
+        [
+            'pago_id'            => $pago->id,
+            'folio'              => $pago->folio,
+            'monto'              => (float) $pago->monto,
+            'motivo_cancelacion' => $data['motivo_cancelacion'],
+        ]
+    );
+
+    return back()->with('success', 'Pago cancelado.');
+}
 
     /* =========================================================
      |  CERRAR CUENTA MANUALMENTE
      ========================================================= */
     public function cerrar(Cuenta $cuenta): RedirectResponse
-    {
-        if ($cuenta->estado !== 'abierta') {
-            return back()->with('error', 'Esta cuenta ya no está abierta.');
-        }
-
-        if ((float) $cuenta->saldo > 0) {
-            return back()->with('error',
-                'No puedes cerrar la cuenta. Aún hay un saldo pendiente de $' .
-                number_format((float) $cuenta->saldo, 2) . '.'
-            );
-        }
-
-        $cuenta->update([
-            'estado'     => 'cerrada',
-            'cerrada_en' => now(),
-        ]);
-
-        return back()->with('success', 'Cuenta cerrada correctamente.');
+{
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'Esta cuenta ya no está abierta.');
     }
+
+    if ((float) $cuenta->saldo > 0) {
+        AuditoriaService::registrar(
+            AuditEvent::ACCESO_DENEGADO,
+            'cuentas',
+            "Intento de cerrar cuenta {$cuenta->folio} con saldo pendiente de $" .
+            number_format((float) $cuenta->saldo, 2),
+            $cuenta
+        );
+
+        return back()->with('error',
+            'No puedes cerrar la cuenta. Aún hay un saldo pendiente de $' .
+            number_format((float) $cuenta->saldo, 2) . '.'
+        );
+    }
+
+    $cuenta->update([
+        'estado'     => 'cerrada',
+        'cerrada_en' => now(),
+    ]);
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_CERRADA,
+        'cuentas',
+        "Cuenta {$cuenta->folio} cerrada manualmente",
+        $cuenta,
+        ['estado' => 'abierta'],
+        ['estado' => 'cerrada']
+    );
+
+    return back()->with('success', 'Cuenta cerrada correctamente.');
+}
 
     /* =========================================================
      |  RECIBO DE PAGO (vista HTML)
      ========================================================= */
-    public function recibo(Pago $pago)
+   public function recibo(Pago $pago)
 {
     $pago->load(['cuenta.paciente', 'user', 'canceladoPor']);
 
@@ -302,31 +390,70 @@ class CuentaController extends Controller
         ->setOption('defaultFont', 'DejaVu Sans')
         ->setOption('isHtml5ParserEnabled', true);
 
-    // inline: se ve en el navegador (visor de PDF)
-    // attachment: se descarga directo
-    return $pdf->stream("recibo-{$pago->folio}.pdf");
+    $output = $pdf->output();
+
+    AuditoriaService::registrar(
+        AuditEvent::RECIBO_PDF_GENERADO,
+        'cuentas',
+        "Recibo PDF generado: {$pago->folio} (cuenta {$pago->cuenta->folio})",
+        $pago->cuenta,
+        [],
+        [],
+        [
+            'pago_id'      => $pago->id,
+            'folio'        => $pago->folio,
+            'monto'        => (float) $pago->monto,
+            'tamano_bytes' => strlen($output),
+        ]
+    );
+
+    return response($output, 200, [
+        'Content-Type'        => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="recibo-' . $pago->folio . '.pdf"',
+    ]);
 }
 
     /* =========================================================
      |  PDF ESTADO DE CUENTA
      ========================================================= */
     public function pdf(Cuenta $cuenta)
-    {
-        $cuenta->load([
-            'paciente',
-            'items.servicio',
-            'items.cita',
-            'pagos.user',
-            'pagos.canceladoPor',
-        ]);
+{
+    $cuenta->load([
+        'paciente',
+        'items.servicio',
+        'items.cita',
+        'pagos.user',
+        'pagos.canceladoPor',
+    ]);
 
-        $pdf = Pdf::loadView('cuentas.pdf.estado-cuenta', compact('cuenta'))
-            ->setOption('isRemoteEnabled', true)
-            ->setOption('defaultFont', 'DejaVu Sans')
-            ->setOption('isHtml5ParserEnabled', true);
+    $pdf = Pdf::loadView('cuentas.pdf.estado-cuenta', compact('cuenta'))
+        ->setOption('isRemoteEnabled', true)
+        ->setOption('defaultFont', 'DejaVu Sans')
+        ->setOption('isHtml5ParserEnabled', true);
 
-        return $pdf->stream("estado-cuenta-{$cuenta->folio}.pdf");
-    }
+    $output = $pdf->output();
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_PDF_GENERADO,
+        'cuentas',
+        "Estado de cuenta PDF generado: {$cuenta->folio} (total $" .
+        number_format((float) $cuenta->total, 2) . ")",
+        $cuenta,
+        [],
+        [],
+        [
+            'folio'        => $cuenta->folio,
+            'total'        => (float) $cuenta->total,
+            'saldo'        => (float) $cuenta->saldo,
+            'tamano_bytes' => strlen($output),
+        ]
+    );
+
+    return response($output, 200, [
+        'Content-Type'        => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="estado-cuenta-' . $cuenta->folio . '.pdf"',
+    ]);
+}
 
     /* =========================================================
      |  MÉTODOS PRIVADOS

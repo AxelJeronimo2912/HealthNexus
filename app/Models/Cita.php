@@ -23,6 +23,11 @@ class Cita extends Model
         'duracion_minutos' => 'integer',
     ];
 
+
+    public static function moduloAuditoria(): string
+{
+    return 'citas';
+}   
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
