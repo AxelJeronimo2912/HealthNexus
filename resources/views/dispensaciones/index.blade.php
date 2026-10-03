@@ -1,6 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dispensación de Recetas</h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-bold text-2xl text-slate-800 tracking-tight">
+                Dispensación de Recetas
+            </h2>
+
+            <button type="button" onclick="abrirModalHistorial()"
+                class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-sm transition-all">
+                <x-heroicon-o-clock class="w-4 h-4 mr-1.5 stroke-2" />
+                Historial
+            </button>
+        </div>
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -26,12 +36,14 @@
         <form method="GET" class="flex gap-2 flex-wrap bg-white p-4 rounded-lg shadow-sm border border-gray-100">
             <input type="text" name="buscar" value="{{ $busqueda }}" placeholder="Buscar por paciente..."
                 class="flex-1 min-w-[200px] border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <select name="filtro" class="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <select name="filtro"
+                class="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option value="pendientes" @selected($filtro === 'pendientes')>Pendientes</option>
                 <option value="dispensadas" @selected($filtro === 'dispensadas')>Dispensadas</option>
                 <option value="todas" @selected($filtro === 'todas')>Todas</option>
             </select>
-            <button type="submit" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-md text-sm transition">
+            <button type="submit"
+                class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-md text-sm transition">
                 Filtrar
             </button>
         </form>
@@ -41,12 +53,18 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Médico</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicamentos</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Paciente</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Médico</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Medicamentos</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -56,32 +74,37 @@
                                 {{ $receta->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                <div class="font-medium text-gray-900">{{ $receta->paciente?->nombre_completo ?? '—' }}</div>
+                                <div class="font-medium text-gray-900">{{ $receta->paciente?->nombre_completo ?? '—' }}
+                                </div>
                                 <div class="text-xs text-gray-500">CURP: {{ $receta->paciente?->curp ?? '—' }}</div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">
                                 {{ $receta->medico?->nombre_completo ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                <span class="px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-medium">
+                                <span
+                                    class="px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-medium">
                                     {{ $receta->medicamentos->count() }} meds
                                 </span>
                                 @if ($receta->receta_libre)
-                                    <span class="px-2.5 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-medium ml-1">
+                                    <span
+                                        class="px-2.5 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-medium ml-1">
                                         Libre
                                     </span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 @if ($receta->dispensada)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                                         Dispensada
                                     </span>
                                     <div class="text-xs text-gray-400 mt-0.5">
                                         {{ $receta->dispensada_en?->format('d/m/Y H:i') }}
                                     </div>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
                                         Pendiente
                                     </span>
                                 @endif
@@ -106,4 +129,50 @@
 
         <div class="mt-4">{{ $recetas->links() }}</div>
     </div>
+
+    {{-- Contenedor del modal de historial (se carga por AJAX) --}}
+    <div id="modal-historial"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden">
+            <div id="modal-historial-content">
+                <div class="p-10 text-center text-slate-400">Cargando historial...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalHistorial() {
+            const modal = document.getElementById('modal-historial');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            fetch('{{ route('dispensaciones.historial') }}', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById('modal-historial-content').innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById('modal-historial-content').innerHTML =
+                        '<div class="p-6 text-rose-600">Error al cargar el historial.</div>';
+                });
+        }
+
+        function cerrarModalHistorial() {
+            const modal = document.getElementById('modal-historial');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('modal-historial').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModalHistorial();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModalHistorial();
+        });
+    </script>
 </x-app-layout>

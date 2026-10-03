@@ -13,7 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-
+use App\Services\CobroService;
 class ConsultaController extends Controller
 {
     /* =========================================================
@@ -67,31 +67,34 @@ class ConsultaController extends Controller
     /* =========================================================
      |  GUARDAR CONSULTA
      ========================================================= */
-       public function store(Request $request, Cita $cita): RedirectResponse
-    {
-        $data = $this->validar($request);
+    public function store(Request $request, Cita $cita): RedirectResponse
+{
+    $data = $this->validar($request);
 
-        $data['cita_id']       = $cita->id;
-        $data['paciente_id']   = $cita->paciente_id;
-        $data['medico_id']     = $cita->medico_id;
-        $data['estado']        = $request->boolean('finalizar') ? 'finalizada' : 'borrador';
+    $data['cita_id']     = $cita->id;
+    $data['paciente_id'] = $cita->paciente_id;
+    $data['medico_id']   = $cita->medico_id;
+    $data['estado']      = $request->boolean('finalizar') ? 'finalizada' : 'borrador';
 
-        if ($data['estado'] === 'finalizada') {
-            $data['finalizada_en'] = now();
-        }
-
-        // Validar stock ANTES de crear la consulta
-        $this->validarStock($request);
-
-        $consulta = Consulta::create($data);
-
-        $this->guardarMedicamentos($consulta, $request);
-
-        $cita->update(['estado' => 'atendida']);
-
-        return redirect()->route('consultas.show', $consulta)
-            ->with('success', 'Consulta guardada correctamente.');
+    if ($data['estado'] === 'finalizada') {
+        $data['finalizada_en'] = now();
     }
+
+    $this->validarStock($request);
+
+    $consulta = Consulta::create($data);
+
+    $this->guardarMedicamentos($consulta, $request);
+
+    $cita->update(['estado' => 'atendida']);
+
+    if ($consulta->estado === 'finalizada') {
+        app(CobroService::class)->cobrarCita($cita);
+    }
+
+    return redirect()->route('consultas.show', $consulta)
+        ->with('success', 'Consulta guardada correctamente.');
+}
     /* =========================================================
      |  MOSTRAR CONSULTA
      ========================================================= */
@@ -137,28 +140,33 @@ class ConsultaController extends Controller
      |  ACTUALIZAR CONSULTA
      ========================================================= */
         public function update(Request $request, Consulta $consulta): RedirectResponse
-    {
-        $this->autorizarAcceso($consulta);
+{
+    $this->autorizarAcceso($consulta);
 
-        $data = $this->validar($request);
+    $estadoAnterior = $consulta->estado;
 
-        if ($request->boolean('finalizar')) {
-            $data['estado']        = 'finalizada';
-            $data['finalizada_en'] = now();
-        }
+    $data = $this->validar($request);
 
-        // Validar stock antes de guardar cambios
-        $this->validarStock($request, $consulta);
-
-        $consulta->update($data);
-
-        $this->guardarMedicamentos($consulta, $request);
-
-        $consulta->cita->update(['estado' => 'atendida']);
-
-        return redirect()->route('consultas.show', $consulta)
-            ->with('success', 'Consulta actualizada correctamente.');
+    if ($request->boolean('finalizar')) {
+        $data['estado']        = 'finalizada';
+        $data['finalizada_en'] = now();
     }
+
+    $this->validarStock($request, $consulta);
+
+    $consulta->update($data);
+
+    $this->guardarMedicamentos($consulta, $request);
+
+    $consulta->cita->update(['estado' => 'atendida']);
+
+    if ($consulta->estado === 'finalizada' && $estadoAnterior !== 'finalizada') {
+        app(CobroService::class)->cobrarCita($consulta->cita);
+    }
+
+    return redirect()->route('consultas.show', $consulta)
+        ->with('success', 'Consulta actualizada correctamente.');
+}
     /* =========================================================
      |  PDF CONSULTA
      ========================================================= */

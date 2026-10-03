@@ -34,6 +34,37 @@
             @endif
         </div>
 
+        {{-- Precio del servicio --}}
+        <div
+            class="bg-white p-6 rounded-lg shadow border-l-4 {{ (float) $servicio->precio > 0 ? 'border-green-500' : 'border-gray-300' }}">
+            <h3 class="font-bold text-gray-800 mb-3">Costo del servicio</h3>
+
+            @if ((float) $servicio->precio > 0)
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-bold text-green-700">
+                        {{ $servicio->precio_formateado }}
+                    </span>
+                    @if ($servicio->precio_descripcion)
+                        <span class="text-sm text-gray-500">
+                            / {{ $servicio->precio_descripcion }}
+                        </span>
+                    @endif
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    Este servicio genera un cargo al agregarse a la cuenta del paciente.
+                </p>
+            @else
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">
+                        Sin costo
+                    </span>
+                    <span class="text-sm text-gray-500">
+                        Este servicio no genera cargo al paciente.
+                    </span>
+                </div>
+            @endif
+        </div>
+
         {{-- Ubicación y horario --}}
         <div class="bg-white p-6 rounded-lg shadow">
             <h3 class="font-bold text-gray-800 mb-3">Ubicación y horario</h3>
@@ -82,26 +113,6 @@
                         </li>
                     @endforeach
                 </ul>
-            @endif
-        </div>
-
-        {{-- Camas --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="font-bold text-gray-800 mb-3">Camas ({{ $servicio->camas->count() }})</h3>
-            @if ($servicio->camas->isEmpty())
-                <p class="text-sm text-gray-500">Sin camas asignadas a este servicio.</p>
-            @else
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    @foreach ($servicio->camas as $cama)
-                        <a href="{{ route('camas.show', $cama) }}" class="block p-2 border rounded hover:bg-gray-50">
-                            <p class="font-mono text-xs">{{ $cama->codigo }}</p>
-                            <p class="text-xs text-gray-500">{{ $cama->area }}</p>
-                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-xs {{ $cama->estado_color }}">
-                                {{ $cama->estado_label }}
-                            </span>
-                        </a>
-                    @endforeach
-                </div>
             @endif
         </div>
 

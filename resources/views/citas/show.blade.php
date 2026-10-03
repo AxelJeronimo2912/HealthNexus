@@ -18,6 +18,14 @@
         $diasMaximos = 7;
         $signoValido = $signoReciente && $signoReciente->created_at->diffInDays(now()) <= $diasMaximos;
         $puedeIniciar = in_array($cita->estado, ['confirmada', 'en_curso']);
+
+        // Estados finales: ya no se puede cambiar el estado
+        $estadosFinales = ['atendida', 'cancelada', 'no_asistio'];
+        $esFinal = in_array($cita->estado, $estadosFinales);
+
+        // Solo el administrador puede reabrir una cita cerrada
+        $esAdmin = auth()->user()->hasRole('administrador');
+        $puedeCambiarEstado = !$esFinal || $esAdmin;
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -181,29 +189,60 @@
         @endif
 
         {{-- Acciones: cambiar estado --}}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Actualizar estado</h3>
-            <div class="flex flex-wrap gap-2">
-                @foreach ([
+        @if ($puedeCambiarEstado)
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Actualizar estado</h3>
+                    @if ($esFinal && $esAdmin)
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                            Modo administrador · cita cerrada
+                        </span>
+                    @endif
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ([
+        'programada' => 'Programar',
         'confirmada' => 'Confirmar',
         'en_curso' => 'En curso',
         'atendida' => 'Marcar atendida',
         'no_asistio' => 'No asistió',
         'cancelada' => 'Cancelar',
     ] as $estado => $label)
-                    @if ($cita->estado !== $estado)
-                        <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST" class="inline">
-                            @csrf
-                            <input type="hidden" name="estado" value="{{ $estado }}">
-                            <button
-                                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all">
-                                {{ $label }}
-                            </button>
-                        </form>
-                    @endif
-                @endforeach
+                        @if ($cita->estado !== $estado)
+                            <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="estado" value="{{ $estado }}">
+                                <button
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all">
+                                    {{ $label }}
+                                </button>
+                            </form>
+                        @endif
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @else
+            {{-- Cita cerrada: no se puede cambiar el estado --}}
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-700">Cita cerrada ({{ $cita->estado_label }})</p>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Esta cita ya no puede cambiar de estado.
+                        @if (!$esAdmin)
+                            Solo un administrador puede reabrirla.
+                        @endif
+                    </p>
+                </div>
+            </div>
+        @endif
 
         @if (auth()->user()->hasRole('administrador'))
             <div class="bg-rose-50/50 p-6 rounded-2xl border border-rose-100 flex items-center justify-between">

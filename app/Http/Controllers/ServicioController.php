@@ -44,17 +44,15 @@ class ServicioController extends Controller
     }
 
     public function store(Request $request): RedirectResponse
-    {
-        $data = $this->validar($request);
+{
+    $data = $this->prepararDatos($this->validar($request), $request);
 
-        $data['abierto_24h'] = $request->boolean('abierto_24h');
-        $data['activo'] = $request->boolean('activo');
+    Servicio::create($data);
 
-        Servicio::create($data);
+    return redirect()->route('servicios.index')
+        ->with('success', 'Servicio registrado correctamente.');
+}
 
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio registrado correctamente.');
-    }
 
     public function show(Servicio $servicio): View
     {
@@ -68,18 +66,15 @@ class ServicioController extends Controller
         return view('servicios.edit', compact('servicio'));
     }
 
-    public function update(Request $request, Servicio $servicio): RedirectResponse
-    {
-        $data = $this->validar($request, $servicio->id);
+   public function update(Request $request, Servicio $servicio): RedirectResponse
+{
+    $data = $this->prepararDatos($this->validar($request, $servicio->id), $request);
 
-        $data['abierto_24h'] = $request->boolean('abierto_24h');
-        $data['activo'] = $request->boolean('activo');
+    $servicio->update($data);
 
-        $servicio->update($data);
-
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio actualizado correctamente.');
-    }
+    return redirect()->route('servicios.index')
+        ->with('success', 'Servicio actualizado correctamente.');
+}
 
     public function destroy(Servicio $servicio): RedirectResponse
     {
@@ -160,24 +155,42 @@ class ServicioController extends Controller
     /**
      * Reglas de validación.
      */
-    private function validar(Request $request, ?int $id = null): array
-    {
-        return $request->validate([
-            'codigo' => ['required', 'string', 'max:20', Rule::unique('servicios', 'codigo')->ignore($id)],
-            'nombre' => ['required', 'string', 'max:150'],
-            'tipo' => ['required', 'in:consulta_externa,urgencias,hospitalizacion,quirofano,farmacia,enfermeria,laboratorio,imagenologia,otro'],
-            'ubicacion' => ['nullable', 'string', 'max:200'],
-            'piso' => ['nullable', 'string', 'max:50'],
-            'ala' => ['nullable', 'string', 'max:50'],
-            'hora_apertura' => ['nullable', 'date_format:H:i'],
-            'hora_cierre' => ['nullable', 'date_format:H:i'],
-            'capacidad' => ['nullable', 'integer', 'min:0'],
-            'extension_telefonica' => ['nullable', 'string', 'max:20'],
-            'descripcion' => ['nullable', 'string'],
-            'notas' => ['nullable', 'string'],
-        ], [
-            'codigo.unique' => 'Ya existe un servicio con ese código.',
-            'tipo.required' => 'El tipo de servicio es obligatorio.',
-        ]);
+   private function validar(Request $request, ?int $id = null): array
+{
+    return $request->validate([
+        'codigo'               => ['required', 'string', 'max:20', Rule::unique('servicios', 'codigo')->ignore($id)],
+        'nombre'               => ['required', 'string', 'max:150'],
+        'tipo'                 => ['required', 'in:consulta_externa,urgencias,hospitalizacion,quirofano,farmacia,enfermeria,laboratorio,imagenologia,otro'],
+        'ubicacion'            => ['nullable', 'string', 'max:200'],
+        'piso'                 => ['nullable', 'string', 'max:50'],
+        'ala'                  => ['nullable', 'string', 'max:50'],
+        'hora_apertura'        => ['nullable', 'date_format:H:i'],
+        'hora_cierre'          => ['nullable', 'date_format:H:i'],
+        'capacidad'            => ['nullable', 'integer', 'min:0'],
+        'tiene_costo'          => ['nullable', 'boolean'],
+        'precio'               => ['nullable', 'numeric', 'min:0'],
+        'precio_descripcion'   => ['nullable', 'string', 'max:100'],
+        'extension_telefonica' => ['nullable', 'string', 'max:20'],
+        'descripcion'          => ['nullable', 'string'],
+        'notas'                => ['nullable', 'string'],
+    ], [
+        'codigo.unique' => 'Ya existe un servicio con ese código.',
+        'tipo.required' => 'El tipo de servicio es obligatorio.',
+    ]);
+}
+private function prepararDatos(array $data, Request $request): array
+{
+    $data['abierto_24h'] = $request->boolean('abierto_24h');
+    $data['activo']      = $request->boolean('activo');
+
+    // Si no tiene costo, forzar precio 0 y limpiar descripción
+    if (! $request->boolean('tiene_costo')) {
+        $data['precio'] = 0;
+        $data['precio_descripcion'] = null;
+    } else {
+        $data['precio'] = $data['precio'] ?? 0;
     }
+
+    return $data;
+}
 }

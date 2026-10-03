@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\IaMedicaController;
 use App\Http\Controllers\Medico\DashboardController as MedicoDashboardController;
 use App\Http\Controllers\Enfermeria\DashboardController as EnfermeriaDashboardController;
 use App\Http\Controllers\Farmacia\DashboardController as FarmaciaDashboardController;
-
+use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\CamaController;
@@ -264,11 +264,13 @@ Route::middleware(['auth', 'permission:citas.ver'])
     ->name('citas.')
     ->group(function () {
         Route::get('/', [CitaController::class, 'index'])->name('index');
+
+        Route::get('/historial', [CitaController::class, 'historial'])->name('historial');
+
         Route::get('/{cita}', [CitaController::class, 'show'])->name('show');
         Route::post('/{cita}/estado', [CitaController::class, 'cambiarEstado'])->name('cambiar-estado');
         Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Consultas
@@ -312,11 +314,11 @@ Route::middleware(['auth', 'permission:dispensaciones.ver'])
     ->name('dispensaciones.')
     ->group(function () {
         Route::get('/', [DispensacionController::class, 'index'])->name('index');
+        Route::get('/historial', [DispensacionController::class, 'historial'])->name('historial');
         Route::get('/{consulta}', [DispensacionController::class, 'show'])->name('show');
         Route::post('/{consulta}/dispensar', [DispensacionController::class, 'dispensar'])->name('dispensar');
         Route::post('/{consulta}/revertir', [DispensacionController::class, 'revertir'])->name('revertir');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Seguimientos
@@ -369,7 +371,33 @@ Route::middleware(['auth', 'permission:servicios.ver'])
         Route::delete('/{servicio}/personal/{pivotId}', [ServicioController::class, 'quitarPersonal'])->name('personal.quitar');
     });
 
+
+
+    /*
+|--------------------------------------------------------------------------
+| Módulo de Cuentas (cargos por paciente)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'permission:cuentas.ver'])
+    ->group(function () {
+        Route::get('cuentas', [CuentaController::class, 'index'])->name('cuentas.index');
+        Route::get('pacientes/{paciente}/cuenta', [CuentaController::class, 'delPaciente'])->name('cuentas.paciente');
+
+        Route::post('cuentas/{cuenta}/items', [CuentaController::class, 'agregarItem'])->name('cuentas.items.store');
+        Route::delete('cuenta-items/{item}', [CuentaController::class, 'destroyItem'])->name('cuentas.items.destroy');
+
+        Route::post('cuentas/{cuenta}/pagos', [CuentaController::class, 'registrarPago'])->name('cuentas.pagos.store');
+        Route::post('pagos/{pago}/cancelar', [CuentaController::class, 'cancelarPago'])->name('cuentas.pagos.cancelar');
+        Route::get('pagos/{pago}/recibo', [CuentaController::class, 'recibo'])->name('cuentas.pagos.recibo');
+
+        Route::post('cuentas/{cuenta}/descuento', [CuentaController::class, 'aplicarDescuento'])->name('cuentas.descuento');
+
+        Route::post('cuentas/{cuenta}/cerrar', [CuentaController::class, 'cerrar'])->name('cuentas.cerrar');
+        Route::get('cuentas/{cuenta}/pdf', [CuentaController::class, 'pdf'])->name('cuentas.pdf');
+
+    });
 /*
+
 |--------------------------------------------------------------------------
 | Módulo de Especialidades
 |--------------------------------------------------------------------------
@@ -477,6 +505,8 @@ Route::middleware(['auth', 'permission:admision.ver'])
         Route::get('/', [AdmisionController::class, 'index'])->name('index');
         Route::get('/crear', [AdmisionController::class, 'create'])->name('create');
         Route::post('/', [AdmisionController::class, 'store'])->name('store');
+        Route::post('/paciente-rapido', [AdmisionController::class, 'storePacienteRapido'])
+            ->name('paciente-rapido');
         Route::get('/{admision}', [AdmisionController::class, 'show'])->name('show');
         Route::post('/{admision}/asignar', [AdmisionController::class, 'asignar'])->name('asignar');
         Route::post('/{admision}/derivar', [AdmisionController::class, 'derivar'])->name('derivar');
