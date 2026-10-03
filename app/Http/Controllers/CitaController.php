@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Cuenta;      
 use App\Models\Servicio;
-
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 class CitaController extends Controller
 {
     /**
@@ -69,7 +70,7 @@ class CitaController extends Controller
     /**
      * Cambia el estado de una cita.
      */
-   public function cambiarEstado(Request $request, Cita $cita): RedirectResponse
+ public function cambiarEstado(Request $request, Cita $cita): RedirectResponse
 {
     $this->autorizarAcceso($cita);
 
@@ -80,7 +81,37 @@ class CitaController extends Controller
     $estadoAnterior = $cita->estado;
     $nuevoEstado    = $request->estado;
 
+    // Si no cambió nada, no auditamos doble
+    if ($estadoAnterior === $nuevoEstado) {
+        return back()->with('info', 'La cita ya estaba en ese estado.');
+    }
+
     $cita->update(['estado' => $nuevoEstado]);
+
+    // ── Evento semántico según el nuevo estado ──
+    $evento = match ($nuevoEstado) {
+        'confirmada' => AuditEvent::CITA_CONFIRMADA,
+        'en_curso'   => AuditEvent::CITA_EN_CURSO,
+        'atendida'   => AuditEvent::CITA_ATENDIDA,
+        'cancelada'  => AuditEvent::CITA_CANCELADA,
+        'no_asistio' => AuditEvent::CITA_NO_ASISTIO,
+        default      => AuditEvent::UPDATED,
+    };
+
+    AuditoriaService::registrar(
+        $evento,
+        'citas',
+        "Cita #{$cita->id} ({$cita->paciente?->nombre_completo}) cambió de '{$estadoAnterior}' a '{$nuevoEstado}'",
+        $cita,
+        ['estado' => $estadoAnterior],
+        ['estado' => $nuevoEstado],
+        [
+            'cita_id'     => $cita->id,
+            'paciente_id' => $cita->paciente_id,
+            'medico_id'   => $cita->medico_id,
+            'fecha_hora'  => $cita->fecha_hora?->toDateTimeString(),
+        ]
+    );
 
     if ($nuevoEstado === 'atendida' && $estadoAnterior !== 'atendida') {
         $this->cobrarServicioDeCita($cita);
@@ -88,8 +119,7 @@ class CitaController extends Controller
 
     return back()->with('success', 'Estado actualizado: ' . $cita->estado_label);
 }
-
-    protected function cobrarServicioDeCita(Cita $cita): void
+   protected function cobrarServicioDeCita(Cita $cita): void
 {
     $servicio = $cita->servicio;
 
@@ -99,13 +129,12 @@ class CitaController extends Controller
 
     $cuenta = $cita->paciente->obtenerCuentaAbierta();
 
-    // Evitar duplicados: ya cobrado para esta cita
     $yaCobrado = $cuenta->items()->where('cita_id', $cita->id)->exists();
     if ($yaCobrado) {
         return;
     }
 
-    $cuenta->items()->create([
+    $item = $cuenta->items()->create([
         'servicio_id'     => $servicio->id,
         'cita_id'         => $cita->id,
         'user_id'         => auth()->id(),
@@ -114,21 +143,48 @@ class CitaController extends Controller
         'precio_unitario' => $servicio->precio,
         'notas'           => 'Generado automáticamente al atender la cita #' . $cita->id,
     ]);
+
+    AuditoriaService::registrar(
+        AuditEvent::CITA_COBRO,
+        'citas',
+        "Cobro generado por cita #{$cita->id}: {$servicio->nombre} (\${$servicio->precio})",
+        $cita,
+        [],
+        [],
+        [
+            'cuenta_id'       => $cuenta->id,
+            'item_id'         => $item->id,
+            'servicio_id'     => $servicio->id,
+            'servicio_nombre' => $servicio->nombre,
+            'monto'           => (float) $servicio->precio,
+        ]
+    );
 }
     /**
      * Elimina una cita (solo admin).
      */
     public function destroy(Cita $cita): RedirectResponse
-    {
-        if (!auth()->user()->hasRole('administrador')) {
-            abort(403, 'Solo el administrador puede eliminar citas.');
-        }
+{
+    if (!auth()->user()->hasRole('administrador')) {
+        AuditoriaService::registrar(
+            AuditEvent::ACCESO_DENEGADO,
+            'citas',
+            "Intento no autorizado de eliminar la cita #{$cita->id} ({$cita->paciente?->nombre_completo})",
+            $cita,
+            [],
+            [],
+            ['motivo' => 'usuario sin rol administrador']
+        );
 
-        $cita->delete();
-
-        return redirect()->route('citas.index')
-            ->with('success', 'Cita eliminada correctamente.');
+        abort(403, 'Solo el administrador puede eliminar citas.');
     }
+
+    // El trait Auditable registra el 'deleted' automáticamente
+    $cita->delete();
+
+    return redirect()->route('citas.index')
+        ->with('success', 'Cita eliminada correctamente.');
+}
 
     /**
      * Verifica que el médico solo acceda a sus propias citas.

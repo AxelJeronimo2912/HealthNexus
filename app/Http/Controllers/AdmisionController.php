@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 
 class AdmisionController extends Controller
 {
@@ -129,22 +131,35 @@ class AdmisionController extends Controller
     }
 
     public function asignar(Request $request, Admision $admision): RedirectResponse
-    {
-        $data = $request->validate([
-            'cama_id' => ['required', 'exists:camas,id'],
-            'medico_id' => ['required', 'exists:users,id'],
-        ]);
+{
+    $data = $request->validate([
+        'cama_id'   => ['required', 'exists:camas,id'],
+        'medico_id' => ['required', 'exists:users,id'],
+    ]);
 
-        $admision->update([
-            'cama_id' => $data['cama_id'],
-            'medico_id' => $data['medico_id'],
-            'estado' => 'hospitalizado',
-        ]);
+    $admision->update([
+        'cama_id'   => $data['cama_id'],
+        'medico_id' => $data['medico_id'],
+        'estado'    => 'hospitalizado',
+    ]);
 
-        Cama::find($data['cama_id'])->update(['estado' => 'ocupada']);
+    Cama::find($data['cama_id'])->update(['estado' => 'ocupada']);
 
-        return back()->with('success', 'Paciente hospitalizado correctamente.');
-    }
+    AuditoriaService::registrar(
+        AuditEvent::ASIGNACION_CAMA,
+        'admisiones',
+        "Asignación de cama {$admision->cama->codigo} y médico {$admision->medico->nombre_completo} al folio {$admision->folio}",
+        $admision,
+        [],
+        [
+            'cama_id'   => $admision->cama_id,
+            'medico_id' => $admision->medico_id,
+            'estado'    => $admision->estado,
+        ]
+    );
+
+    return back()->with('success', 'Paciente hospitalizado correctamente.');
+}
 
    
 public function derivar(Request $request, Admision $admision): RedirectResponse|JsonResponse
@@ -161,6 +176,18 @@ public function derivar(Request $request, Admision $admision): RedirectResponse|
         'estado'               => 'derivado',
     ]);
 
+    AuditoriaService::registrar(
+        AuditEvent::DERIVACION,
+        'admisiones',
+        "Derivación del folio {$admision->folio} al hospital {$admision->hospitalDerivado->nombre}",
+        $admision,
+        [],
+        [
+            'hospital_derivado_id' => $admision->hospital_derivado_id,
+            'motivo_derivacion'    => $admision->motivo_derivacion,
+        ]
+    );
+
     if ($request->wantsJson() || $request->ajax()) {
         return response()->json([
             'ok'       => true,
@@ -173,35 +200,49 @@ public function derivar(Request $request, Admision $admision): RedirectResponse|
         ->with('success', 'Paciente derivado. Generando pase de salida...');
 }
 
-    public function paseSalida(Admision $admision)
-    {
-        $admision->load(['paciente', 'medico', 'hospitalDerivado', 'user']);
+  public function paseSalida(Admision $admision)
+{
+    $admision->load(['paciente', 'medico', 'hospitalDerivado', 'user']);
 
-        if ($admision->estado !== 'derivado') {
-            return back()->with('error', 'El paciente debe estar derivado para generar el pase.');
-        }
-
-        $carpeta = storage_path('app/public/pases-salida');
-        if (!file_exists($carpeta)) {
-            mkdir($carpeta, 0755, true);
-        }
-
-        $pdf = Pdf::loadView('admisiones.pdf.pase-salida', compact('admision'));
-        $pdf->setOption('isRemoteEnabled', true);
-        $pdf->setOption('defaultFont', 'DejaVu Sans');
-        $pdf->setOption('isHtml5ParserEnabled', true);
-
-        $output = $pdf->output();
-
-        $nombreArchivo = 'pases-salida/pase-' . $admision->folio . '.pdf';
-        \Storage::disk('public')->put($nombreArchivo, $output);
-        $admision->update(['pase_salida_pdf' => $nombreArchivo]);
-
-        return response($output, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="pase-' . $admision->folio . '.pdf"',
-        ]);
+    if ($admision->estado !== 'derivado') {
+        return back()->with('error', 'El paciente debe estar derivado para generar el pase.');
     }
+
+    $carpeta = storage_path('app/public/pases-salida');
+    if (!file_exists($carpeta)) {
+        mkdir($carpeta, 0755, true);
+    }
+
+    $pdf = Pdf::loadView('admisiones.pdf.pase-salida', compact('admision'));
+    $pdf->setOption('isRemoteEnabled', true);
+    $pdf->setOption('defaultFont', 'DejaVu Sans');
+    $pdf->setOption('isHtml5ParserEnabled', true);
+
+    $output = $pdf->output();
+
+    $nombreArchivo = 'pases-salida/pase-' . $admision->folio . '.pdf';
+    \Storage::disk('public')->put($nombreArchivo, $output);
+    $admision->update(['pase_salida_pdf' => $nombreArchivo]);
+
+    AuditoriaService::registrar(
+        AuditEvent::EXPORTACION,
+        'admisiones',
+        "Generación de pase de salida PDF para el folio {$admision->folio}",
+        $admision,
+        [],
+        [],
+        [
+            'archivo'      => $nombreArchivo,
+            'tamano_bytes' => strlen($output),
+            'tipo'         => 'pase_salida_pdf',
+        ]
+    );
+
+    return response($output, 200, [
+        'Content-Type'        => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="pase-' . $admision->folio . '.pdf"',
+    ]);
+}
 
     public function destroy(Admision $admision): RedirectResponse
     {

@@ -7,6 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 
 class TurnoController extends Controller
 {
@@ -32,7 +34,8 @@ class TurnoController extends Controller
 
         Turno::create($data);
 
-        return redirect()->route('turnos.index')
+        return redirect()
+            ->route('admin.turnos.index')
             ->with('success', 'Turno creado correctamente.');
     }
 
@@ -56,29 +59,38 @@ class TurnoController extends Controller
 
         $turno->update($data);
 
-        return redirect()->route('turnos.index')
+        return redirect()
+            ->route('admin.turnos.index')
             ->with('success', 'Turno actualizado correctamente.');
     }
 
     public function destroy(Turno $turno): RedirectResponse
     {
         if ($turno->users()->count() > 0) {
+            AuditoriaService::registrar(
+                AuditEvent::ACCESO_DENEGADO,
+                'turnos',
+                "Intento de eliminar el turno {$turno->nombre} bloqueado por tener usuarios asignados",
+                $turno
+            );
+
             return back()->with('error', 'No puedes eliminar un turno con usuarios asignados.');
         }
 
-        $turno->delete();
+        $turno->delete(); // el trait registra 'deleted'
 
-        return redirect()->route('turnos.index')
+        return redirect()
+            ->route('admin.turnos.index')
             ->with('success', 'Turno eliminado correctamente.');
     }
 
     private function validar(Request $request, ?int $id = null): array
     {
         return $request->validate([
-            'nombre' => ['required', 'string', 'max:50', Rule::unique('turnos', 'nombre')->ignore($id)],
-            'codigo' => ['required', 'string', 'max:20', Rule::unique('turnos', 'codigo')->ignore($id)],
+            'nombre'      => ['required', 'string', 'max:50', Rule::unique('turnos', 'nombre')->ignore($id)],
+            'codigo'      => ['required', 'string', 'max:20', Rule::unique('turnos', 'codigo')->ignore($id)],
             'hora_inicio' => ['required', 'date_format:H:i'],
-            'hora_fin' => ['required', 'date_format:H:i'],
+            'hora_fin'    => ['required', 'date_format:H:i'],
             'descripcion' => ['nullable', 'string'],
         ], [
             'nombre.unique' => 'Ya existe un turno con ese nombre.',
