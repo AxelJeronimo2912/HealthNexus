@@ -6,10 +6,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\Auditable;
 
 class User extends Authenticatable
 {
-use Notifiable, HasRoles, HasFactory;
+
+use Notifiable, HasRoles, HasFactory, Auditable;
 
     protected $fillable = [
         'name', 'email', 'password',
@@ -25,7 +27,16 @@ use Notifiable, HasRoles, HasFactory;
         'remember_token',
         'pin',
     ];
-
+  public static function moduloAuditoria(): string
+    {
+        return 'pacientes';
+    }
+public function servicios()
+{
+    return $this->belongsToMany(Servicio::class)
+        ->withPivot(['rol_en_servicio', 'fecha_inicio', 'activo'])
+        ->withTimestamps();
+}
     protected function casts(): array
     {
         return [

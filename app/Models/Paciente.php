@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;              
 
 class Paciente extends Model
 {
+        use  Auditable;        
+
     protected $table = 'pacientes';
     protected $fillable = [
         'nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento',
@@ -25,6 +28,11 @@ class Paciente extends Model
     public function getNombreCompletoAttribute()
     {
         return trim("{$this->nombre} {$this->apellido_paterno} {$this->apellido_materno}");
+    }
+
+     public static function moduloAuditoria(): string
+    {
+        return 'pacientes';
     }
 
     public function getEdadAttribute()
@@ -130,4 +138,30 @@ public function getEnSeguimientoAttribute(): bool
     return $triageGrave;
 }
 
+
+public function cuentas()
+{
+    return $this->hasMany(Cuenta::class);
+}
+
+/**
+ * Cuenta actualmente abierta del paciente (o null si no hay).
+ */
+public function cuentaAbierta()
+{
+    return $this->hasOne(Cuenta::class)->where('estado', 'abierta')->latestOfMany();
+}
+
+/**
+ * Devuelve la cuenta abierta o la crea si no existe.
+ */
+public function obtenerCuentaAbierta(): Cuenta
+{
+    return $this->cuentaAbierta
+        ?? Cuenta::create([
+            'paciente_id' => $this->id,
+            'folio'       => Cuenta::generarFolio(),
+            'estado'      => 'abierta',
+        ]);
+}
 }

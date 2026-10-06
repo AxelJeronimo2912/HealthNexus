@@ -41,7 +41,6 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 
-    // 👇 Rutas del PIN (segundo factor para médicos)
     Route::get('login/pin', [PinController::class, 'show'])
         ->name('login.pin');
 

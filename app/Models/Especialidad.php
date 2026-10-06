@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Especialidad extends Model
 {
+        use Auditable;
+
     protected $table = 'especialidades';
 
     protected $fillable = [
@@ -20,6 +23,10 @@ class Especialidad extends Model
 
     // ---------------- Relaciones ----------------
 
+     public static function moduloAuditoria(): string
+    {
+        return 'especialidades';
+    }
     public function medicos()
     {
         return $this->belongsToMany(User::class, 'especialidad_user')

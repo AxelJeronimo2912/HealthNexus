@@ -27,7 +27,10 @@ class RolePermissionSeeder extends Seeder
             'existencias.ver',
             'servicios.ver',
             'especialidades.ver',
-             'enfermeria.ver'
+             'enfermeria.ver',
+              'asistente.ver',
+              'alertas.ver'
+             
             ,
         ]);
 
@@ -46,6 +49,9 @@ class RolePermissionSeeder extends Seeder
             'servicios.ver',
              'admision.ver',
             'especialidades.ver',
+             'asistente.ver',
+             'alertas.ver',
+             'cuentas.ver'
         ]);
 
         // Farmacia: inventario y dispensación
@@ -55,6 +61,8 @@ class RolePermissionSeeder extends Seeder
             'movimientos.ver',
             'prediccion.ver',
             'dispensaciones.ver',
+             'asistente.ver',
+             'alertas.ver'
         ]);
     }
 }

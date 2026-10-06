@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Cita extends Model
 {
+        use Auditable;
+
     protected $table = 'citas';
 
     protected $fillable = [
-        'paciente_id', 'medico_id', 'turno_id', 'signo_vital_id', 'creado_por',
+        'paciente_id', 'medico_id', 'turno_id', 'signo_vital_id', 'creado_por','servicio_id',
         'fecha_hora', 'duracion_minutos', 'estado', 'triage_al_momento',
         'motivo', 'notas','especialidad_id'
     ];
@@ -20,6 +23,11 @@ class Cita extends Model
         'duracion_minutos' => 'integer',
     ];
 
+
+    public static function moduloAuditoria(): string
+{
+    return 'citas';
+}   
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
@@ -67,6 +75,10 @@ class Cita extends Model
         };
     }
 
+    public function servicio()
+{
+    return $this->belongsTo(\App\Models\Servicio::class);
+}
     public function getEstadoColorAttribute(): string
     {
         return match ($this->estado) {
@@ -84,4 +96,6 @@ class Cita extends Model
 {
     return $this->belongsTo(Especialidad::class);
 }
+
+
 }

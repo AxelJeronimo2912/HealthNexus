@@ -6,6 +6,19 @@
     </x-slot>
 
     <div class="py-8 max-w-3xl mx-auto sm:px-6 lg:px-8">
+
+        {{-- 🔴 DEBUG TEMPORAL --}}
+        @if ($errors->any())
+            <div class="mb-4 p-3 bg-red-100 border border-red-400 rounded">
+                <strong>Errores:</strong>
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('servicios.update', $servicio) }}" method="POST"
             class="space-y-6 bg-white p-6 rounded-lg shadow">
             @csrf @method('PUT')

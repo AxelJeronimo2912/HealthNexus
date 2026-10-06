@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreConsultaRequest;
+use App\Http\Requests\UpdateConsultaRequest;
 use App\Models\Cita;
 use App\Models\Consulta;
 use App\Models\Diagnostico;
 use App\Models\Medicamento;
 use App\Models\SignoVital;
 use App\Services\InventarioService;
+use App\Services\CobroService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Services\RecetaValidator;
 
 class ConsultaController extends Controller
 {
@@ -21,7 +25,7 @@ class ConsultaController extends Controller
      ========================================================= */
     public function iniciar(Cita $cita): View|RedirectResponse
     {
-        $user = auth()->user();
+        $user    = auth()->user();
         $esAdmin = $user->hasRole('administrador');
 
         if (!$esAdmin && $cita->medico_id !== $user->id) {
@@ -42,7 +46,7 @@ class ConsultaController extends Controller
         if (!$signo) {
             return redirect()->route('signos-vitales.create', [
                 'paciente_id' => $cita->paciente_id,
-                'cita_id' => $cita->id,
+                'cita_id'     => $cita->id,
             ])->with('warning', 'Antes de iniciar la consulta debes registrar los signos vitales y la somatometría del paciente.');
         }
 
@@ -50,7 +54,7 @@ class ConsultaController extends Controller
         if ($signo->created_at->diffInDays(now()) > $diasMaximos) {
             return redirect()->route('signos-vitales.create', [
                 'paciente_id' => $cita->paciente_id,
-                'cita_id' => $cita->id,
+                'cita_id'     => $cita->id,
             ])->with('warning', "Los signos vitales del paciente tienen más de {$diasMaximos} días. Registra unos nuevos antes de la consulta.");
         }
 
@@ -58,8 +62,8 @@ class ConsultaController extends Controller
             $cita->update(['estado' => 'en_curso']);
         }
 
-        $medicamentos  = Medicamento::where('activo', true)->orderBy('nombre')->get();
-        $diagnosticos  = Diagnostico::where('activo', true)->orderBy('codigo')->get();
+        $medicamentos = Medicamento::where('activo', true)->orderBy('nombre')->get();
+        $diagnosticos = Diagnostico::where('activo', true)->orderBy('codigo')->get();
 
         return view('consultas.create', compact('cita', 'signo', 'medicamentos', 'diagnosticos'));
     }
@@ -67,20 +71,19 @@ class ConsultaController extends Controller
     /* =========================================================
      |  GUARDAR CONSULTA
      ========================================================= */
-       public function store(Request $request, Cita $cita): RedirectResponse
+    public function store(StoreConsultaRequest $request, Cita $cita): RedirectResponse
     {
-        $data = $this->validar($request);
+        $data = $request->validated();
 
-        $data['cita_id']       = $cita->id;
-        $data['paciente_id']   = $cita->paciente_id;
-        $data['medico_id']     = $cita->medico_id;
-        $data['estado']        = $request->boolean('finalizar') ? 'finalizada' : 'borrador';
+        $data['cita_id']     = $cita->id;
+        $data['paciente_id'] = $cita->paciente_id;
+        $data['medico_id']   = $cita->medico_id;
+        $data['estado']      = $request->boolean('finalizar') ? 'finalizada' : 'borrador';
 
         if ($data['estado'] === 'finalizada') {
             $data['finalizada_en'] = now();
         }
 
-        // Validar stock ANTES de crear la consulta
         $this->validarStock($request);
 
         $consulta = Consulta::create($data);
@@ -89,9 +92,14 @@ class ConsultaController extends Controller
 
         $cita->update(['estado' => 'atendida']);
 
+        if ($consulta->estado === 'finalizada') {
+            app(CobroService::class)->cobrarCita($cita);
+        }
+
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta guardada correctamente.');
     }
+
     /* =========================================================
      |  MOSTRAR CONSULTA
      ========================================================= */
@@ -136,18 +144,19 @@ class ConsultaController extends Controller
     /* =========================================================
      |  ACTUALIZAR CONSULTA
      ========================================================= */
-        public function update(Request $request, Consulta $consulta): RedirectResponse
+    public function update(UpdateConsultaRequest $request, Consulta $consulta): RedirectResponse
     {
         $this->autorizarAcceso($consulta);
 
-        $data = $this->validar($request);
+        $estadoAnterior = $consulta->estado;
+
+        $data = $request->validated();
 
         if ($request->boolean('finalizar')) {
             $data['estado']        = 'finalizada';
             $data['finalizada_en'] = now();
         }
 
-        // Validar stock antes de guardar cambios
         $this->validarStock($request, $consulta);
 
         $consulta->update($data);
@@ -156,9 +165,14 @@ class ConsultaController extends Controller
 
         $consulta->cita->update(['estado' => 'atendida']);
 
+        if ($consulta->estado === 'finalizada' && $estadoAnterior !== 'finalizada') {
+            app(CobroService::class)->cobrarCita($consulta->cita);
+        }
+
         return redirect()->route('consultas.show', $consulta)
             ->with('success', 'Consulta actualizada correctamente.');
     }
+
     /* =========================================================
      |  PDF CONSULTA
      ========================================================= */
@@ -183,71 +197,34 @@ class ConsultaController extends Controller
     /* =========================================================
      |  PDF RECETA
      ========================================================= */
-    public function pdfReceta(Consulta $consulta)
-    {
-        $this->autorizarAcceso($consulta);
 
-        $consulta->load(['paciente', 'medico', 'medicamentos', 'diagnosticoPrincipal']);
+public function pdfReceta(Consulta $consulta)
+{
+    $this->autorizarAcceso($consulta);
 
-        $pdf = Pdf::loadView('consultas.pdf.receta', compact('consulta'));
+    $consulta->load(['paciente', 'medico', 'medicamentos', 'diagnosticoPrincipal']);
 
-        return $pdf->stream('receta-' . $consulta->id . '.pdf');
-    }
+    RecetaValidator::validarParaImprimir($consulta); 
 
-    /* =========================================================
-     |  VALIDACIÓN DE DATOS
-     ========================================================= */
-    private function validar(Request $request): array
-    {
-        return $request->validate([
-            'subjetivo'                 => ['nullable', 'string'],
-            'objetivo'                  => ['nullable', 'string'],
-            'analisis'                  => ['nullable', 'string'],
-            'plan'                      => ['nullable', 'string'],
-            'diagnostico_principal_id'  => ['nullable', 'exists:diagnosticos,id'],
-            'diagnostico_secundario_id' => ['nullable', 'exists:diagnosticos,id'],
-            'temperatura'               => ['nullable', 'numeric', 'min:30', 'max:45'],
-            'frecuencia_cardiaca'       => ['nullable', 'integer', 'min:20', 'max:250'],
-            'frecuencia_respiratoria'   => ['nullable', 'integer', 'min:5', 'max:80'],
-            'presion_arterial'          => ['nullable', 'string', 'max:20'],
-            'saturacion_oxigeno'        => ['nullable', 'integer', 'min:0', 'max:100'],
-            'glucosa'                   => ['nullable', 'integer', 'min:0', 'max:1000'],
-            'peso'                      => ['nullable', 'numeric', 'min:0.5', 'max:400'],
-            'talla'                     => ['nullable', 'numeric', 'min:0.3', 'max:2.5'],
-            'perimetro_abdominal'       => ['nullable', 'numeric', 'min:0', 'max:300'],
-            'receta_libre'              => ['nullable', 'string'],
-            'notas'                     => ['nullable', 'string'],
-            'medicamentos'              => ['nullable', 'array'],
-            'medicamentos.*.id'         => ['required_with:medicamentos', 'exists:medicamentos,id'],
-            'medicamentos.*.dosis'      => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.via'        => ['nullable', 'string', 'max:50'],
-            'medicamentos.*.frecuencia' => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.duracion'   => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.indicaciones' => ['nullable', 'string'],
-        ]);
-    }
+    $pdf = Pdf::loadView('consultas.pdf.receta', compact('consulta'));
+
+    return $pdf->stream('receta-' . $consulta->id . '.pdf');
+}
 
     /* =========================================================
-     |  VALIDAR STOCK DISPONIBLE
+     |  VALIDAR STOCK
      ========================================================= */
-    /**
-     * Valida que haya stock suficiente para los medicamentos NUEVOS
-     * (en edición, se excluyen los que ya estaban en la consulta).
-     */
     private function validarStock(Request $request, ?Consulta $consulta = null): void
     {
         $meds = $request->input('medicamentos', []);
         if (empty($meds)) return;
 
-        // IDs ya asociados a la consulta (en edición)
         $anteriores = $consulta
             ? $consulta->medicamentos()->pluck('medicamentos.id')->toArray()
             : [];
 
         foreach ($meds as $m) {
             if (empty($m['id'])) continue;
-
-            // Si ya estaba en la consulta, no hay que volver a validar stock
             if (in_array($m['id'], $anteriores)) continue;
 
             $med = Medicamento::find($m['id']);
@@ -268,7 +245,6 @@ class ConsultaController extends Controller
     {
         $meds = $request->input('medicamentos', []);
 
-        // 1. Construir el array para sync
         $nuevos = [];
         foreach ($meds as $m) {
             if (empty($m['id'])) continue;
@@ -282,12 +258,11 @@ class ConsultaController extends Controller
             ];
         }
 
-        // 2. Obtener los medicamentos que ya tenía la consulta (si es edición)
         $anteriores = $consulta->exists
             ? $consulta->medicamentos()->pluck('medicamentos.id')->toArray()
             : [];
 
-        // 3. Devolver al stock los medicamentos que se quitaron
+        // Devolver al stock los que se quitaron
         foreach ($anteriores as $medId) {
             if (!isset($nuevos[$medId])) {
                 $med = Medicamento::find($medId);
@@ -302,7 +277,7 @@ class ConsultaController extends Controller
             }
         }
 
-        // 4. Descontar del stock los medicamentos NUEVOS
+        // Descontar del stock los nuevos
         foreach (array_keys($nuevos) as $medId) {
             if (!in_array($medId, $anteriores)) {
                 $med = Medicamento::find($medId);
@@ -323,7 +298,6 @@ class ConsultaController extends Controller
             }
         }
 
-        // 5. Guardar la receta
         $consulta->medicamentos()->sync($nuevos);
     }
 

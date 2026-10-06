@@ -3,12 +3,13 @@
         const pacienteSelect = document.getElementById('paciente_id');
         const medicoSelect = document.getElementById('medico_id');
         const especialidadSelect = document.getElementById('especialidad_id');
+        const servicioSelect = document.getElementById('servicio_id');
         const fechaInput = document.getElementById('fecha');
         const horaInput = document.getElementById('hora');
+        const duracionSelect = document.getElementById('duracion_minutos');
         const avisoBloqueo = document.getElementById('aviso-bloqueo');
         const loadingMedicos = document.getElementById('loading-medicos');
 
-        // ============ Detectar médico asignado al paciente ============
         function obtenerMedicoAsignado() {
             if (!pacienteSelect) return {
                 id: null,
@@ -21,79 +22,97 @@
             };
         }
 
+        // ============ Reset del select de médicos ============
+        function resetMedicoSelect(mensaje, disabled = true) {
+            medicoSelect.innerHTML = `<option value="">${mensaje}</option>`;
+            medicoSelect.disabled = disabled;
+        }
+
         // ============ Cargar médicos disponibles ============
         async function cargarMedicos() {
             const pacienteId = pacienteSelect?.value || '';
             const fecha = fechaInput?.value || '';
             const hora = horaInput?.value || '';
+            const duracion = duracionSelect?.value || 30;
             const especialidadId = especialidadSelect?.value || '';
+            const servicioId = servicioSelect?.value || '';
 
-            if (!fecha || !hora) return;
+            if (!fecha || !hora) {
+                resetMedicoSelect('— Selecciona paciente, fecha y hora —');
+                return;
+            }
+
+            if (!especialidadId && !servicioId) {
+                resetMedicoSelect('— Selecciona una especialidad o servicio —');
+                return;
+            }
 
             loadingMedicos?.classList.remove('hidden');
+            medicoSelect.disabled = true;
 
             const params = new URLSearchParams({
                 fecha,
-                hora
+                hora,
+                duracion_minutos: duracion,
             });
             if (pacienteId) params.append('paciente_id', pacienteId);
             if (especialidadId) params.append('especialidad_id', especialidadId);
+            if (servicioId) params.append('servicio_id', servicioId);
 
             try {
-                const res = await fetch(`{{ route('agenda.medicos-disponibles') }}?${params}`);
+                const res = await fetch(`{{ route('agenda.medicos-disponibles') }}?${params}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
                 const medicos = await res.json();
+
+                // Si el backend devuelve { error: true, message: "..." }
+                if (medicos && medicos.error) {
+                    resetMedicoSelect(medicos.message || 'Error al cargar médicos');
+                    return;
+                }
 
                 medicoSelect.innerHTML = '<option value="">— Selecciona un médico —</option>';
 
                 if (!Array.isArray(medicos) || medicos.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.value = '';
-                    opt.textContent = '— Sin médicos disponibles —';
-                    opt.disabled = true;
-                    medicoSelect.appendChild(opt);
-                    medicoSelect.disabled = true;
-                } else {
-                    medicos.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.id;
-
-                        // Etiqueta con aviso si está ocupado
-                        opt.textContent = `${m.nombre} (${m.rol})` + (m.ocupado ? ' — OCUPADO' :
-                            '');
-                        opt.dataset.ocupado = m.ocupado ? '1' : '0';
-
-                        // Deshabilitar si está ocupado
-                        if (m.ocupado) {
-                            opt.disabled = true;
-                        }
-
-                        medicoSelect.appendChild(opt);
-                    });
-
-                    medicoSelect.disabled = false;
+                    resetMedicoSelect('— Sin médicos disponibles —');
+                    return;
                 }
 
-                // Si el paciente tiene médico asignado, autoseleccionarlo
+                medicos.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = `${m.nombre} (${m.rol})` + (m.ocupado ? ' — OCUPADO' : '');
+                    opt.dataset.ocupado = m.ocupado ? '1' : '0';
+                    if (m.ocupado) opt.disabled = true;
+                    medicoSelect.appendChild(opt);
+                });
+
+                medicoSelect.disabled = false;
+
+                // ============ Autoselección de médico asignado ============
                 const asignado = obtenerMedicoAsignado();
                 if (asignado.id) {
-                    // Buscar la opción que corresponde al médico asignado
                     const opcionAsignada = Array.from(medicoSelect.options)
-                        .find(o => o.value == asignado.id);
+                        .find(o => String(o.value) === String(asignado.id));
 
                     if (opcionAsignada && !opcionAsignada.disabled) {
                         medicoSelect.value = asignado.id;
-                        avisoBloqueo?.classList.remove('hidden');
-                    } else {
-                        // El médico asignado no está disponible → mostrar aviso
-                        avisoBloqueo?.classList.remove('hidden');
                     }
+                    avisoBloqueo?.classList.remove('hidden');
                 } else {
                     avisoBloqueo?.classList.add('hidden');
                 }
             } catch (e) {
                 console.error('Error al cargar médicos:', e);
-                medicoSelect.innerHTML = '<option value="">Error al cargar médicos</option>';
-                medicoSelect.disabled = true;
+                resetMedicoSelect('— Error al cargar médicos —');
             } finally {
                 loadingMedicos?.classList.add('hidden');
             }
@@ -103,25 +122,29 @@
         pacienteSelect?.addEventListener('change', cargarMedicos);
         fechaInput?.addEventListener('change', cargarMedicos);
         horaInput?.addEventListener('change', cargarMedicos);
+        duracionSelect?.addEventListener('change', cargarMedicos);
         especialidadSelect?.addEventListener('change', cargarMedicos);
+        servicioSelect?.addEventListener('change', cargarMedicos);
 
-        // Cargar al inicio si hay valores
-        if (pacienteSelect?.value && fechaInput?.value && horaInput?.value) {
-            cargarMedicos();
-        }
-
-        // ============ Mostrar aviso de bloqueo al cambiar paciente ============
+        // ============ Aviso de bloqueo al cambiar paciente ============
         pacienteSelect?.addEventListener('change', function() {
             const asignado = obtenerMedicoAsignado();
             if (asignado.id) {
                 avisoBloqueo?.classList.remove('hidden');
-                if (asignado.nombre) {
-                    const aviso = avisoBloqueo?.querySelector('.aviso-nombre');
-                    if (aviso) aviso.textContent = asignado.nombre;
+                const aviso = avisoBloqueo?.querySelector('.aviso-nombre');
+                if (aviso && asignado.nombre) {
+                    aviso.textContent = asignado.nombre;
                 }
             } else {
                 avisoBloqueo?.classList.add('hidden');
             }
         });
+
+        // ============ Carga inicial (si viene con old()) ============
+        if (fechaInput?.value && horaInput?.value) {
+            cargarMedicos();
+        } else {
+            resetMedicoSelect('— Selecciona paciente, fecha y hora —');
+        }
     });
 </script>

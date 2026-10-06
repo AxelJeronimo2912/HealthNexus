@@ -1,10 +1,30 @@
 @php
     $user = auth()->user();
     $rol = $user->getRoleNames()->first();
+    $rolLower = strtolower(trim($rol ?? ''));
 
     $linkBase =
         'group/link flex items-center px-3 py-2.5 rounded-xl hover:bg-[#7C3AED]/20 text-slate-300 hover:text-white transition-colors duration-150 min-w-[240px]';
     $linkActivo = 'bg-[#7C3AED]/30 text-white font-medium border-l-4 border-[#A78BFA]';
+
+    if (str_starts_with($rolLower, 'admin')) {
+        $dashboardRoute = route('admin.dashboard');
+    } elseif (str_starts_with($rolLower, 'medic') || $rolLower === 'm') {
+        $dashboardRoute = route('medico.dashboard');
+    } elseif (str_starts_with($rolLower, 'enferm')) {
+        $dashboardRoute = route('enfermeria.dashboard');
+    } elseif (str_starts_with($rolLower, 'farmac')) {
+        $dashboardRoute = route('farmacia.dashboard');
+    } else {
+        $dashboardRoute = route('dashboard');
+    }
+
+    $dashboardActivo =
+        request()->routeIs('admin.dashboard') ||
+        request()->routeIs('medico.dashboard') ||
+        request()->routeIs('enfermeria.dashboard') ||
+        request()->routeIs('farmacia.dashboard') ||
+        request()->routeIs('dashboard');
 @endphp
 
 <!-- SIDEBAR DESPLEGABLE CON HOVER -->
@@ -14,7 +34,7 @@
 
     <!-- HEADER / LOGO -->
     <div class="flex items-center justify-between h-16 px-4 border-b border-slate-800/60 min-w-[256px]">
-        <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
+        <a href="{{ $dashboardRoute }}" class="flex items-center space-x-3">
             <div
                 class="w-9 h-9 min-w-[36px] rounded-xl bg-[#7C3AED]/20 border border-[#A78BFA]/30 flex items-center justify-center text-[#A78BFA]">
                 <x-heroicon-s-heart class="w-5 h-5" />
@@ -56,8 +76,7 @@
             Panel
         </p>
 
-        <a href="{{ route('dashboard') }}"
-            class="{{ $linkBase }} {{ request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') ? $linkActivo : '' }}">
+        <a href="{{ $dashboardRoute }}" class="{{ $linkBase }} {{ $dashboardActivo ? $linkActivo : '' }}">
             <x-heroicon-o-home class="w-5 h-5 shrink-0 text-[#A78BFA]" />
             <span
                 class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
@@ -68,7 +87,7 @@
 
         {{-- GESTION HOSPITALARIA --}}
         @canany(['pacientes.ver', 'admision.ver', 'servicios.ver', 'especialidades.ver', 'citas.ver', 'turnos.ver',
-            'camas.ver'])
+            'camas.ver', 'cuentas.ver'])
 
             <p
                 class="px-3 pt-4 pb-1 text-[10px] uppercase text-[#A78BFA]/70 tracking-wider font-semibold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
@@ -77,7 +96,7 @@
 
             @can('pacientes.ver')
                 <a href="{{ route('pacientes.index') }}"
-                    class="{{ $linkBase }} {{ request()->routeIs('admin.pacientes.*') ? $linkActivo : '' }}">
+                    class="{{ $linkBase }} {{ request()->routeIs('pacientes.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-user-group class="w-5 h-5 shrink-0" />
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
@@ -89,8 +108,11 @@
             @can('admision.ver')
                 <a href="{{ route('admisiones.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('admisiones.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-clipboard-document-check class="w-5 h-5" />
-                    <span class="ml-2">Admisión</span>
+                    <x-heroicon-o-clipboard-document-check class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Admisión
+                    </span>
                 </a>
             @endcan
 
@@ -108,8 +130,11 @@
             @can('especialidades.ver')
                 <a href="{{ route('especialidades.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('especialidades.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-academic-cap class="w-5 h-5" />
-                    <span class="ml-2">Especialidades</span>
+                    <x-heroicon-o-academic-cap class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Especialidades
+                    </span>
                 </a>
             @endcan
 
@@ -142,6 +167,16 @@
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Camas
+                    </span>
+                </a>
+            @endcan
+            @can('cuentas.ver')
+                <a href="{{ route('cuentas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('cuentas.*') ? $linkActivo : '' }}">
+                    <x-heroicon-o-banknotes class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Cuentas por cobrar
                     </span>
                 </a>
             @endcan
@@ -209,14 +244,20 @@
             @can('enfermeria.ver')
                 <a href="{{ route('enfermeria.notas.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('enfermeria.notas.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-heart class="w-5 h-5" />
-                    <span class="ml-2">Notas de Enfermería</span>
+                    <x-heroicon-o-heart class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Notas de Enfermería
+                    </span>
                 </a>
 
                 <a href="{{ route('enfermeria.administraciones.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('enfermeria.administraciones.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-beaker class="w-5 h-5" />
-                    <span class="ml-2">Administrar Medicamentos</span>
+                    <x-heroicon-o-beaker class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Administrar Medicamentos
+                    </span>
                 </a>
             @endcan
 
@@ -300,8 +341,11 @@
             @can('prediccion.ver')
                 <a href="{{ route('prediccion.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('prediccion.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-cpu-chip class="w-5 h-5" />
-                    <span class="ml-2">Predicción IA</span>
+                    <x-heroicon-o-cpu-chip class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Predicción IA
+                    </span>
                 </a>
             @endcan
 
@@ -341,23 +385,28 @@
             @can('dispositivos.ver')
                 <a href="{{ route('dispositivos.index') }}"
                     class="{{ $linkBase }} {{ request()->routeIs('dispositivos.*') ? $linkActivo : '' }}">
-                    <x-heroicon-o-device-phone-mobile class="w-5 h-5" />
-                    <span class="ml-2">Dispositivos</span>
+                    <x-heroicon-o-device-phone-mobile class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Dispositivos
+                    </span>
                 </a>
             @endcan
 
             @can('auditoria.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('auditoria.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('auditoria.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-clipboard-document-list class="w-5 h-5 shrink-0" />
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                        Auditoria
+                        Auditoría
                     </span>
                 </a>
             @endcan
 
             @can('asistente.ver')
-                <a href="#" class="{{ $linkBase }}">
+                <a href="{{ route('asistente.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('asistente.*') ? $linkActivo : '' }}">
                     <x-heroicon-o-sparkles class="w-5 h-5 shrink-0" />
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
@@ -367,12 +416,16 @@
             @endcan
 
             @can('alertas.ver')
-                <a href="#" class="{{ $linkBase }}">
-                    <x-heroicon-o-bell-alert class="w-5 h-5 shrink-0 text-[#FBBF24]" />
+                <a href="{{ route('alertas.index') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('alertas.*') ? $linkActivo : '' }}"
+                    x-data="{ alertas: 0 }" x-init="fetch('{{ route('alertas.contar') }}').then(r => r.json()).then(d => alertas = d.total)">
+                    <x-heroicon-o-bell-alert class="w-5 h-5 shrink-0" />
                     <span
                         class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                         Alertas Inteligentes
                     </span>
+                    <span x-show="alertas > 0" x-text="alertas"
+                        class="ml-auto px-2 py-0.5 bg-red-500 text-white rounded-full text-xs font-bold"></span>
                 </a>
             @endcan
 

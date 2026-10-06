@@ -11,13 +11,20 @@
                     Nueva Cita
                 </a>
             @endcan
+
+            <button type="button" onclick="abrirModalHistorial()"
+                class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-sm transition-all">
+                <x-heroicon-o-clock class="w-4 h-4 mr-1.5 stroke-2" />
+                Historial
+            </button>
         </div>
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
 
         @if (session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
+            <div
+                class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
                 {{ session('success') }}
             </div>
         @endif
@@ -38,7 +45,8 @@
                         class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">Hoy</a>
                     <span class="text-slate-300 text-xs">•</span>
                     <a href="{{ route('agenda.index', ['fecha' => $fecha->format('Y-m-d')]) }}"
-                        class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">Ver semana</a>
+                        class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">Ver
+                        semana</a>
                 </div>
             </div>
 
@@ -77,15 +85,24 @@
             <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-slate-50/70">
                     <tr>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Hora</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Paciente</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Triage</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Hora</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Paciente</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Triage</th>
                         @if (auth()->user()->hasRole('administrador'))
-                            <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Médico</th>
+                            <th
+                                class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                Médico</th>
                         @endif
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Duración</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
-                        <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Duración</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Estado</th>
+                        <th
+                            class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-100">
@@ -123,7 +140,8 @@
                             @endif
                             <td class="px-5 py-4 text-sm text-slate-500">{{ $cita->duracion_minutos }} min</td>
                             <td class="px-5 py-4 text-sm">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm {{ $cita->estado_color }}">
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm {{ $cita->estado_color }}">
                                     {{ $cita->estado_label }}
                                 </span>
                             </td>
@@ -146,4 +164,52 @@
             </table>
         </div>
     </div>
+
+    {{-- Contenedor del modal de historial (se carga por AJAX) --}}
+    <div id="modal-historial"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden">
+            <div id="modal-historial-content">
+                <div class="p-10 text-center text-slate-400">Cargando historial...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalHistorial() {
+            const modal = document.getElementById('modal-historial');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            fetch('{{ route('citas.historial') }}', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById('modal-historial-content').innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById('modal-historial-content').innerHTML =
+                        '<div class="p-6 text-rose-600">Error al cargar el historial.</div>';
+                });
+        }
+
+        function cerrarModalHistorial() {
+            const modal = document.getElementById('modal-historial');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Cerrar al hacer clic fuera del modal
+        document.getElementById('modal-historial').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModalHistorial();
+        });
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModalHistorial();
+        });
+    </script>
 </x-app-layout>

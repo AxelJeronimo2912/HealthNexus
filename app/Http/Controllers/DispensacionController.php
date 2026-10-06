@@ -170,4 +170,29 @@ class DispensacionController extends Controller
             return back()->with('error', 'Error al revertir: ' . $e->getMessage());
         }
     }
+
+    /**
+ * Historial de dispensaciones (HTML para el modal).
+ */
+public function historial(Request $request)
+{
+    $busqueda = $request->input('buscar');
+
+    $query = Consulta::with(['paciente', 'medico', 'dispensadaPor'])
+        ->where('dispensada', true)
+        ->orderByDesc('dispensada_en');
+
+    if ($busqueda) {
+        $query->whereHas('paciente', function ($q) use ($busqueda) {
+            $q->where('nombre', 'like', "%{$busqueda}%")
+              ->orWhere('apellido_paterno', 'like', "%{$busqueda}%")
+              ->orWhere('apellido_materno', 'like', "%{$busqueda}%")
+              ->orWhere('curp', 'like', "%{$busqueda}%");
+        });
+    }
+
+    $historial = $query->limit(50)->get();
+
+    return view('dispensaciones.partials.historial-modal', compact('historial', 'busqueda'));
+}
 }

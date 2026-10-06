@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 
 class ServicioController extends Controller
 {
@@ -30,9 +32,9 @@ class ServicioController extends Controller
 
         // Estadísticas
         $stats = [
-            'total' => Servicio::count(),
+            'total'   => Servicio::count(),
             'activos' => Servicio::where('activo', true)->count(),
-            'tipos' => Servicio::distinct('tipo')->count('tipo'),
+            'tipos'   => Servicio::distinct('tipo')->count('tipo'),
         ];
 
         return view('servicios.index', compact('servicios', 'busqueda', 'tipo', 'stats'));
@@ -45,10 +47,7 @@ class ServicioController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validar($request);
-
-        $data['abierto_24h'] = $request->boolean('abierto_24h');
-        $data['activo'] = $request->boolean('activo');
+        $data = $this->prepararDatos($this->validar($request), $request);
 
         Servicio::create($data);
 
@@ -70,10 +69,7 @@ class ServicioController extends Controller
 
     public function update(Request $request, Servicio $servicio): RedirectResponse
     {
-        $data = $this->validar($request, $servicio->id);
-
-        $data['abierto_24h'] = $request->boolean('abierto_24h');
-        $data['activo'] = $request->boolean('activo');
+        $data = $this->prepararDatos($this->validar($request, $servicio->id), $request);
 
         $servicio->update($data);
 
@@ -84,14 +80,28 @@ class ServicioController extends Controller
     public function destroy(Servicio $servicio): RedirectResponse
     {
         if ($servicio->users()->count() > 0) {
+            AuditoriaService::registrar(
+                AuditEvent::ACCESO_DENEGADO,
+                'servicios',
+                "Intento de eliminar servicio {$servicio->nombre} bloqueado por tener personal asignado",
+                $servicio
+            );
+
             return back()->with('error', 'No puedes eliminar un servicio con personal asignado.');
         }
 
         if ($servicio->camas()->count() > 0) {
+            AuditoriaService::registrar(
+                AuditEvent::ACCESO_DENEGADO,
+                'servicios',
+                "Intento de eliminar servicio {$servicio->nombre} bloqueado por tener camas asignadas",
+                $servicio
+            );
+
             return back()->with('error', 'No puedes eliminar un servicio con camas asignadas.');
         }
 
-        $servicio->delete();
+        $servicio->delete(); 
 
         return redirect()->route('servicios.index')
             ->with('success', 'Servicio eliminado correctamente.');
@@ -120,12 +130,11 @@ class ServicioController extends Controller
     public function asignarPersonal(Request $request, Servicio $servicio): RedirectResponse
     {
         $data = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id'         => ['required', 'exists:users,id'],
             'rol_en_servicio' => ['nullable', 'string', 'max:50'],
-            'fecha_inicio' => ['nullable', 'date'],
+            'fecha_inicio'    => ['nullable', 'date'],
         ]);
 
-        // Evitar duplicado activo
         $existe = $servicio->users()
             ->wherePivot('user_id', $data['user_id'])
             ->wherePivot('activo', true)
@@ -137,9 +146,27 @@ class ServicioController extends Controller
 
         $servicio->users()->attach($data['user_id'], [
             'rol_en_servicio' => $data['rol_en_servicio'] ?? null,
-            'fecha_inicio' => $data['fecha_inicio'] ?? now(),
-            'activo' => true,
+            'fecha_inicio'    => $data['fecha_inicio'] ?? now(),
+            'activo'          => true,
         ]);
+
+        $userAsignado = \App\Models\User::find($data['user_id']);
+
+        AuditoriaService::registrar(
+            AuditEvent::UPDATED,
+            'servicios',
+            "Asignación de personal al servicio {$servicio->nombre}: {$userAsignado?->nombre_completo}",
+            $servicio,
+            [],
+            [],
+            [
+                'accion'          => 'asignar_personal',
+                'user_id'         => $data['user_id'],
+                'user_nombre'     => $userAsignado?->nombre_completo,
+                'rol_en_servicio' => $data['rol_en_servicio'] ?? null,
+                'fecha_inicio'    => $data['fecha_inicio'] ?? now()->toDateString(),
+            ]
+        );
 
         return back()->with('success', 'Personal asignado correctamente.');
     }
@@ -149,35 +176,91 @@ class ServicioController extends Controller
      */
     public function quitarPersonal(Servicio $servicio, $pivotId): RedirectResponse
     {
+        // Recuperar datos del pivote antes de borrar, para poder auditar
+        $pivot = $servicio->users()->newPivotStatement()
+            ->where('id', $pivotId)
+            ->where('servicio_id', $servicio->id)
+            ->first();
+
+        $userAfectado = $pivot ? \App\Models\User::find($pivot->user_id) : null;
+
         $servicio->users()->newPivotStatement()
             ->where('id', $pivotId)
             ->where('servicio_id', $servicio->id)
             ->delete();
+
+        AuditoriaService::registrar(
+            AuditEvent::UPDATED,
+            'servicios',
+            "Remoción de personal del servicio {$servicio->nombre}: {$userAfectado?->nombre_completo}",
+            $servicio,
+            [],
+            [],
+            [
+                'accion'          => 'quitar_personal',
+                'pivot_id'        => $pivotId,
+                'user_id'         => $pivot?->user_id,
+                'user_nombre'     => $userAfectado?->nombre_completo,
+                'rol_en_servicio' => $pivot?->rol_en_servicio,
+            ]
+        );
 
         return back()->with('success', 'Personal removido del servicio.');
     }
 
     /**
      * Reglas de validación.
+     *
+     * Nota: aceptamos H:i y H:i:s porque los <input type="time"> modernos
+     * envían "HH:MM:SS". La normalización a "H:i" se hace en prepararDatos().
      */
     private function validar(Request $request, ?int $id = null): array
     {
         return $request->validate([
-            'codigo' => ['required', 'string', 'max:20', Rule::unique('servicios', 'codigo')->ignore($id)],
-            'nombre' => ['required', 'string', 'max:150'],
-            'tipo' => ['required', 'in:consulta_externa,urgencias,hospitalizacion,quirofano,farmacia,enfermeria,laboratorio,imagenologia,otro'],
-            'ubicacion' => ['nullable', 'string', 'max:200'],
-            'piso' => ['nullable', 'string', 'max:50'],
-            'ala' => ['nullable', 'string', 'max:50'],
-            'hora_apertura' => ['nullable', 'date_format:H:i'],
-            'hora_cierre' => ['nullable', 'date_format:H:i'],
-            'capacidad' => ['nullable', 'integer', 'min:0'],
+            'codigo'               => ['required', 'string', 'max:20', Rule::unique('servicios', 'codigo')->ignore($id)],
+            'nombre'               => ['required', 'string', 'max:150'],
+            'tipo'                 => ['required', 'in:consulta_externa,urgencias,hospitalizacion,quirofano,farmacia,enfermeria,laboratorio,imagenologia,otro'],
+            'ubicacion'            => ['nullable', 'string', 'max:200'],
+            'piso'                 => ['nullable', 'string', 'max:50'],
+            'ala'                  => ['nullable', 'string', 'max:50'],
+            'hora_apertura'        => ['nullable', 'date_format:H:i,H:i:s'],
+            'hora_cierre'          => ['nullable', 'date_format:H:i,H:i:s'],
+            'capacidad'            => ['nullable', 'integer', 'min:0'],
+            'tiene_costo'          => ['nullable', 'boolean'],
+            'precio'               => ['nullable', 'numeric', 'min:0'],
+            'precio_descripcion'   => ['nullable', 'string', 'max:100'],
             'extension_telefonica' => ['nullable', 'string', 'max:20'],
-            'descripcion' => ['nullable', 'string'],
-            'notas' => ['nullable', 'string'],
+            'descripcion'          => ['nullable', 'string'],
+            'notas'                => ['nullable', 'string'],
         ], [
             'codigo.unique' => 'Ya existe un servicio con ese código.',
             'tipo.required' => 'El tipo de servicio es obligatorio.',
         ]);
+    }
+
+    /**
+     * Normaliza y completa los datos antes de guardar.
+     */
+    private function prepararDatos(array $data, Request $request): array
+    {
+        $data['abierto_24h'] = $request->boolean('abierto_24h');
+        $data['activo']      = $request->boolean('activo');
+
+        // Normalizar horas a "H:i" (ej. "08:00:00" -> "08:00")
+        foreach (['hora_apertura', 'hora_cierre'] as $campo) {
+            if (!empty($data[$campo])) {
+                $data[$campo] = substr($data[$campo], 0, 5);
+            }
+        }
+
+        // Si no tiene costo, forzar precio 0 y limpiar descripción
+        if (! $request->boolean('tiene_costo')) {
+            $data['precio'] = 0;
+            $data['precio_descripcion'] = null;
+        } else {
+            $data['precio'] = $data['precio'] ?? 0;
+        }
+
+        return $data;
     }
 }
