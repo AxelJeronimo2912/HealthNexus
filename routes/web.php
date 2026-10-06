@@ -250,6 +250,7 @@ Route::middleware(['auth', 'permission:agenda.ver'])
         Route::get('/dia', [AgendaController::class, 'dia'])->name('dia');
         Route::get('/crear', [AgendaController::class, 'create'])->name('create');
         Route::post('/', [AgendaController::class, 'store'])->name('store');
+        Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
         Route::get('/api/medicos-disponibles', [AgendaController::class, 'medicosDisponibles'])->name('medicos-disponibles');
         Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
     });
