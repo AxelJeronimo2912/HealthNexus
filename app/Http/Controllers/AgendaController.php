@@ -39,12 +39,6 @@ class AgendaController extends Controller
 
     $citas = $query->orderBy('fecha_hora')->get();
 
-    $citasPorDia = [];
-    for ($d = $inicioSemana->copy(); $d->lte($finSemana); $d->addDay()) {
-        $key = $d->format('Y-m-d');
-        $citasPorDia[$key] = $citas->filter(fn($c) => $c->fecha_hora->format('Y-m-d') === $key);
-    }
-
     $stats = [
         'total_semana' => $citas->count(),
         'programadas' => $citas->where('estado', 'programada')->count(),
@@ -85,11 +79,87 @@ class AgendaController extends Controller
         ->orderBy('nombre')
         ->get();
 
+    $servicios = Servicio::where('activo', true)
+        ->where('precio', '>', 0)
+        ->orderBy('nombre')
+        ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
+
+    $fechaSeleccionada = $request->input('fecha', $fecha->format('Y-m-d'));
+    $horaSeleccionada = $request->input('hora', '09:00');
+
     return view('agenda.index', compact(
-        'fecha', 'inicioSemana', 'finSemana', 'citasPorDia', 'stats',
-        'pacientes', 'especialidades'
+        'fecha',
+        'stats',
+        'pacientes',
+        'especialidades',
+        'servicios',
+        'fechaSeleccionada',
+        'horaSeleccionada',
     ));
 }
+
+    public function eventos(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'start' => ['required', 'date'],
+            'end' => ['required', 'date', 'after:start'],
+        ]);
+
+        $inicio = Carbon::parse($validated['start']);
+        $fin = Carbon::parse($validated['end']);
+        $user = auth()->user();
+        $esAdmin = $user->hasRole('administrador');
+
+        $query = Cita::with(['paciente', 'medico', 'especialidad'])
+            ->where('fecha_hora', '>=', $inicio)
+            ->where('fecha_hora', '<', $fin);
+
+        if ($this->esMedico($user) && ! $esAdmin) {
+            $query->where('medico_id', $user->id);
+        }
+
+        $coloresTriage = [
+            'rojo' => '#f43f5e',
+            'naranja' => '#f59e0b',
+            'amarillo' => '#facc15',
+            'verde' => '#10b981',
+            'azul' => '#0ea5e9',
+        ];
+
+        $eventos = $query->orderBy('fecha_hora')->get()->map(function (Cita $cita) use ($coloresTriage) {
+            $paciente = $cita->paciente;
+            $iniciales = mb_substr($paciente?->nombre_completo ?? 'P', 0, 2);
+            $cancelada = $cita->estado === 'cancelada';
+            $color = $cancelada ? '#cbd5e1' : ($coloresTriage[$cita->triage_al_momento] ?? '#94a3b8');
+
+            return [
+                'id' => $cita->id,
+                'title' => ($paciente?->nombre_completo ?? 'Paciente')
+                    . ' · Dr. ' . ($cita->medico?->nombre_completo ?? '—'),
+                'start' => $cita->fecha_hora->toIso8601String(),
+                'end' => $cita->fecha_hora->copy()->addMinutes($cita->duracion_minutos ?: 30)->toIso8601String(),
+                'color' => $color,
+                'textColor' => $cancelada
+                    ? '#64748b'
+                    : ($cita->triage_al_momento === 'amarillo' ? '#422006' : '#ffffff'),
+                'extendedProps' => [
+                    'fecha' => $cita->fecha_hora->locale('es')->translatedFormat('l d \\d\\e F, Y'),
+                    'hora' => $cita->fecha_hora->format('H:i'),
+                    'paciente' => $paciente?->nombre_completo ?? '—',
+                    'paciente_id' => $paciente?->id ?? 'N/A',
+                    'medico' => $cita->medico?->nombre_completo ?? '—',
+                    'especialidad' => $cita->especialidad?->nombre ?? '—',
+                    'estado' => $cita->estado_label,
+                    'motivo' => $cita->motivo ?? 'Sin motivo especificado',
+                    'triage' => strtoupper($cita->triage_al_momento ?? 'Sin triage'),
+                    'iniciales' => strtoupper($iniciales),
+                ],
+            ];
+        });
+
+        return response()->json($eventos);
+    }
+
     public function dia(Request $request): View
     {
         $fecha = $request->filled('fecha')
@@ -164,9 +234,9 @@ class AgendaController extends Controller
         ->get();
 
     $servicios = Servicio::where('activo', true)
-    ->where('precio', '>', 0)     
-    ->orderBy('nombre')
-    ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
+        ->where('precio', '>', 0)
+        ->orderBy('nombre')
+        ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
 
     return view('agenda.create', [
         'pacientes'         => $pacientes,
@@ -213,7 +283,8 @@ class AgendaController extends Controller
             ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
             ->where(function ($q) use ($fechaHora, $duracion) {
                 $fin = $fechaHora->copy()->addMinutes($duracion);
-                $q->whereBetween('fecha_hora', [$fechaHora, $fin])
+                $q->where('fecha_hora', '>=', $fechaHora)
+                  ->where('fecha_hora', '<', $fin)
                   ->orWhere(function ($sub) use ($fechaHora) {
                       $sub->where('fecha_hora', '<', $fechaHora)
                           ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$fechaHora]);
@@ -311,6 +382,7 @@ class AgendaController extends Controller
         $request->validate([
             'fecha'           => ['required', 'date'],
             'hora'            => ['required', 'date_format:H:i'],
+            'duracion_minutos' => ['nullable', 'integer', 'min:15', 'max:180'],
             'paciente_id'     => ['nullable', 'exists:pacientes,id'],
             'especialidad_id' => ['nullable', 'exists:especialidades,id'],
             'servicio_id'     => ['nullable', 'exists:servicios,id'],   // ← nuevo
@@ -329,7 +401,8 @@ class AgendaController extends Controller
         $esHoy = $fecha->isToday();
 
         $inicio = Carbon::parse("{$fecha->toDateString()} {$hora}");
-        $fin    = $inicio->copy()->addMinutes(30);
+        $duracion = (int) $request->input('duracion_minutos', 30);
+        $fin = $inicio->copy()->addMinutes($duracion);
 
         // 1. Query base: candidatos con rol médico
         $candidatosQuery = User::query()
@@ -377,7 +450,8 @@ class AgendaController extends Controller
             $ocupado = Cita::where('medico_id', $m->id)
                 ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
                 ->where(function ($q) use ($inicio, $fin) {
-                    $q->whereBetween('fecha_hora', [$inicio, $fin])
+                    $q->where('fecha_hora', '>=', $inicio)
+                      ->where('fecha_hora', '<', $fin)
                       ->orWhere(function ($sub) use ($inicio) {
                           $sub->where('fecha_hora', '<', $inicio)
                               ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$inicio]);
