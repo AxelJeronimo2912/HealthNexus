@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamp('cancelado_en')->nullable();
             $table->foreignId('cancelado_por')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->timestamp('pagado_en');
+            $table->timestamp('pagado_en')->useCurrent();
             $table->text('notas')->nullable();
             $table->timestamps();
 
