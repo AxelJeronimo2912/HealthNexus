@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
+use App\Services\DispositivoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,21 +21,23 @@ class DispositivoController extends Controller
         $esAdmin = $user->hasRole('administrador');
 
         $busqueda = $request->input('buscar');
-        $filtro = $request->input('filtro'); // confiable, pendiente, bloqueado, inactivo
+        $filtro = $request->input('filtro'); // confiable, pendiente, bloqueado
 
         $query = Dispositivo::with(['user', 'aprobadoPor'])
             ->orderByDesc('ultimo_acceso');
 
-        // 🔒 Filtro por rol
         if (!$esAdmin) {
             $query->where('user_id', $user->id);
         }
 
-        // Búsqueda
+        // Búsqueda (incluye búsqueda por SO y navegador)
         if ($busqueda) {
             $query->where(function ($q) use ($busqueda) {
                 $q->where('nombre', 'like', "%{$busqueda}%")
                   ->orWhere('ip_registro', 'like', "%{$busqueda}%")
+                  ->orWhere('ip_ultimo_acceso', 'like', "%{$busqueda}%")
+                  ->orWhere('sistema_operativo', 'like', "%{$busqueda}%")
+                  ->orWhere('navegador', 'like', "%{$busqueda}%")
                   ->orWhereHas('user', function ($sub) use ($busqueda) {
                       $sub->where('nombre', 'like', "%{$busqueda}%")
                           ->orWhere('email', 'like', "%{$busqueda}%");
@@ -60,7 +63,7 @@ class DispositivoController extends Controller
         }
 
         $stats = [
-            'total' => (clone $baseStats)->count(),
+            'total'      => (clone $baseStats)->count(),
             'confiables' => (clone $baseStats)->where('confiable', true)->where('activo', true)->count(),
             'pendientes' => (clone $baseStats)->where('confiable', false)->where('activo', true)->count(),
             'bloqueados' => (clone $baseStats)->where('activo', false)->count(),
@@ -93,10 +96,10 @@ class DispositivoController extends Controller
         }
 
         $dispositivo->update([
-            'confiable' => true,
-            'activo' => true,
+            'confiable'   => true,
+            'activo'      => true,
             'aprobado_en' => now(),
-            'aprobado_por' => auth()->id(),
+            'aprobado_por'=> auth()->id(),
         ]);
 
         return back()->with('success', 'Dispositivo marcado como confiable.');
@@ -111,7 +114,7 @@ class DispositivoController extends Controller
 
         // Un usuario no admin no puede bloquear su dispositivo actual
         if (!$this->esAdmin(auth()->user())) {
-            $huellaActual = \App\Services\DispositivoService::generarHuella(request());
+            $huellaActual = DispositivoService::generarHuella(request());
             if ($dispositivo->huella === $huellaActual) {
                 return back()->with('error', 'No puedes bloquear el dispositivo con el que estás conectado.');
             }
