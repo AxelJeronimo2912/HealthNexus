@@ -50,7 +50,7 @@ class StoreConsultaRequest extends FormRequest
             'notas'        => ['nullable', 'string', 'max:2000'],
 
             'medicamentos'                 => ['nullable', 'array', 'max:20'],
-            'medicamentos.*.id'            => ['required_with:medicamentos', 'exists:medicamentos,id'],
+            'medicamentos.*.id'            => ['nullable', 'exists:medicamentos,id'],
             'medicamentos.*.dosis'         => ['nullable', 'string', 'max:100'],
             'medicamentos.*.via'           => ['nullable', 'string', 'max:50'],
             'medicamentos.*.frecuencia'    => ['nullable', 'string', 'max:100'],
@@ -85,7 +85,7 @@ class StoreConsultaRequest extends FormRequest
     }
 
     /**
-     * 🔴 Reglas de negocio que cruzan campos.
+     * Validaciones personalizadas posteriores a las reglas base.
      */
     public function withValidator(Validator $validator): void
     {
@@ -102,16 +102,26 @@ class StoreConsultaRequest extends FormRequest
                 }
             }
 
-            // ===== Regla 2: No repetir medicamentos =====
-            $ids = collect($this->medicamentos ?? [])->pluck('id')->filter();
+            // ===== Regla 2: No repetir medicamentos (ignorando filas vacías) =====
+            $ids = collect($this->medicamentos ?? [])
+                ->pluck('id')
+                ->filter() // <-- Ignora los IDs vacíos/nulos
+                ->values();
+                
             if ($ids->count() !== $ids->unique()->count()) {
                 $v->errors()->add('medicamentos',
                     'No puedes recetar el mismo medicamento dos veces.');
             }
 
-            // ===== Regla 3: Medicamentos sin dosis cuando se finaliza =====
+            // ===== Regla 3: Medicamentos sin dosis/frecuencia cuando se finaliza =====
             if ($this->boolean('finalizar')) {
                 foreach ($this->medicamentos ?? [] as $i => $m) {
+                    
+                    // Ignorar filas completamente vacías (sin ID de medicamento)
+                    if (empty($m['id'])) {
+                        continue; 
+                    }
+
                     if (empty($m['dosis'])) {
                         $v->errors()->add("medicamentos.$i.dosis",
                             'La dosis es obligatoria cuando finalizas la consulta.');
@@ -127,7 +137,13 @@ class StoreConsultaRequest extends FormRequest
             if ($paciente && $paciente->alergias) {
                 $alergias = strtolower($paciente->alergias);
                 foreach ($this->medicamentos ?? [] as $i => $m) {
-                    $med = Medicamento::find($m['id'] ?? null);
+                    
+                    // Ignorar filas vacías
+                    if (empty($m['id'])) {
+                        continue;
+                    }
+
+                    $med = Medicamento::find($m['id']);
                     if ($med && str_contains($alergias, strtolower($med->nombre))) {
                         $v->errors()->add("medicamentos.$i.id",
                             "El paciente es alérgico a {$med->nombre}.");

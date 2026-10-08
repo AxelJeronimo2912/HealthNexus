@@ -199,15 +199,16 @@
                     Calendario de Citas
                 </span>
             </a>
-
-            <a href="{{ route('agenda.create') }}"
-                class="{{ $linkBase }} {{ request()->routeIs('agenda.create') ? $linkActivo : '' }}">
-                <x-heroicon-o-plus-circle class="w-5 h-5 shrink-0" />
-                <span
-                    class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                    Nueva Cita
-                </span>
-            </a>
+            <!--
+                <a href="{{ route('agenda.create') }}"
+                    class="{{ $linkBase }} {{ request()->routeIs('agenda.create') ? $linkActivo : '' }}">
+                    <x-heroicon-o-plus-circle class="w-5 h-5 shrink-0" />
+                    <span
+                        class="ml-3 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                        Nueva Cita
+                    </span>
+                </a>
+                -->
         @endcan
 
 

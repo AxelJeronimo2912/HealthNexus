@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 use App\Models\Especialidad;
-
+use Illuminate\Http\Request;   
 class UserController extends Controller
 {
     /**
