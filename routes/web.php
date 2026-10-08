@@ -219,8 +219,8 @@ Route::middleware(['auth', 'permission:expediente.ver'])
 Route::middleware(['auth', 'permission:camas.ver'])
     ->group(function () {
         Route::resource('camas', CamaController::class);
-        Route::post('camas/{cama}/estado', [CamaController::class, 'cambiarEstado'])
-            ->name('camas.cambiar-estado');
+        Route::patch('/camas/{cama}/estado', [CamaController::class, 'cambiarEstado'])
+    ->name('camas.cambiarEstado');
     });
 
 /*
@@ -253,8 +253,8 @@ Route::middleware(['auth', 'permission:agenda.ver'])
         Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
         Route::get('/api/medicos-disponibles', [AgendaController::class, 'medicosDisponibles'])->name('medicos-disponibles');
         Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
+        Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Citas

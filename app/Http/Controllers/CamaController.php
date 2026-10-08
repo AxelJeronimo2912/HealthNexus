@@ -18,23 +18,22 @@ class CamaController extends Controller
         $busqueda = $request->input('buscar');
         $filtroEstado = $request->input('estado');
 
-        $camas = Cama::query()
-            ->when($busqueda, function ($q) use ($busqueda) {
-                $q->where(function ($query) use ($busqueda) {
-                    $query->where('codigo', 'like', "%{$busqueda}%")
-                        ->orWhere('habitacion', 'like', "%{$busqueda}%")
-                        ->orWhere('area', 'like', "%{$busqueda}%");
-                });
-            })
-            ->when(
-                $filtroEstado,
-                fn ($q) => $q->where('estado', $filtroEstado)
-            )
-            ->orderBy('area')
-            ->orderBy('piso')
-            ->orderBy('codigo')
-            ->paginate(15)
-            ->withQueryString();
+       $camas = Cama::query()
+    ->when($busqueda, function ($q) use ($busqueda) {
+        $q->where(function ($query) use ($busqueda) {
+            $query->where('codigo', 'like', "%{$busqueda}%")
+                ->orWhere('habitacion', 'like', "%{$busqueda}%")
+                ->orWhere('area', 'like', "%{$busqueda}%");
+        });
+    })
+    ->when(
+        $filtroEstado,
+        fn ($q) => $q->where('estado', $filtroEstado)
+    )
+    ->orderBy('area')
+    ->orderBy('piso')
+    ->orderBy('codigo')
+    ->get();   
 
         // Estadísticas rápidas
         $stats = [

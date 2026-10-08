@@ -13,30 +13,44 @@ use App\Enums\AuditEvent;
 use App\Services\AuditoriaService;
 class EspecialidadController extends Controller
 {
-    public function index(Request $request): View
-    {
-        $busqueda = $request->input('buscar');
-        $grupo = $request->input('grupo');
+   public function index(Request $request)
+{
+    $busqueda = $request->get('buscar', '');
+    $grupo    = $request->get('grupo', '');
 
-        $especialidades = Especialidad::query()
-            ->withCount(['medicos', 'servicios', 'citas', 'consultas'])
-            ->when($busqueda, function ($q) use ($busqueda) {
-                $q->where('nombre', 'like', "%{$busqueda}%")
-                  ->orWhere('codigo', 'like', "%{$busqueda}%");
-            })
-            ->when($grupo, fn($q) => $q->where('grupo', $grupo))
-            ->orderBy('nombre')
-            ->paginate(15)
-            ->withQueryString();
+    $especialidades = Especialidad::query()
+        ->when($busqueda, function ($q) use ($busqueda) {
+            $q->where(function ($qq) use ($busqueda) {
+                $qq->where('nombre', 'like', "%{$busqueda}%")
+                   ->orWhere('codigo', 'like', "%{$busqueda}%");
+            });
+        })
+        ->when($grupo, fn($q) => $q->where('grupo', $grupo))
+        ->withCount(['medicos', 'servicios', 'consultas'])
+        ->with(['medicos', 'servicios'])  // ← cargar relaciones para los modales
+        ->orderBy('nombre')
+        ->paginate(15)
+        ->withQueryString();
 
-        $stats = [
-            'total' => Especialidad::count(),
-            'activas' => Especialidad::where('activo', true)->count(),
-            'grupos' => Especialidad::distinct('grupo')->count('grupo'),
-        ];
+    $stats = [
+        'total'   => Especialidad::count(),
+        'activas' => Especialidad::where('activo', true)->count(),
+        'grupos'  => Especialidad::distinct('grupo')->count('grupo'),
+    ];
 
-        return view('especialidades.index', compact('especialidades', 'busqueda', 'grupo', 'stats'));
-    }
+    // Datos para los modales de médicos / servicios
+    $medicosDisponibles   = \App\Models\User::role('medico')->orderBy('name')->get();
+    $serviciosDisponibles = \App\Models\Servicio::orderBy('nombre')->get();
+
+    return view('especialidades.index', compact(
+        'especialidades',
+        'stats',
+        'busqueda',
+        'grupo',
+        'medicosDisponibles',
+        'serviciosDisponibles'
+    ));
+}
 
     public function create(): View
     {

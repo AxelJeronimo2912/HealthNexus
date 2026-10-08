@@ -1,124 +1,211 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Detalle de Receta Médica</h2>
-            <a href="{{ route('dispensaciones.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-900 transition">← Volver al listado</a>
+        <div class="flex justify-between items-center gap-3">
+            <div class="min-w-0">
+                <h2 class="font-extrabold text-2xl text-slate-800 leading-tight truncate">
+                    Detalle de Receta Médica
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Medicamentos, indicaciones y dispensación</p>
+            </div>
+            <a href="{{ route('dispensaciones.index') }}"
+                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+                Volver
+            </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    @php
+        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $inputCls =
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
+        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+    @endphp
+
+    <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         @if (session('success'))
-            <div class="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm shadow-sm flex items-center justify-between">
+            <div
+                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
                 <span>{{ session('success') }}</span>
             </div>
         @endif
         @if (session('error'))
-            <div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm shadow-sm flex items-center justify-between">
+            <div
+                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
                 <span>{{ session('error') }}</span>
             </div>
         @endif
 
-        {{-- Estado --}}
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 border-l-4 {{ $consulta->dispensada ? 'border-l-green-500' : 'border-l-yellow-500' }}">
-            <div class="flex justify-between items-center">
-                <div>
-                    <p class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Estado de la receta</p>
-                    <p class="text-lg font-bold mt-0.5">
+        {{-- ============ ESTADO ============ --}}
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div class="flex-1">
+                    <p class="{{ $labelCls }}">Estado de la receta</p>
+                    <div class="mt-2">
                         @if ($consulta->dispensada)
-                            <span class="text-green-700 flex items-center gap-1.5">
-                                <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span> Dispensada
+                            <span
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold uppercase tracking-wide">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                Dispensada
                             </span>
                         @else
-                            <span class="text-yellow-700 flex items-center gap-1.5">
-                                <span class="h-2.5 w-2.5 rounded-full bg-yellow-500"></span> Pendiente de dispensar
+                            <span
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold uppercase tracking-wide">
+                                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                                Pendiente de dispensar
                             </span>
                         @endif
-                    </p>
+                    </div>
                     @if ($consulta->dispensada)
-                        <p class="text-xs text-gray-500 mt-1">
-                            Dispensado por <span class="font-medium text-gray-700">{{ $consulta->dispensadaPor?->nombre_completo ?? '—' }}</span> el {{ $consulta->dispensada_en?->format('d/m/Y H:i') }}
+                        <p class="text-[11px] font-medium text-slate-400 mt-2">
+                            Dispensado por
+                            <span
+                                class="font-bold text-slate-600">{{ $consulta->dispensadaPor?->nombre_completo ?? '—' }}</span>
+                            el {{ $consulta->dispensada_en?->format('d/m/Y H:i') }}
                         </p>
                     @endif
                 </div>
-                <div class="text-right text-xs text-gray-500 bg-gray-50 p-3 rounded-md border border-gray-100">
-                    <p class="font-bold text-gray-700">Receta #{{ $consulta->id }}</p>
-                    <p class="mt-0.5">{{ $consulta->created_at->format('d/m/Y H:i') }}</p>
+
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 text-right shrink-0">
+                    <p class="text-xs font-extrabold text-slate-700">Receta #{{ $consulta->id }}</p>
+                    <p class="text-[11px] font-medium text-slate-400 mt-0.5">
+                        {{ $consulta->created_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
         </div>
 
-        {{-- Paciente --}}
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 class="font-semibold text-sm text-gray-800 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">Información del Paciente</h3>
-            <p class="text-base font-bold text-gray-900">{{ $consulta->paciente?->nombre_completo }}</p>
-            <dl class="grid grid-cols-2 gap-4 text-sm mt-3 bg-gray-50 p-3 rounded-md">
-                <div>
-                    <dt class="text-gray-500 text-xs">CURP</dt>
-                    <dd class="font-medium text-gray-800 mt-0.5">{{ $consulta->paciente?->curp ?? '—' }}</dd>
+        {{-- ============ PACIENTE ============ --}}
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+            <div>
+                <p class="{{ $labelCls }}">Paciente</p>
+                <p class="text-2xl font-black text-slate-800 tracking-tight mt-0.5">
+                    {{ $consulta->paciente?->nombre_completo }}
+                </p>
+            </div>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
+                    <dt class="{{ $labelCls }}">CURP</dt>
+                    <dd class="text-xs font-extrabold text-slate-800 mt-1">{{ $consulta->paciente?->curp ?? '—' }}</dd>
                 </div>
-                <div>
-                    <dt class="text-gray-500 text-xs">Edad</dt>
-                    <dd class="font-medium text-gray-800 mt-0.5">{{ $consulta->paciente?->edad ?? '—' }} años</dd>
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
+                    <dt class="{{ $labelCls }}">Edad</dt>
+                    <dd class="text-xs font-extrabold text-slate-800 mt-1">{{ $consulta->paciente?->edad ?? '—' }} años
+                    </dd>
                 </div>
-                <div class="col-span-2">
-                    <dt class="text-gray-500 text-xs">Alergias registradas</dt>
-                    <dd class="text-red-600 font-semibold mt-0.5">{{ $consulta->paciente?->alergias ?? 'Ninguna registrada' }}</dd>
+                <div class="bg-rose-50/60 border border-rose-100 rounded-2xl p-3 sm:col-span-2">
+                    <dt class="{{ $labelCls }}">Alergias registradas</dt>
+                    <dd class="text-xs font-extrabold text-rose-700 mt-1">
+                        {{ $consulta->paciente?->alergias ?? 'Ninguna registrada' }}
+                    </dd>
                 </div>
             </dl>
         </div>
 
-        {{-- Médico --}}
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 class="font-semibold text-sm text-gray-800 uppercase tracking-wider mb-2 pb-2 border-b border-gray-100">Médico Prescriptor</h3>
-            <p class="font-medium text-gray-900">{{ $consulta->medico?->nombre_completo ?? '—' }}</p>
-            @if ($consulta->diagnosticoPrincipal)
-                <p class="text-sm text-gray-600 mt-2 bg-indigo-50/50 p-2.5 rounded border border-indigo-100">
-                    <strong class="text-indigo-900">Diagnóstico Principal (Dx):</strong> {{ $consulta->diagnosticoPrincipal->etiqueta }}
+        {{-- ============ MÉDICO ============ --}}
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <div>
+                <p class="{{ $labelCls }}">Médico prescriptor</p>
+                <p class="text-xs font-extrabold text-slate-800 mt-1">
+                    {{ $consulta->medico?->nombre_completo ?? '—' }}
                 </p>
+            </div>
+
+            @if ($consulta->diagnosticoPrincipal)
+                <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4">
+                    <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Diagnóstico principal (Dx)
+                    </p>
+                    <p class="text-xs font-extrabold text-slate-800 mt-1">
+                        {{ $consulta->diagnosticoPrincipal->etiqueta }}
+                    </p>
+                </div>
             @endif
         </div>
 
-        {{-- Medicamentos --}}
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 class="font-semibold text-sm text-gray-800 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">Medicamentos Recetados</h3>
+        {{-- ============ MEDICAMENTOS ============ --}}
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100">
+                <h3 class="font-extrabold text-slate-800 text-base">Medicamentos recetados</h3>
+                <p class="text-[11px] text-slate-400">
+                    {{ $consulta->medicamentos->count() }} medicamentos en esta receta
+                </p>
+            </div>
 
             @if ($consulta->medicamentos->count())
-                <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                    <table class="min-w-full text-sm divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-slate-50/70 border-b border-slate-100">
                             <tr>
-                                <th class="px-3 py-2.5 text-left font-medium text-gray-500 text-xs uppercase">Medicamento</th>
-                                <th class="px-3 py-2.5 text-left font-medium text-gray-500 text-xs uppercase">Dosis</th>
-                                <th class="px-3 py-2.5 text-left font-medium text-gray-500 text-xs uppercase">Vía</th>
-                                <th class="px-3 py-2.5 text-left font-medium text-gray-500 text-xs uppercase">Frecuencia</th>
-                                <th class="px-3 py-2.5 text-left font-medium text-gray-500 text-xs uppercase">Duración</th>
-                                <th class="px-3 py-2.5 text-right font-medium text-gray-500 text-xs uppercase">Stock Disp.</th>
+                                <th class="{{ $thCls }} text-left">Medicamento</th>
+                                <th class="{{ $thCls }} text-left">Dosis</th>
+                                <th class="{{ $thCls }} text-left">Vía</th>
+                                <th class="{{ $thCls }} text-left">Frecuencia</th>
+                                <th class="{{ $thCls }} text-left">Duración</th>
+                                <th class="{{ $thCls }} text-right">Stock disp.</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
+                        <tbody class="divide-y divide-slate-100">
                             @foreach ($consulta->medicamentos as $m)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-3 py-2.5 font-medium text-gray-900">
-                                        {{ $m->nombre }} {{ $m->concentracion }}
+                                <tr class="hover:bg-indigo-50/30 transition-colors">
+                                    <td class="px-5 py-3.5">
+                                        <p class="text-xs font-bold text-slate-800">
+                                            {{ $m->nombre }}
+                                            @if ($m->concentracion)
+                                                <span class="text-slate-400 font-medium">·
+                                                    {{ $m->concentracion }}</span>
+                                            @endif
+                                        </p>
                                         @if ($m->pivot->indicaciones)
-                                            <div class="text-xs text-gray-500 font-normal mt-0.5">
+                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5">
                                                 {{ $m->pivot->indicaciones }}
-                                            </div>
+                                            </p>
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2.5 text-gray-600">{{ $m->pivot->dosis ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-gray-600">{{ $m->pivot->via ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-gray-600">{{ $m->pivot->frecuencia ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-gray-600">{{ $m->pivot->duracion ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-right">
+                                    <td class="px-5 py-3.5">
+                                        <span
+                                            class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                            {{ $m->pivot->dosis ?? '—' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3.5">
+                                        <span
+                                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            {{ $m->pivot->via ?? '—' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-xs font-medium text-slate-600">
+                                        {{ $m->pivot->frecuencia ?? '—' }}
+                                    </td>
+                                    <td class="px-5 py-3.5 text-xs font-medium text-slate-600">
+                                        {{ $m->pivot->duracion ?? '—' }}
+                                    </td>
+                                    <td class="px-5 py-3.5 text-right">
                                         @php $stock = $m->stock_total_calculado; @endphp
                                         @if ($stock <= 0)
-                                            <span class="inline-block px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold">{{ $stock }}</span>
+                                            <span
+                                                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold">
+                                                {{ $stock }}
+                                            </span>
                                         @elseif ($stock <= $m->stock_minimo)
-                                            <span class="inline-block px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-bold">{{ $stock }}</span>
+                                            <span
+                                                class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold">
+                                                {{ $stock }}
+                                            </span>
                                         @else
-                                            <span class="inline-block px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">{{ $stock }}</span>
+                                            <span
+                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold">
+                                                {{ $stock }}
+                                            </span>
                                         @endif
                                     </td>
                                 </tr>
@@ -127,54 +214,97 @@
                     </table>
                 </div>
             @else
-                <p class="text-sm text-gray-500 italic">No hay medicamentos registrados en esta receta.</p>
+                <div class="px-5 py-12 text-center">
+                    <p class="text-xs font-semibold text-slate-400">No hay medicamentos registrados en esta receta.</p>
+                </div>
             @endif
 
             @if ($consulta->receta_libre)
-                <div class="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <p class="text-xs font-bold text-purple-900 uppercase tracking-wider mb-1">Indicaciones / Receta Libre</p>
-                    <p class="text-sm text-gray-700 whitespace-pre-line">{{ $consulta->receta_libre }}</p>
+                <div class="p-5 border-t border-slate-100">
+                    <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-4">
+                        <p class="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
+                            Indicaciones / Receta libre
+                        </p>
+                        <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line mt-2">
+                            {{ $consulta->receta_libre }}
+                        </p>
+                    </div>
                 </div>
             @endif
         </div>
 
-        {{-- Acciones de Dispensación --}}
+        {{-- ============ DISPENSACIÓN ============ --}}
         @if (!$consulta->dispensada)
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="font-semibold text-sm text-gray-800 uppercase tracking-wider mb-3">Acción de Dispensación</h3>
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Acción de dispensación</h3>
+                        <p class="text-[11px] text-slate-400">Al confirmar, se descontará el inventario automáticamente
+                        </p>
+                    </div>
+                </div>
+
                 <form action="{{ route('dispensaciones.dispensar', $consulta) }}" method="POST"
                     onsubmit="return confirm('¿Confirmar dispensación? Se descontará del inventario de forma automática.')"
-                    class="space-y-4">
+                    class="p-6 space-y-5">
                     @csrf
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 uppercase tracking-wider">Notas de dispensación (opcional)</label>
-                        <textarea name="notas_dispensacion" rows="2" 
-                            class="mt-1 w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-green-500 focus:ring-green-500"
-                            placeholder="Observaciones o comentarios adicionales..."></textarea>
+                        <label class="{{ $labelCls }}">Notas de dispensación (opcional)</label>
+                        <textarea name="notas_dispensacion" rows="2" placeholder="Observaciones o comentarios adicionales..."
+                            class="{{ $inputCls }} resize-none"></textarea>
                     </div>
-                    <button type="submit"
-                        class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-semibold shadow transition gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                        Dispensar receta y descontar stock
-                    </button>
+
+                    <div class="flex justify-end pt-5 border-t border-slate-100">
+                        <button type="submit"
+                            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                            Dispensar receta y descontar stock
+                        </button>
+                    </div>
                 </form>
             </div>
         @else
             @if (auth()->user()?->hasRole('administrador'))
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">Zona Administrativa</p>
-                        <p class="text-xs text-gray-500">¿Necesitas anular esta transacción? Los valores del stock serán devueltos.</p>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-extrabold text-slate-800">Zona administrativa</p>
+                                <p class="text-[11px] font-medium text-slate-400 mt-0.5">
+                                    ¿Necesitas anular esta transacción? Los valores del stock serán devueltos.
+                                </p>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('dispensaciones.revertir', $consulta) }}" method="POST"
+                            onsubmit="return confirm('¿Estás seguro de revertir la dispensación? El stock recuperará sus cantidades anteriores.')">
+                            @csrf
+                            <button type="submit"
+                                class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 border border-rose-100 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
+                                Revertir dispensación
+                            </button>
+                        </form>
                     </div>
-                    <form action="{{ route('dispensaciones.revertir', $consulta) }}" method="POST"
-                        onsubmit="return confirm('¿Estás seguro de revertir la dispensación? El stock recuperará sus cantidades anteriores.')">
-                        @csrf
-                        <button type="submit" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-md text-sm font-medium transition">
-                            Revertir dispensación
-                        </button>
-                    </form>
                 </div>
             @endif
         @endif
+
     </div>
 </x-app-layout>
