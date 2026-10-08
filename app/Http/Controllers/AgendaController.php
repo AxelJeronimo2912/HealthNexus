@@ -39,6 +39,12 @@ class AgendaController extends Controller
 
     $citas = $query->orderBy('fecha_hora')->get();
 
+    $citasPorDia = [];
+    for ($d = $inicioSemana->copy(); $d->lte($finSemana); $d->addDay()) {
+        $key = $d->format('Y-m-d');
+        $citasPorDia[$key] = $citas->filter(fn($c) => $c->fecha_hora->format('Y-m-d') === $key);
+    }
+
     $stats = [
         'total_semana' => $citas->count(),
         'programadas' => $citas->where('estado', 'programada')->count(),
@@ -46,6 +52,7 @@ class AgendaController extends Controller
         'canceladas' => $citas->where('estado', 'cancelada')->count(),
     ];
 
+    // ==================== PACIENTES ====================
     $pacientesQuery = Paciente::whereHas('signosVitales', function ($q) {
             $q->whereIn('id', function ($sub) {
                 $sub->selectRaw('MAX(id)')
@@ -75,91 +82,48 @@ class AgendaController extends Controller
 
     $pacientes = $pacientesQuery->get();
 
+    // ==================== ESPECIALIDADES ====================
     $especialidades = Especialidad::where('activo', true)
         ->orderBy('nombre')
         ->get();
 
+    // ==================== SERVICIOS ====================
     $servicios = Servicio::where('activo', true)
         ->where('precio', '>', 0)
         ->orderBy('nombre')
         ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
 
-    $fechaSeleccionada = $request->input('fecha', $fecha->format('Y-m-d'));
-    $horaSeleccionada = $request->input('hora', '09:00');
+    // ==================== FECHA/HORA SELECCIONADAS (para el modal) ====================
+    $fechaSeleccionada = $request->input('fecha', now()->format('Y-m-d'));
+    $horaSeleccionada  = $request->input('hora', '09:00');
+
+    // ==================== MÉDICOS (solo admin) ====================
+$medicos = $esAdmin
+    ? User::whereHas('roles', function ($q) {
+          $q->whereRaw('LOWER(name) LIKE ?', ['%medic%'])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%doctor%'])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%médic%']);
+      })
+      ->where('activo', true)
+      ->orderBy('name')
+      ->get(['id', 'name', 'apellido_paterno', 'apellido_materno'])
+    : collect();
 
     return view('agenda.index', compact(
         'fecha',
+        'inicioSemana',
+        'finSemana',
+        'citasPorDia',
         'stats',
         'pacientes',
         'especialidades',
-        'servicios',
-        'fechaSeleccionada',
+        'servicios',             
+        'fechaSeleccionada',      
         'horaSeleccionada',
+        'medicos'                 
+    
     ));
 }
-
-    public function eventos(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'start' => ['required', 'date'],
-            'end' => ['required', 'date', 'after:start'],
-        ]);
-
-        $inicio = Carbon::parse($validated['start']);
-        $fin = Carbon::parse($validated['end']);
-        $user = auth()->user();
-        $esAdmin = $user->hasRole('administrador');
-
-        $query = Cita::with(['paciente', 'medico', 'especialidad'])
-            ->where('fecha_hora', '>=', $inicio)
-            ->where('fecha_hora', '<', $fin);
-
-        if ($this->esMedico($user) && ! $esAdmin) {
-            $query->where('medico_id', $user->id);
-        }
-
-        $coloresTriage = [
-            'rojo' => '#f43f5e',
-            'naranja' => '#f59e0b',
-            'amarillo' => '#facc15',
-            'verde' => '#10b981',
-            'azul' => '#0ea5e9',
-        ];
-
-        $eventos = $query->orderBy('fecha_hora')->get()->map(function (Cita $cita) use ($coloresTriage) {
-            $paciente = $cita->paciente;
-            $iniciales = mb_substr($paciente?->nombre_completo ?? 'P', 0, 2);
-            $cancelada = $cita->estado === 'cancelada';
-            $color = $cancelada ? '#cbd5e1' : ($coloresTriage[$cita->triage_al_momento] ?? '#94a3b8');
-
-            return [
-                'id' => $cita->id,
-                'title' => ($paciente?->nombre_completo ?? 'Paciente')
-                    . ' · Dr. ' . ($cita->medico?->nombre_completo ?? '—'),
-                'start' => $cita->fecha_hora->toIso8601String(),
-                'end' => $cita->fecha_hora->copy()->addMinutes($cita->duracion_minutos ?: 30)->toIso8601String(),
-                'color' => $color,
-                'textColor' => $cancelada
-                    ? '#64748b'
-                    : ($cita->triage_al_momento === 'amarillo' ? '#422006' : '#ffffff'),
-                'extendedProps' => [
-                    'fecha' => $cita->fecha_hora->locale('es')->translatedFormat('l d \\d\\e F, Y'),
-                    'hora' => $cita->fecha_hora->format('H:i'),
-                    'paciente' => $paciente?->nombre_completo ?? '—',
-                    'paciente_id' => $paciente?->id ?? 'N/A',
-                    'medico' => $cita->medico?->nombre_completo ?? '—',
-                    'especialidad' => $cita->especialidad?->nombre ?? '—',
-                    'estado' => $cita->estado_label,
-                    'motivo' => $cita->motivo ?? 'Sin motivo especificado',
-                    'triage' => strtoupper($cita->triage_al_momento ?? 'Sin triage'),
-                    'iniciales' => strtoupper($iniciales),
-                ],
-            ];
-        });
-
-        return response()->json($eventos);
-    }
-
     public function dia(Request $request): View
     {
         $fecha = $request->filled('fecha')
@@ -234,9 +198,9 @@ class AgendaController extends Controller
         ->get();
 
     $servicios = Servicio::where('activo', true)
-        ->where('precio', '>', 0)
-        ->orderBy('nombre')
-        ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
+    ->where('precio', '>', 0)     
+    ->orderBy('nombre')
+    ->get(['id', 'nombre', 'codigo', 'tipo', 'precio', 'precio_descripcion']);
 
     return view('agenda.create', [
         'pacientes'         => $pacientes,
@@ -283,8 +247,7 @@ class AgendaController extends Controller
             ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
             ->where(function ($q) use ($fechaHora, $duracion) {
                 $fin = $fechaHora->copy()->addMinutes($duracion);
-                $q->where('fecha_hora', '>=', $fechaHora)
-                  ->where('fecha_hora', '<', $fin)
+                $q->whereBetween('fecha_hora', [$fechaHora, $fin])
                   ->orWhere(function ($sub) use ($fechaHora) {
                       $sub->where('fecha_hora', '<', $fechaHora)
                           ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$fechaHora]);
@@ -382,7 +345,6 @@ class AgendaController extends Controller
         $request->validate([
             'fecha'           => ['required', 'date'],
             'hora'            => ['required', 'date_format:H:i'],
-            'duracion_minutos' => ['nullable', 'integer', 'min:15', 'max:180'],
             'paciente_id'     => ['nullable', 'exists:pacientes,id'],
             'especialidad_id' => ['nullable', 'exists:especialidades,id'],
             'servicio_id'     => ['nullable', 'exists:servicios,id'],   // ← nuevo
@@ -401,8 +363,7 @@ class AgendaController extends Controller
         $esHoy = $fecha->isToday();
 
         $inicio = Carbon::parse("{$fecha->toDateString()} {$hora}");
-        $duracion = (int) $request->input('duracion_minutos', 30);
-        $fin = $inicio->copy()->addMinutes($duracion);
+        $fin    = $inicio->copy()->addMinutes(30);
 
         // 1. Query base: candidatos con rol médico
         $candidatosQuery = User::query()
@@ -450,8 +411,7 @@ class AgendaController extends Controller
             $ocupado = Cita::where('medico_id', $m->id)
                 ->whereIn('estado', ['programada', 'confirmada', 'en_curso'])
                 ->where(function ($q) use ($inicio, $fin) {
-                    $q->where('fecha_hora', '>=', $inicio)
-                      ->where('fecha_hora', '<', $fin)
+                    $q->whereBetween('fecha_hora', [$inicio, $fin])
                       ->orWhere(function ($sub) use ($inicio) {
                           $sub->where('fecha_hora', '<', $inicio)
                               ->whereRaw('DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE) > ?', [$inicio]);
@@ -495,6 +455,75 @@ class AgendaController extends Controller
             'message' => $e->getMessage(),
         ], 500);
     }
+}
+
+/**
+ * Endpoint AJAX: citas para FullCalendar (según el rango visible).
+ */
+public function eventos(Request $request): JsonResponse
+{
+    $request->validate([
+        'start' => ['required', 'date'],
+        'end'   => ['required', 'date'],
+    ]);
+
+    $user    = auth()->user();
+    $esAdmin = $user->hasRole('administrador');
+
+    $query = Cita::with(['paciente', 'medico', 'especialidad'])
+        ->whereBetween('fecha_hora', [
+            Carbon::parse($request->start),
+            Carbon::parse($request->end),
+        ]);
+
+    if ($this->esMedico($user) && !$esAdmin) {
+        $query->where('medico_id', $user->id);
+    }
+
+    $eventos = $query->orderBy('fecha_hora')->get()->map(function ($c) {
+        $cancelada = $c->estado === 'cancelada';
+
+        return [
+            'id'    => $c->id,
+            'title' => $c->paciente->nombre_completo ?? 'Paciente',
+
+            'start' => $c->fecha_hora->format('Y-m-d\TH:i:s'),
+            'end'   => $c->fecha_hora->copy()
+                          ->addMinutes($c->duracion_minutos ?: 30)
+                          ->format('Y-m-d\TH:i:s'),
+
+            'color' => $cancelada ? '#cbd5e1' : match ($c->triage_al_momento) {
+                'rojo'     => '#f43f5e',
+                'naranja'  => '#f59e0b',
+                'amarillo' => '#facc15',
+                'verde'    => '#10b981',
+                'azul'     => '#0ea5e9',
+                default    => '#94a3b8',
+            },
+            'textColor' => $cancelada
+                ? '#64748b'
+                : ($c->triage_al_momento === 'amarillo' ? '#422006' : '#ffffff'),
+
+            'extendedProps' => [
+                'fecha'        => $c->fecha_hora->translatedFormat('l d \d\e F, Y'),
+                'hora'         => $c->fecha_hora->format('H:i'),
+                'paciente'     => $c->paciente->nombre_completo ?? '—',
+                'paciente_id'  => $c->paciente->id ?? 'N/A',
+                'medico'       => $c->medico->nombre_completo ?? '—',
+                'especialidad' => $c->especialidad?->nombre ?? '—',
+                'estado'       => $c->estado_label,
+                'motivo'       => $c->motivo ?? 'Sin motivo especificado',
+                'triage'       => strtoupper($c->triage_al_momento ?? 'Sin triage'),
+                'iniciales'    => strtoupper(mb_substr($c->paciente->nombre_completo ?? 'P', 0, 2)),
+                'estado_raw'      => $c->estado,
+                'triage_raw'      => $c->triage_al_momento,
+                'medico_id'       => $c->medico_id,
+                'especialidad_id' => $c->especialidad_id,
+            ],
+        ];
+    });
+
+    return response()->json($eventos);
 }
 
     /**
