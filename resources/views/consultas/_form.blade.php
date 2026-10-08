@@ -3,6 +3,63 @@
     $readonly = $readonly ?? false;
 @endphp
 
+{{-- ============ TOM SELECT (autocompletado CIE-10) ============ --}}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+    /* TomSelect con la paleta slate/indigo de la app */
+    .ts-wrapper.single .ts-control,
+    .ts-wrapper .ts-control {
+        border: 1px solid #e2e8f0;
+        /* slate-200 */
+        border-radius: 0.75rem;
+        /* rounded-xl */
+        background: #f8fafc;
+        /* slate-50 */
+        box-shadow: none;
+        padding: 0.55rem 0.9rem;
+        min-height: 38px;
+        font-size: 0.75rem;
+        /* text-xs */
+        color: #1e293b;
+        /* slate-800 */
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .ts-wrapper.focus .ts-control {
+        background: #ffffff;
+        border-color: #6366f1;
+        /* indigo-500 */
+        box-shadow: none;
+    }
+
+    .ts-wrapper .ts-control input::placeholder {
+        color: #94a3b8;
+        /* slate-400 */
+    }
+
+    .ts-dropdown {
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+        font-size: 0.75rem;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .ts-dropdown .option {
+        padding: 0.5rem 0.9rem;
+        color: #334155;
+    }
+
+    .ts-dropdown .option.active {
+        background-color: #eef2ff;
+        /* indigo-50 */
+        color: #3730a3;
+        /* indigo-800 */
+    }
+</style>
+
 @php
     $inputCls =
         'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
@@ -195,10 +252,11 @@
         </div>
     @endforeach
 
+    {{-- ====== DIAGNÓSTICOS CON AUTOCOMPLETADO ====== --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="{{ $labelCls }}">Diagnóstico principal (CIE-10)</label>
-            <select name="diagnostico_principal_id" class="{{ $inputCls }}">
+            <select name="diagnostico_principal_id" id="diag-principal" class="{{ $inputCls }}">
                 <option value="">— Buscar o seleccionar —</option>
                 @foreach ($diagnosticos as $d)
                     <option value="{{ $d->id }}" @selected(old('diagnostico_principal_id', $c?->diagnostico_principal_id) == $d->id)>
@@ -212,7 +270,7 @@
         </div>
         <div>
             <label class="{{ $labelCls }}">Diagnóstico secundario (CIE-10)</label>
-            <select name="diagnostico_secundario_id" class="{{ $inputCls }}">
+            <select name="diagnostico_secundario_id" id="diag-secundario" class="{{ $inputCls }}">
                 <option value="">— Buscar o seleccionar —</option>
                 @foreach ($diagnosticos as $d)
                     <option value="{{ $d->id }}" @selected(old('diagnostico_secundario_id', $c?->diagnostico_secundario_id) == $d->id)>
@@ -220,6 +278,9 @@
                     </option>
                 @endforeach
             </select>
+            @error('diagnostico_secundario_id')
+                <p class="{{ $errorCls }}">{{ $message }}</p>
+            @enderror
         </div>
     </div>
 </section>
@@ -304,10 +365,11 @@
     </div>
 </section>
 
-{{-- ============ JS: IMC + agregar medicamentos + dictado por voz ============ --}}
+{{-- ============ JS: IMC + medicamentos + dictado por voz + TomSelect ============ --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // IMC automático
+
+        // ===== IMC automático =====
         const peso = document.getElementById('peso');
         const talla = document.getElementById('talla');
         const imc = document.getElementById('imc');
@@ -325,7 +387,33 @@
         if (talla) talla.addEventListener('input', calcularImc);
         calcularImc();
 
-        // Dictado por voz
+        // ===== Autoacompletado de diagnósticos (Tom Select) =====
+        if (typeof TomSelect !== 'undefined') {
+            const configDiag = {
+                placeholder: 'Escribe código o nombre...',
+                maxOptions: 300,
+                allowEmptyOption: true,
+                searchField: ['text'],
+                sortField: [{
+                    field: '$score'
+                }],
+                render: {
+                    option: function(data, escape) {
+                        return `<div class="py-1">${escape(data.text)}</div>`;
+                    },
+                    item: function(data, escape) {
+                        return `<div>${escape(data.text)}</div>`;
+                    },
+                    no_results: function() {
+                        return '<div class="p-2 text-slate-400 text-xs">Sin resultados</div>';
+                    }
+                }
+            };
+            new TomSelect('#diag-principal', configDiag);
+            new TomSelect('#diag-secundario', configDiag);
+        }
+
+        // ===== Dictado por voz =====
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             document.querySelectorAll('[data-dictar]').forEach(btn => btn.style.display = 'none');
