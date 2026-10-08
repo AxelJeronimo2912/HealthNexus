@@ -2,190 +2,205 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div>
-                <h2 class="font-semibold text-xl text-slate-800">Expedientes</h2>
-                <p class="text-sm text-slate-400">Historial clínico de todos los pacientes</p>
+                <h2 class="font-extrabold text-2xl text-slate-800 leading-tight">Expedientes</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Historial clínico y consultas por paciente</p>
             </div>
+
             <a href="{{ route('pacientes.index') }}"
-                class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-indigo-600 transition">
+                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group">
                 Ver todos los pacientes
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                 </svg>
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+        {{-- Barra de búsqueda + contador --}}
         <div
-            class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 p-8 shadow-xl shadow-indigo-200 text-white">
-            <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5"></div>
-            <div class="absolute right-32 -bottom-24 w-52 h-52 rounded-full bg-white/5"></div>
+            class="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
 
-            <div class="relative">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                    <div>
-                        <h3 class="text-3xl font-extrabold tracking-tight">Expedientes clínicos</h3>
-                        <p class="text-indigo-100 mt-1">Busca un paciente para ver su historial completo.</p>
-                    </div>
-                    <div class="self-start rounded-2xl bg-white/10 border border-white/20 px-5 py-3 backdrop-blur">
-                        <p class="text-xs font-bold tracking-wider text-indigo-200 uppercase">
-                            {{ $busqueda ? 'Resultados' : 'Total' }}
-                        </p>
-                        <p class="text-3xl font-extrabold leading-none mt-1" id="total-pacientes">
-                            {{ $pacientes->total() }}
-                        </p>
-                    </div>
+            <div class="flex items-center gap-3 md:pr-4 md:border-r border-slate-100 shrink-0">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        {{ $busqueda ? 'RESULTADOS' : 'EXPEDIENTES' }}
+                    </p>
+                    <p class="text-2xl font-extrabold text-indigo-600 mt-0.5">{{ $pacientes->total() }}</p>
+                </div>
+            </div>
+
+            <form method="GET" action="{{ route('expedientes.index') }}"
+                class="flex flex-1 flex-col sm:flex-row gap-2">
+                <div class="relative flex-1">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                    </svg>
+                    <input type="text" name="buscar" value="{{ $busqueda }}"
+                        placeholder="Buscar por nombre, apellidos o CURP"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none">
                 </div>
 
-                <form method="GET" action="{{ route('expedientes.index') }}" id="form-busqueda"
-                    class="flex flex-col sm:flex-row gap-3" onsubmit="return false;">
-                    <div class="relative flex-1">
-                        <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none"
-                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-                        </svg>
+                <button type="submit"
+                    class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    Buscar
+                </button>
 
-                        <input type="text" name="buscar" id="input-buscar" value="{{ $busqueda }}"
-                            placeholder="Buscar por nombre, apellidos o CURP" autocomplete="off"
-                            class="w-full pl-12 pr-10 py-3 rounded-2xl border-0 bg-white text-slate-800 placeholder-slate-400 shadow-sm focus:ring-2 focus:ring-indigo-300">
+                @if ($busqueda)
+                    <a href="{{ route('expedientes.index') }}"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold text-center transition-all">
+                        Limpiar
+                    </a>
+                @endif
+            </form>
+        </div>
 
-                        {{-- Spinner de carga (oculto por defecto) --}}
-                        <div id="spinner-busqueda" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
-                            <svg class="animate-spin h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                                </path>
-                            </svg>
+        {{-- Tabla (escritorio) --}}
+        <div class="hidden md:block bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <table class="min-w-full">
+                <thead class="bg-slate-50/70 border-b border-slate-100">
+                    <tr>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Paciente</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            CURP</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Edad</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Último triage</th>
+                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Consultas</th>
+                        <th
+                            class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($pacientes as $paciente)
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-bold shrink-0">
+                                        {{ strtoupper(mb_substr($paciente->nombre_completo ?? 'P', 0, 2)) }}
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-800">{{ $paciente->nombre_completo }}</p>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-xs font-medium text-slate-500">
+                                {{ $paciente->curp ?? '—' }}
+                            </td>
+                            <td class="px-5 py-3.5 text-xs font-semibold text-slate-700">
+                                {{ $paciente->edad }} años
+                            </td>
+                            <td class="px-5 py-3.5">
+                                @if ($paciente->ultimoSignoVital)
+                                    <span
+                                        class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
+                                        {{ $paciente->ultimoSignoVital->triage_label }}
+                                    </span>
+                                @else
+                                    <span class="text-slate-400 text-[11px] font-semibold">Sin signos vitales</span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <span
+                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[11px] font-bold">
+                                    {{ $paciente->consultas_count }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('expedientes.show', $paciente) }}"
+                                        class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all active:scale-95">
+                                        Ver expediente
+                                    </a>
+                                    <a href="{{ route('pacientes.show', $paciente) }}"
+                                        class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold transition-all active:scale-95">
+                                        Ficha
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-5 py-14 text-center">
+                                <p class="text-xs font-semibold text-slate-400">Sin pacientes con expediente.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Tarjetas (móvil) --}}
+        <div class="md:hidden space-y-3">
+            @forelse ($pacientes as $paciente)
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-11 h-11 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                            {{ strtoupper(mb_substr($paciente->nombre_completo ?? 'P', 0, 2)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-extrabold text-slate-800 truncate">{{ $paciente->nombre_completo }}
+                            </p>
+                            <p class="text-[11px] font-medium text-slate-400 truncate">
+                                {{ $paciente->curp ?? '—' }} · {{ $paciente->edad }} años
+                            </p>
                         </div>
                     </div>
 
-                    <button type="submit"
-                        class="hidden sm:inline-block px-6 py-3 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 text-sm font-semibold transition">
-                        Buscar
-                    </button>
+                    <div
+                        class="flex items-center justify-between bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Triage</p>
+                            @if ($paciente->ultimoSignoVital)
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
+                                    {{ $paciente->ultimoSignoVital->triage_label }}
+                                </span>
+                            @else
+                                <span class="text-slate-400 text-[11px] font-semibold">Sin signos vitales</span>
+                            @endif
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultas</p>
+                            <span
+                                class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[11px] font-bold">
+                                {{ $paciente->consultas_count }}
+                            </span>
+                        </div>
+                    </div>
 
-                    <a href="{{ route('expedientes.index') }}" id="btn-limpiar"
-                        class="px-6 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 text-sm font-semibold text-center transition {{ $busqueda ? '' : 'hidden' }}">
-                        Limpiar
-                    </a>
-                </form>
-            </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('expedientes.show', $paciente) }}"
+                            class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold text-center shadow-sm">
+                            Ver expediente
+                        </a>
+                        <a href="{{ route('pacientes.show', $paciente) }}"
+                            class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold text-center">
+                            Ficha
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-10 text-center">
+                    <p class="text-xs font-semibold text-slate-400">Sin pacientes con expediente.</p>
+                </div>
+            @endforelse
         </div>
 
-        <section id="contenedor-resultados">
-            @include('expedientes._tabla', ['pacientes' => $pacientes, 'busqueda' => $busqueda])
-        </section>
+        <div>{{ $pacientes->links() }}</div>
     </div>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const input = document.getElementById('input-buscar');
-            const form = document.getElementById('form-busqueda');
-            const contenedor = document.getElementById('contenedor-resultados');
-            const spinner = document.getElementById('spinner-busqueda');
-            const btnLimpiar = document.getElementById('btn-limpiar');
-            const totalSpan = document.getElementById('total-pacientes');
-
-            if (!input || !contenedor) return;
-
-            const baseUrl = "{{ route('expedientes.index') }}";
-            let debounceTimer = null;
-            let controlador = null; // AbortController para cancelar fetch anterior
-
-            // Mostrar / ocultar spinner
-            function mostrarSpinner(show) {
-                if (!spinner) return;
-                spinner.classList.toggle('hidden', !show);
-            }
-
-            // Mostrar / ocultar botón "Limpiar"
-            function toggleLimpiar(show) {
-                if (!btnLimpiar) return;
-                btnLimpiar.classList.toggle('hidden', !show);
-            }
-
-            async function buscar(termino) {
-                // Cancela el fetch anterior si sigue en curso
-                if (controlador) controlador.abort();
-                controlador = new AbortController();
-
-                mostrarSpinner(true);
-                toggleLimpiar(termino.length > 0);
-
-                const url = new URL(baseUrl);
-                if (termino) url.searchParams.set('buscar', termino);
-                url.searchParams.set('_partial', '1'); // flag para el controlador/vista
-
-                try {
-                    const resp = await fetch(url.toString(), {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'text/html',
-                        },
-                        signal: controlador.signal,
-                    });
-
-                    if (!resp.ok) throw new Error('Error en la búsqueda');
-
-                    const html = await resp.text();
-
-                    // El backend devuelve solo el HTML del partial (tabla + paginación)
-                    contenedor.innerHTML = html;
-
-                    // Actualiza el contador del banner leyendo el nuevo total
-                    const nuevoTotal = contenedor.querySelector('[data-total-pacientes]');
-                    if (nuevoTotal && totalSpan) {
-                        totalSpan.textContent = nuevoTotal.dataset.totalPacientes;
-                    }
-
-                    // Actualiza la URL del navegador SIN recargar (opcional, mejora UX)
-                    const urlVisible = new URL(window.location);
-                    if (termino) urlVisible.searchParams.set('buscar', termino);
-                    else urlVisible.searchParams.delete('buscar');
-                    history.replaceState({}, '', urlVisible.toString());
-
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.error('Error búsqueda:', err);
-                    }
-                } finally {
-                    mostrarSpinner(false);
-                }
-            }
-
-            // Evento input con debounce (300ms)
-            input.addEventListener('input', function() {
-                const termino = this.value.trim();
-
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    buscar(termino);
-                }, 300);
-            });
-
-            // Evita submit normal (ya se busca en vivo)
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                buscar(input.value.trim());
-            });
-
-            // Botón limpiar: vacía y vuelve a buscar
-            btnLimpiar?.addEventListener('click', function(e) {
-                e.preventDefault();
-                input.value = '';
-                buscar('');
-                input.focus();
-            });
-
-            // Al cargar la página, si ya había término, mostrar el botón limpiar
-            if (input.value.trim()) {
-                toggleLimpiar(true);
-            }
-        });
-    </script>
 </x-app-layout>
-

@@ -1,31 +1,65 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800">
-                Cuenta de {{ $paciente->nombre_completo }}
-            </h2>
-            <a href="{{ url()->previous() }}" class="text-sm text-gray-600 hover:underline">← Volver</a>
+        <div class="flex justify-between items-center gap-3">
+            <div class="min-w-0">
+                <h2 class="font-extrabold text-2xl text-slate-800 leading-tight truncate">
+                    Cuenta de {{ $paciente->nombre_completo }}
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Cargos, descuentos y pagos del paciente</p>
+            </div>
+            <a href="{{ url()->previous() }}"
+                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+                Volver
+            </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    @php
+        $abierta = $cuenta->estado === 'abierta';
+        $inputCls =
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
+        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $btnCancel = 'px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold';
+    @endphp
+
+    <div class="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         @if (session('success'))
-            <div class="p-3 bg-emerald-100 text-emerald-800 rounded">{{ session('success') }}</div>
+            <div
+                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
         @endif
         @if (session('error'))
-            <div class="p-3 bg-rose-100 text-rose-800 rounded">{{ session('error') }}</div>
+            <div
+                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
         @endif
 
         {{-- ============ AVISO: CUENTA CERRADA ============ --}}
         @if ($cuenta->estado === 'cerrada')
-            <div class="p-4 bg-slate-100 border border-slate-200 text-slate-700 rounded-lg flex items-center gap-3">
-                <svg class="w-6 h-6 shrink-0 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <div class="text-sm">
-                    <p class="font-semibold">Cuenta cerrada</p>
+            <div class="p-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-3xl flex items-center gap-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-extrabold text-slate-800">Cuenta cerrada</p>
                     <p class="text-xs text-slate-500 mt-0.5">
                         Cerrada el {{ $cuenta->cerrada_en?->format('d/m/Y H:i') }}.
                         Ya no se puede modificar. Solo puedes descargar el estado de cuenta.
@@ -35,68 +69,81 @@
         @endif
 
         {{-- ============ ENCABEZADO CON TOTALES ============ --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-xs text-gray-500 font-mono">{{ $cuenta->folio }}</p>
-                    <p class="text-3xl font-bold mt-1">{{ $cuenta->total_formateado }}</p>
-                    <div class="mt-3 grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Subtotal</p>
-                            <p class="font-semibold">${{ number_format((float) $cuenta->subtotal, 2) }}</p>
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-5">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                            {{ $cuenta->folio }}
+                        </span>
+                        <span
+                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $cuenta->estado_color }}">
+                            {{ ucfirst($cuenta->estado) }}
+                        </span>
+                    </div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-4">TOTAL DE LA CUENTA</p>
+                    <p class="text-4xl font-black text-slate-800 tracking-tight mt-0.5">
+                        {{ $cuenta->total_formateado }}</p>
+
+                    <div class="mt-4 grid grid-cols-3 gap-3">
+                        <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
+                            <p class="text-sm font-extrabold text-slate-800 mt-0.5">
+                                ${{ number_format((float) $cuenta->subtotal, 2) }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Pagado</p>
-                            <p class="font-semibold text-emerald-700">
-                                ${{ number_format((float) $cuenta->pagado, 2) }}
-                            </p>
+                        <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-3">
+                            <p class="text-[10px] font-bold text-emerald-600/70 uppercase tracking-wider">Pagado</p>
+                            <p class="text-sm font-extrabold text-emerald-600 mt-0.5">
+                                ${{ number_format((float) $cuenta->pagado, 2) }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Saldo</p>
+                        <div
+                            class="{{ (float) $cuenta->saldo > 0 ? 'bg-rose-50/60 border-rose-100' : 'bg-emerald-50/60 border-emerald-100' }} border rounded-2xl p-3">
                             <p
-                                class="font-bold {{ (float) $cuenta->saldo > 0 ? 'text-rose-700' : 'text-emerald-700' }}">
-                                ${{ number_format((float) $cuenta->saldo, 2) }}
-                            </p>
+                                class="text-[10px] font-bold uppercase tracking-wider {{ (float) $cuenta->saldo > 0 ? 'text-rose-500/70' : 'text-emerald-600/70' }}">
+                                Saldo</p>
+                            <p
+                                class="text-sm font-extrabold mt-0.5 {{ (float) $cuenta->saldo > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
+                                ${{ number_format((float) $cuenta->saldo, 2) }}</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="text-right space-y-2">
-                    <span class="px-3 py-1 rounded text-sm {{ $cuenta->estado_color }}">
-                        {{ ucfirst($cuenta->estado) }}
-                    </span>
-
+                <div class="md:text-right space-y-2 md:max-w-[220px]">
                     {{-- Solo cuenta ABIERTA: botones de cerrar --}}
-                    @if ($cuenta->estado === 'abierta')
+                    @if ($abierta)
                         @if ((float) $cuenta->saldo > 0)
                             <button type="button" disabled title="No se puede cerrar con saldo pendiente"
-                                class="text-xs text-gray-400 cursor-not-allowed inline-flex items-center gap-1 justify-end w-full">
+                                class="w-full md:w-auto px-4 py-2.5 bg-slate-100 text-slate-400 cursor-not-allowed rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                                 Cerrar cuenta
                             </button>
-                            <p class="text-[10px] text-gray-400 mt-1">
+                            <p class="text-[11px] text-slate-400 leading-snug">
                                 Paga el saldo de
-                                <strong>${{ number_format((float) $cuenta->saldo, 2) }}</strong>
+                                <strong class="text-slate-600">${{ number_format((float) $cuenta->saldo, 2) }}</strong>
                                 para poder cerrarla.
                             </p>
                         @else
                             <form action="{{ route('cuentas.cerrar', $cuenta) }}" method="POST">
                                 @csrf
                                 <button onclick="return confirm('¿Cerrar la cuenta? Ya no podrás modificar cargos.')"
-                                    class="text-xs text-emerald-600 hover:underline font-medium">
-                                    ✓ Cerrar cuenta
+                                    class="w-full md:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Cerrar cuenta
                                 </button>
                             </form>
                         @endif
                     @endif
 
-                    {{-- Solo cuenta CERRADA: botón imprimir estado de cuenta --}}
+                    {{-- Solo cuenta CERRADA: imprimir estado de cuenta --}}
                     @if ($cuenta->estado === 'cerrada')
                         <a href="{{ route('cuentas.pdf', $cuenta) }}" target="_blank"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-medium">
+                            class="w-full md:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -109,216 +156,263 @@
         </div>
 
         {{-- ============ CARGOS ============ --}}
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b flex flex-wrap justify-between items-center gap-2">
-                <h3 class="font-bold text-gray-800">Cargos</h3>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-base">Cargos</h3>
+                    <p class="text-[11px] text-slate-400">{{ $cuenta->items->count() }} conceptos en la cuenta</p>
+                </div>
 
                 {{-- Solo cuenta ABIERTA: botones de agregar --}}
-                @if ($cuenta->estado === 'abierta')
+                @if ($abierta)
                     <div class="flex flex-wrap gap-2">
                         <button type="button" onclick="abrirModalServicio()"
-                            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">
+                            class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all">
                             + Agregar servicio
                         </button>
 
                         <button type="button"
                             onclick="document.getElementById('modal-cargo').classList.remove('hidden')"
-                            class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded text-xs">
-                            + Agregar cargo manual
+                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 rounded-xl text-[11px] font-bold transition-all">
+                            + Cargo manual
                         </button>
 
                         <button type="button"
                             onclick="document.getElementById('modal-descuento').classList.remove('hidden')"
-                            class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs">
-                            % Aplicar descuento
+                            class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-700 border border-amber-200 rounded-xl text-[11px] font-bold transition-all">
+                            % Descuento
                         </button>
                     </div>
                 @else
-                    <span class="text-xs text-slate-400 italic">🔒 Cuenta cerrada — no editable</span>
+                    <span class="text-[11px] text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
                 @endif
             </div>
 
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Cant.</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">P. Unitario</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Descuento</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Importe</th>
-                        {{-- Solo columna acciones si la cuenta está abierta --}}
-                        @if ($cuenta->estado === 'abierta')
-                            <th class="px-4 py-2"></th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($cuenta->items as $item)
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-slate-50/70 border-b border-slate-100">
                         <tr>
-                            <td class="px-4 py-3 text-xs text-gray-500">
-                                {{ $item->created_at->format('d/m/Y H:i') }}
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="font-medium">{{ $item->concepto }}</span>
-                                @if ($item->cita)
-                                    <span class="block text-xs text-gray-500">Cita #{{ $item->cita->id }}</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-sm text-center">{{ $item->cantidad }}</td>
-                            <td class="px-4 py-3 text-sm text-right">
-                                ${{ number_format((float) $item->precio_unitario, 2) }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right text-rose-600">
-                                @if ((float) $item->descuento > 0)
-                                    -${{ number_format((float) $item->descuento, 2) }}
-                                @else
-                                    —
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right font-semibold">
-                                ${{ number_format((float) $item->importe, 2) }}
-                            </td>
-                            @if ($cuenta->estado === 'abierta')
-                                <td class="px-4 py-3 text-right">
-                                    <form action="{{ route('cuentas.items.destroy', $item) }}" method="POST"
-                                        onsubmit="return confirm('¿Eliminar este cargo?')">
-                                        @csrf @method('DELETE')
-                                        <button class="text-xs text-rose-600 hover:underline">Eliminar</button>
-                                    </form>
-                                </td>
+                            <th class="{{ $thCls }} text-left">Fecha</th>
+                            <th class="{{ $thCls }} text-left">Concepto</th>
+                            <th class="{{ $thCls }} text-center">Cant.</th>
+                            <th class="{{ $thCls }} text-right">P. Unitario</th>
+                            <th class="{{ $thCls }} text-right">Descuento</th>
+                            <th class="{{ $thCls }} text-right">Importe</th>
+                            @if ($abierta)
+                                <th class="px-5 py-3.5"></th>
                             @endif
                         </tr>
-                    @empty
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($cuenta->items as $item)
+                            <tr class="hover:bg-indigo-50/30 transition-colors">
+                                <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                                    {{ $item->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <p class="text-xs font-bold text-slate-800">{{ $item->concepto }}</p>
+                                    @if ($item->cita)
+                                        <span
+                                            class="inline-block mt-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold">
+                                            Cita #{{ $item->cita->id }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3.5 text-center text-xs font-semibold text-slate-700">
+                                    {{ $item->cantidad }}</td>
+                                <td class="px-5 py-3.5 text-right text-xs font-medium text-slate-600">
+                                    ${{ number_format((float) $item->precio_unitario, 2) }}
+                                </td>
+                                <td class="px-5 py-3.5 text-right text-xs font-semibold text-rose-500">
+                                    @if ((float) $item->descuento > 0)
+                                        -${{ number_format((float) $item->descuento, 2) }}
+                                    @else
+                                        <span class="text-slate-300">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3.5 text-right text-xs font-extrabold text-slate-800">
+                                    ${{ number_format((float) $item->importe, 2) }}
+                                </td>
+                                @if ($abierta)
+                                    <td class="px-5 py-3.5 text-right">
+                                        <form action="{{ route('cuentas.items.destroy', $item) }}" method="POST"
+                                            onsubmit="return confirm('¿Eliminar este cargo?')">
+                                            @csrf @method('DELETE')
+                                            <button
+                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $abierta ? 7 : 6 }}" class="px-5 py-12 text-center">
+                                    <p class="text-xs font-semibold text-slate-400">Sin cargos.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="bg-slate-50/70 border-t border-slate-100">
                         <tr>
-                            <td colspan="{{ $cuenta->estado === 'abierta' ? 7 : 6 }}"
-                                class="px-4 py-6 text-center text-gray-500">
-                                Sin cargos.
+                            <td colspan="5" class="px-5 py-2.5 text-right text-xs font-bold text-slate-500">
+                                Subtotal</td>
+                            <td class="px-5 py-2.5 text-right text-xs font-extrabold text-slate-800">
+                                ${{ number_format((float) $cuenta->subtotal, 2) }}
                             </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-                <tfoot class="bg-gray-50">
-                    <tr>
-                        <td colspan="5" class="px-4 py-2 text-right font-bold">Subtotal:</td>
-                        <td class="px-4 py-2 text-right font-bold">
-                            ${{ number_format((float) $cuenta->subtotal, 2) }}
-                        </td>
-                        @if ($cuenta->estado === 'abierta')
-                            <td></td>
-                        @endif
-                    </tr>
-                    @if ((float) $cuenta->descuento_global > 0)
-                        <tr>
-                            <td colspan="5" class="px-4 py-2 text-right text-rose-700">Descuento global:</td>
-                            <td class="px-4 py-2 text-right text-rose-700">
-                                -${{ number_format((float) $cuenta->descuento_global, 2) }}
-                            </td>
-                            @if ($cuenta->estado === 'abierta')
+                            @if ($abierta)
                                 <td></td>
                             @endif
                         </tr>
-                    @endif
-                    <tr>
-                        <td colspan="5" class="px-4 py-2 text-right font-bold text-lg">Total:</td>
-                        <td class="px-4 py-2 text-right font-bold text-lg">{{ $cuenta->total_formateado }}</td>
-                        @if ($cuenta->estado === 'abierta')
-                            <td></td>
+                        @if ((float) $cuenta->descuento_global > 0)
+                            <tr>
+                                <td colspan="5" class="px-5 py-2.5 text-right text-xs font-bold text-rose-500">
+                                    Descuento global
+                                    @if ($cuenta->motivo_descuento)
+                                        <span
+                                            class="font-medium text-rose-400">({{ $cuenta->motivo_descuento }})</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-2.5 text-right text-xs font-extrabold text-rose-500">
+                                    -${{ number_format((float) $cuenta->descuento_global, 2) }}
+                                </td>
+                                @if ($abierta)
+                                    <td></td>
+                                @endif
+                            </tr>
                         @endif
-                    </tr>
-                </tfoot>
-            </table>
+                        <tr class="border-t border-slate-200">
+                            <td colspan="5" class="px-5 py-3.5 text-right text-sm font-extrabold text-slate-800">
+                                Total
+                            </td>
+                            <td class="px-5 py-3.5 text-right text-base font-black text-indigo-600">
+                                {{ $cuenta->total_formateado }}</td>
+                            @if ($abierta)
+                                <td></td>
+                            @endif
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
         {{-- ============ PAGOS ============ --}}
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b flex flex-wrap justify-between items-center gap-2">
-                <h3 class="font-bold text-gray-800">Pagos registrados</h3>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-base">Pagos registrados</h3>
+                    <p class="text-[11px] text-slate-400">{{ $cuenta->pagos->count() }} movimientos</p>
+                </div>
 
-                @if ($cuenta->estado === 'abierta' && (float) $cuenta->saldo > 0)
+                @if ($abierta && (float) $cuenta->saldo > 0)
                     <button type="button" onclick="document.getElementById('modal-pago').classList.remove('hidden')"
-                        class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs">
+                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all">
                         + Registrar pago
                     </button>
                 @elseif ($cuenta->estado === 'cerrada')
-                    <span class="text-xs text-slate-400 italic">🔒 Cuenta cerrada — no editable</span>
+                    <span class="text-[11px] text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
                 @endif
             </div>
 
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
-                        <th class="px-4 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($cuenta->pagos as $pago)
-                        <tr class="{{ $pago->estado === 'cancelado' ? 'opacity-50 line-through' : '' }}">
-                            <td class="px-4 py-3 text-xs font-mono">{{ $pago->folio }}</td>
-                            <td class="px-4 py-3 text-sm">{{ $pago->pagado_en->format('d/m/Y H:i') }}</td>
-                            <td class="px-4 py-3 text-sm">
-                                {{ $pago->metodo_label }}
-                                @if ($pago->referencia)
-                                    <span class="block text-xs text-gray-500">Ref: {{ $pago->referencia }}</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right font-semibold text-emerald-700">
-                                ${{ number_format((float) $pago->monto, 2) }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                @if ($pago->estado === 'aplicado')
-                                    <span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs">
-                                        Aplicado
-                                    </span>
-                                @else
-                                    <span class="px-2 py-1 bg-rose-100 text-rose-800 rounded text-xs">
-                                        Cancelado
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-right space-x-2">
-                                {{-- El recibo del pago siempre se puede ver --}}
-                                <a href="{{ route('cuentas.pagos.recibo', $pago) }}" target="_blank"
-                                    class="text-xs text-blue-600 hover:underline">Recibo</a>
-
-                                {{-- Cancelar solo si está abierta --}}
-                                @if ($pago->estado === 'aplicado' && $cuenta->estado === 'abierta')
-                                    <button type="button"
-                                        onclick="cancelarPago({{ $pago->id }}, '{{ $pago->folio }}')"
-                                        class="text-xs text-rose-600 hover:underline">Cancelar</button>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-slate-50/70 border-b border-slate-100">
                         <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-gray-500">Sin pagos registrados.</td>
+                            <th class="{{ $thCls }} text-left">Folio</th>
+                            <th class="{{ $thCls }} text-left">Fecha</th>
+                            <th class="{{ $thCls }} text-left">Método</th>
+                            <th class="{{ $thCls }} text-right">Monto</th>
+                            <th class="{{ $thCls }} text-center">Estado</th>
+                            <th class="px-5 py-3.5"></th>
                         </tr>
-                    @endforelse
-                </tbody>
-                <tfoot class="bg-gray-50">
-                    <tr>
-                        <td colspan="3" class="px-4 py-2 text-right font-bold">Total pagado:</td>
-                        <td class="px-4 py-2 text-right font-bold text-emerald-700">
-                            ${{ number_format((float) $cuenta->pagado, 2) }}
-                        </td>
-                        <td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="px-4 py-2 text-right font-bold text-lg">Saldo pendiente:</td>
-                        <td
-                            class="px-4 py-2 text-right font-bold text-lg
-                            {{ (float) $cuenta->saldo > 0 ? 'text-rose-700' : 'text-emerald-700' }}">
-                            ${{ number_format((float) $cuenta->saldo, 2) }}
-                        </td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($cuenta->pagos as $pago)
+                            <tr
+                                class="hover:bg-indigo-50/30 transition-colors {{ $pago->estado === 'cancelado' ? 'opacity-50 line-through' : '' }}">
+                                <td class="px-5 py-3.5">
+                                    <span
+                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                        {{ $pago->folio }}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 text-xs font-medium text-slate-600 whitespace-nowrap">
+                                    {{ $pago->pagado_en->format('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <p class="text-xs font-bold text-slate-700">{{ $pago->metodo_label }}</p>
+                                    @if ($pago->referencia)
+                                        <p class="text-[10px] font-medium text-slate-400">Ref: {{ $pago->referencia }}
+                                        </p>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3.5 text-right text-xs font-extrabold text-emerald-600">
+                                    ${{ number_format((float) $pago->monto, 2) }}
+                                </td>
+                                <td class="px-5 py-3.5 text-center">
+                                    @if ($pago->estado === 'aplicado')
+                                        <span
+                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            Aplicado
+                                        </span>
+                                    @else
+                                        <span
+                                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            Cancelado
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3.5">
+                                    <div class="flex justify-end gap-2">
+                                        {{-- El recibo del pago siempre se puede ver --}}
+                                        <a href="{{ route('cuentas.pagos.recibo', $pago) }}" target="_blank"
+                                            class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                                            Recibo
+                                        </a>
+
+                                        {{-- Cancelar solo si está abierta --}}
+                                        @if ($pago->estado === 'aplicado' && $abierta)
+                                            <button type="button"
+                                                onclick="cancelarPago({{ $pago->id }}, '{{ $pago->folio }}')"
+                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                Cancelar
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-5 py-12 text-center">
+                                    <p class="text-xs font-semibold text-slate-400">Sin pagos registrados.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="bg-slate-50/70 border-t border-slate-100">
+                        <tr>
+                            <td colspan="3" class="px-5 py-2.5 text-right text-xs font-bold text-slate-500">Total
+                                pagado
+                            </td>
+                            <td class="px-5 py-2.5 text-right text-xs font-extrabold text-emerald-600">
+                                ${{ number_format((float) $cuenta->pagado, 2) }}
+                            </td>
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr class="border-t border-slate-200">
+                            <td colspan="3" class="px-5 py-3.5 text-right text-sm font-extrabold text-slate-800">
+                                Saldo
+                                pendiente</td>
+                            <td
+                                class="px-5 py-3.5 text-right text-base font-black {{ (float) $cuenta->saldo > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
+                                ${{ number_format((float) $cuenta->saldo, 2) }}
+                            </td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -327,20 +421,33 @@
          MODALES — Solo se renderizan si la cuenta está ABIERTA.
          Si está cerrada, no hay formularios activos en la página.
     ====================================================================== --}}
-    @if ($cuenta->estado === 'abierta')
+    @if ($abierta)
 
         {{-- ==================== MODAL AGREGAR SERVICIO ==================== --}}
-        <div id="modal-servicio" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
-                <h3 class="text-lg font-semibold mb-4">Agregar servicio a la cuenta</h3>
+        <div id="modal-servicio"
+            class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Agregar servicio</h3>
+                        <p class="text-xs text-slate-400">Selecciona del catálogo de servicios</p>
+                    </div>
+                </div>
 
                 <form action="{{ route('cuentas.items.store', $cuenta) }}" method="POST" class="space-y-4">
                     @csrf
 
                     <div>
-                        <label class="block text-sm font-medium">Servicio *</label>
-                        <select id="servicio-select" name="servicio_id" required
-                            class="w-full border-gray-300 rounded-md">
+                        <label class="{{ $labelCls }}">Servicio *</label>
+                        <select id="servicio-select" name="servicio_id" required class="{{ $inputCls }}">
                             <option value="">— Selecciona un servicio —</option>
                             @foreach ($servicios as $srv)
                                 <option value="{{ $srv->id }}" data-precio="{{ $srv->precio }}"
@@ -351,37 +458,38 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p id="servicio-detalle" class="text-xs text-gray-500 mt-1"></p>
+                        <p id="servicio-detalle" class="text-[11px] font-medium text-indigo-600 mt-1.5"></p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium">Concepto *</label>
+                        <label class="{{ $labelCls }}">Concepto *</label>
                         <input type="text" name="concepto" id="servicio-concepto" required
-                            class="w-full border-gray-300 rounded-md">
+                            class="{{ $inputCls }}">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium">Cantidad *</label>
+                            <label class="{{ $labelCls }}">Cantidad *</label>
                             <input type="number" name="cantidad" value="1" min="1" required
-                                class="w-full border-gray-300 rounded-md">
+                                class="{{ $inputCls }}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Precio unitario *</label>
+                            <label class="{{ $labelCls }}">Precio unitario *</label>
                             <input type="number" name="precio_unitario" id="servicio-precio" step="0.01"
-                                min="0" required class="w-full border-gray-300 rounded-md">
+                                min="0" required class="{{ $inputCls }}">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium">Notas</label>
-                        <textarea name="notas" rows="2" class="w-full border-gray-300 rounded-md"></textarea>
+                        <label class="{{ $labelCls }}">Notas</label>
+                        <textarea name="notas" rows="2" class="{{ $inputCls }} resize-none"></textarea>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-3 border-t">
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                         <button type="button" onclick="cerrarModalServicio()"
-                            class="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">
+                            class="{{ $btnCancel }}">Cancelar</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm">
                             Agregar servicio
                         </button>
                     </div>
@@ -390,50 +498,63 @@
         </div>
 
         {{-- ==================== MODAL CARGO MANUAL ==================== --}}
-        <div id="modal-cargo" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-                <h3 class="text-lg font-semibold mb-4">Agregar cargo manual</h3>
-                <p class="text-xs text-gray-500 mb-3">
-                    Para conceptos libres no ligados a un servicio del catálogo.
-                </p>
+        <div id="modal-cargo"
+            class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Agregar cargo manual</h3>
+                        <p class="text-xs text-slate-400">Para conceptos libres fuera del catálogo</p>
+                    </div>
+                </div>
+
                 <form action="{{ route('cuentas.items.store', $cuenta) }}" method="POST" class="space-y-4">
                     @csrf
                     <div>
-                        <label class="block text-sm font-medium">Concepto *</label>
-                        <input type="text" name="concepto" required class="w-full border-gray-300 rounded-md">
+                        <label class="{{ $labelCls }}">Concepto *</label>
+                        <input type="text" name="concepto" required class="{{ $inputCls }}">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium">Cantidad *</label>
+                            <label class="{{ $labelCls }}">Cantidad *</label>
                             <input type="number" name="cantidad" value="1" min="1" required
-                                class="w-full border-gray-300 rounded-md">
+                                class="{{ $inputCls }}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Precio unitario *</label>
+                            <label class="{{ $labelCls }}">Precio unitario *</label>
                             <input type="number" name="precio_unitario" step="0.01" min="0" required
-                                class="w-full border-gray-300 rounded-md">
+                                class="{{ $inputCls }}">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium">Descuento</label>
+                            <label class="{{ $labelCls }}">Descuento</label>
                             <input type="number" name="descuento" step="0.01" min="0" value="0"
-                                class="w-full border-gray-300 rounded-md">
+                                class="{{ $inputCls }}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Motivo descuento</label>
-                            <input type="text" name="motivo_descuento" class="w-full border-gray-300 rounded-md">
+                            <label class="{{ $labelCls }}">Motivo descuento</label>
+                            <input type="text" name="motivo_descuento" class="{{ $inputCls }}">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium">Notas</label>
-                        <textarea name="notas" rows="2" class="w-full border-gray-300 rounded-md"></textarea>
+                        <label class="{{ $labelCls }}">Notas</label>
+                        <textarea name="notas" rows="2" class="{{ $inputCls }} resize-none"></textarea>
                     </div>
-                    <div class="flex justify-end gap-2 pt-3 border-t">
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                         <button type="button"
                             onclick="document.getElementById('modal-cargo').classList.add('hidden')"
-                            class="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-slate-700 text-white rounded-md">
+                            class="{{ $btnCancel }}">Cancelar</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm">
                             Agregar cargo
                         </button>
                     </div>
@@ -442,11 +563,22 @@
         </div>
 
         {{-- ==================== MODAL DESCUENTO GLOBAL ==================== --}}
-        <div id="modal-descuento" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                <h3 class="text-lg font-semibold mb-4">Aplicar descuento a la cuenta</h3>
+        <div id="modal-descuento"
+            class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 font-black text-lg">
+                        %
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Aplicar descuento</h3>
+                        <p class="text-xs text-slate-400">Descuento global a toda la cuenta</p>
+                    </div>
+                </div>
 
-                <div class="mb-3 p-3 bg-amber-50 border border-amber-200 rounded text-sm">
+                <div class="p-3 bg-amber-50 border border-amber-100 rounded-2xl text-xs">
                     <p class="text-amber-800">
                         Subtotal actual:
                         <strong>${{ number_format((float) $cuenta->subtotal, 2) }}</strong>
@@ -456,7 +588,7 @@
                             Descuento actual:
                             <strong>-${{ number_format((float) $cuenta->descuento_global, 2) }}</strong>
                             @if ($cuenta->motivo_descuento)
-                                <span class="text-xs">({{ $cuenta->motivo_descuento }})</span>
+                                <span class="text-[11px]">({{ $cuenta->motivo_descuento }})</span>
                             @endif
                         </p>
                     @endif
@@ -465,26 +597,27 @@
                 <form action="{{ route('cuentas.descuento', $cuenta) }}" method="POST" class="space-y-4">
                     @csrf
                     <div>
-                        <label class="block text-sm font-medium">Monto del descuento *</label>
+                        <label class="{{ $labelCls }}">Monto del descuento *</label>
                         <input type="number" name="descuento_global" step="0.01" min="0"
                             max="{{ $cuenta->subtotal }}" required value="{{ (float) $cuenta->descuento_global }}"
-                            class="w-full border-gray-300 rounded-md">
-                        <p class="text-xs text-gray-500 mt-1">
+                            class="{{ $inputCls }}">
+                        <p class="text-[11px] text-slate-400 mt-1">
                             No puede superar el subtotal (${{ number_format((float) $cuenta->subtotal, 2) }}).
                         </p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium">Motivo</label>
+                        <label class="{{ $labelCls }}">Motivo</label>
                         <input type="text" name="motivo_descuento" placeholder="Ej. Convenio, cortesía, ajuste"
-                            value="{{ $cuenta->motivo_descuento }}" class="w-full border-gray-300 rounded-md">
+                            value="{{ $cuenta->motivo_descuento }}" class="{{ $inputCls }}">
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-3 border-t">
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                         <button type="button"
                             onclick="document.getElementById('modal-descuento').classList.add('hidden')"
-                            class="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-md">
+                            class="{{ $btnCancel }}">Cancelar</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">
                             Aplicar descuento
                         </button>
                     </div>
@@ -493,25 +626,39 @@
         </div>
 
         {{-- ==================== MODAL PAGO ==================== --}}
-        <div id="modal-pago" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-                <h3 class="text-lg font-semibold mb-4">Registrar pago</h3>
-                <p class="text-sm text-gray-500 mb-3">
-                    Saldo pendiente:
-                    <strong class="text-rose-700">${{ number_format((float) $cuenta->saldo, 2) }}</strong>
-                </p>
+        <div id="modal-pago"
+            class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Registrar pago</h3>
+                        <p class="text-xs text-slate-400">
+                            Saldo pendiente:
+                            <strong class="text-rose-600">${{ number_format((float) $cuenta->saldo, 2) }}</strong>
+                        </p>
+                    </div>
+                </div>
+
                 <form action="{{ route('cuentas.pagos.store', $cuenta) }}" method="POST" class="space-y-4">
                     @csrf
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium">Monto *</label>
+                            <label class="{{ $labelCls }}">Monto *</label>
                             <input type="number" name="monto" step="0.01" min="0.01"
                                 max="{{ (float) $cuenta->saldo }}" required value="{{ (float) $cuenta->saldo }}"
-                                class="w-full border-gray-300 rounded-md">
+                                class="{{ $inputCls }}">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Método *</label>
-                            <select name="metodo" required class="w-full border-gray-300 rounded-md">
+                            <label class="{{ $labelCls }}">Método *</label>
+                            <select name="metodo" required class="{{ $inputCls }}">
                                 <option value="efectivo">Efectivo</option>
                                 <option value="tarjeta">Tarjeta</option>
                                 <option value="transferencia">Transferencia</option>
@@ -520,18 +667,19 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium">Referencia (opcional)</label>
+                        <label class="{{ $labelCls }}">Referencia (opcional)</label>
                         <input type="text" name="referencia" placeholder="Ej. últimos 4 dígitos, no. autorización"
-                            class="w-full border-gray-300 rounded-md">
+                            class="{{ $inputCls }}">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium">Notas</label>
-                        <textarea name="notas" rows="2" class="w-full border-gray-300 rounded-md"></textarea>
+                        <label class="{{ $labelCls }}">Notas</label>
+                        <textarea name="notas" rows="2" class="{{ $inputCls }} resize-none"></textarea>
                     </div>
-                    <div class="flex justify-end gap-2 pt-3 border-t">
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                         <button type="button" onclick="document.getElementById('modal-pago').classList.add('hidden')"
-                            class="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-md">
+                            class="{{ $btnCancel }}">Cancelar</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm">
                             Registrar pago
                         </button>
                     </div>
@@ -541,24 +689,37 @@
 
         {{-- ==================== MODAL CANCELAR PAGO ==================== --}}
         <div id="modal-cancelar-pago"
-            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                <h3 class="text-lg font-semibold mb-4">Cancelar pago</h3>
-                <p class="text-sm text-gray-500 mb-3">
-                    Vas a cancelar el pago <strong id="cancelar-folio" class="font-mono"></strong>.
-                    Esta acción queda registrada.
-                </p>
+            class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-base">Cancelar pago</h3>
+                        <p class="text-xs text-slate-400">
+                            Pago <strong id="cancelar-folio" class="font-mono text-slate-600"></strong> · esta acción
+                            queda registrada
+                        </p>
+                    </div>
+                </div>
+
                 <form id="form-cancelar-pago" method="POST" class="space-y-4">
                     @csrf
                     <div>
-                        <label class="block text-sm font-medium">Motivo de cancelación *</label>
-                        <textarea name="motivo_cancelacion" rows="3" required class="w-full border-gray-300 rounded-md"></textarea>
+                        <label class="{{ $labelCls }}">Motivo de cancelación *</label>
+                        <textarea name="motivo_cancelacion" rows="3" required class="{{ $inputCls }} resize-none"></textarea>
                     </div>
-                    <div class="flex justify-end gap-2 pt-3 border-t">
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                         <button type="button"
                             onclick="document.getElementById('modal-cancelar-pago').classList.add('hidden')"
-                            class="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-md">
+                            class="{{ $btnCancel }}">Cancelar</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-sm">
                             Sí, cancelar pago
                         </button>
                     </div>
@@ -566,12 +727,12 @@
             </div>
         </div>
 
-    @endif {{-- fin @if ($cuenta->estado === 'abierta') --}}
+    @endif {{-- fin @if ($abierta) --}}
 
     @push('scripts')
         <script>
             // Solo cargamos el JS si la cuenta está abierta (los modales existen)
-            @if ($cuenta->estado === 'abierta')
+            @if ($abierta)
 
                 function abrirModalServicio() {
                     document.getElementById('modal-servicio').classList.remove('hidden');

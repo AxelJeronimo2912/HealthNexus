@@ -1,136 +1,197 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800">
-                Predicción — {{ $medicamento->nombre }} {{ $medicamento->concentracion }}
-            </h2>
-            <a href="{{ route('prediccion.index') }}" class="text-sm text-gray-600 hover:underline">
-                ← Volver
+        <div class="flex justify-between items-center gap-3">
+            <div class="min-w-0">
+                <h2 class="font-extrabold text-2xl text-slate-800 leading-tight truncate">
+                    Predicción — {{ $medicamento->nombre }} {{ $medicamento->concentracion }}
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Análisis predictivo de consumo y agotamiento</p>
+            </div>
+            <a href="{{ route('prediccion.index') }}"
+                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+                Volver
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    @php
+        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+    @endphp
 
-        {{-- Resumen --}}
+    <div class="py-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+        {{-- ============ RESUMEN ============ --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase">Stock actual</p>
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                 <p
-                    class="text-2xl font-bold {{ $stockActual <= $medicamento->stock_minimo ? 'text-red-600' : 'text-green-600' }}">
+                    class="text-[11px] font-bold uppercase tracking-wider {{ $stockActual <= $medicamento->stock_minimo ? 'text-rose-600/70' : 'text-emerald-600/70' }}">
+                    Stock actual
+                </p>
+                <p
+                    class="text-3xl font-black tracking-tight mt-1 {{ $stockActual <= $medicamento->stock_minimo ? 'text-rose-600' : 'text-emerald-600' }}">
                     {{ $stockActual }}
                 </p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase">Predicción diaria</p>
-                <p class="text-2xl font-bold text-indigo-600">{{ $consumoPromedio }}</p>
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <p class="text-[11px] font-bold text-indigo-600/70 uppercase tracking-wider">Predicción diaria</p>
+                <p class="text-3xl font-black text-indigo-600 tracking-tight mt-1">{{ $consumoPromedio }}</p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase">Días restantes</p>
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                 <p
-                    class="text-2xl font-bold {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'text-red-600' : 'text-gray-800' }}">
+                    class="text-[11px] font-bold uppercase tracking-wider {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'text-rose-600/70' : 'text-slate-400' }}">
+                    Días restantes
+                </p>
+                <p
+                    class="text-3xl font-black tracking-tight mt-1 {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'text-rose-600' : 'text-slate-800' }}">
                     {{ $diasRestantes ?? '—' }}
                 </p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase">Consumo total 90d</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $consumoTotal }}</p>
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Consumo total 90d</p>
+                <p class="text-3xl font-black text-slate-800 tracking-tight mt-1">{{ $consumoTotal }}</p>
             </div>
         </div>
 
-        {{-- MODELOS USADOS --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="font-bold text-gray-800 mb-4">Modelos de predicción usados</h3>
+        {{-- ============ MODELOS USADOS ============ --}}
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+            <div>
+                <h3 class="font-extrabold text-slate-800 text-base">Modelos de predicción usados</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">Algoritmos aplicados al consumo histórico</p>
+            </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div class="border-l-4 border-blue-500 pl-3">
-                    <p class="text-xs text-gray-500 uppercase">Promedio 7 días</p>
-                    <p class="text-xl font-bold">{{ $prediccion['promedio_7_dias'] }}</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 border-l-4 border-l-indigo-400">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promedio 7 días</p>
+                    <p class="text-2xl font-black text-slate-800 tracking-tight mt-1">
+                        {{ $prediccion['promedio_7_dias'] }}</p>
                 </div>
-                <div class="border-l-4 border-blue-500 pl-3">
-                    <p class="text-xs text-gray-500 uppercase">Promedio 30 días</p>
-                    <p class="text-xl font-bold">{{ $prediccion['promedio_30_dias'] }}</p>
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 border-l-4 border-l-indigo-400">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promedio 30 días</p>
+                    <p class="text-2xl font-black text-slate-800 tracking-tight mt-1">
+                        {{ $prediccion['promedio_30_dias'] }}</p>
                 </div>
-                <div class="border-l-4 border-indigo-500 pl-3">
-                    <p class="text-xs text-gray-500 uppercase">Promedio móvil ponderado</p>
-                    <p class="text-xl font-bold">{{ $prediccion['movil_ponderado'] }}</p>
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 border-l-4 border-l-indigo-500">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mov. ponderado</p>
+                    <p class="text-2xl font-black text-slate-800 tracking-tight mt-1">
+                        {{ $prediccion['movil_ponderado'] }}</p>
                 </div>
-                <div class="border-l-4 border-purple-500 pl-3">
-                    <p class="text-xs text-gray-500 uppercase">Suavizado exponencial</p>
-                    <p class="text-xl font-bold">{{ $prediccion['suavizado_exponencial'] }}</p>
+                <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 border-l-4 border-l-purple-500">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Suavizado exp.</p>
+                    <p class="text-2xl font-black text-slate-800 tracking-tight mt-1">
+                        {{ $prediccion['suavizado_exponencial'] }}</p>
                 </div>
             </div>
 
             {{-- Regresión lineal --}}
-            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h4 class="font-semibold text-sm text-gray-700 mb-2">Regresión lineal</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div>
-                        <p class="text-xs text-gray-500">Pendiente</p>
-                        <p class="font-mono font-bold">{{ $prediccion['regresion']['pendiente'] }}</p>
+            <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 space-y-4">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                        </svg>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Intercepto</p>
-                        <p class="font-mono font-bold">{{ $prediccion['regresion']['intercepto'] }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">R² (bondad de ajuste)</p>
-                        <p class="font-mono font-bold">{{ $prediccion['regresion']['r2'] }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">Predicción base</p>
-                        <p class="font-mono font-bold text-indigo-600">
-                            {{ $prediccion['prediccion_diaria_base'] }}/día
-                        </p>
+                        <h4 class="font-extrabold text-slate-800 text-sm">Regresión lineal</h4>
+                        <p class="text-[11px] text-slate-400">Ajuste de tendencia sobre los datos históricos</p>
                     </div>
                 </div>
-                <p class="text-xs text-gray-600 mt-3 italic">
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white border border-slate-100 rounded-2xl p-3">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pendiente</p>
+                        <p class="text-xs font-mono font-bold text-slate-800 mt-1">
+                            {{ $prediccion['regresion']['pendiente'] }}</p>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-3">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Intercepto</p>
+                        <p class="text-xs font-mono font-bold text-slate-800 mt-1">
+                            {{ $prediccion['regresion']['intercepto'] }}</p>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-3">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">R² (bondad)</p>
+                        <p class="text-xs font-mono font-bold text-slate-800 mt-1">{{ $prediccion['regresion']['r2'] }}
+                        </p>
+                    </div>
+                    <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-3">
+                        <p class="text-[10px] font-bold text-indigo-600/70 uppercase tracking-wider">Predicción base</p>
+                        <p class="text-xs font-mono font-bold text-indigo-700 mt-1">
+                            {{ $prediccion['prediccion_diaria_base'] }}/día</p>
+                    </div>
+                </div>
+
+                <p class="text-[11px] font-medium text-slate-500 italic leading-relaxed">
                     {{ $prediccion['regresion']['interpretacion'] }}
                 </p>
             </div>
         </div>
 
-        {{-- GRÁFICA 1: Historial de consumo --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="font-bold text-gray-800 mb-4">Historial de consumo (últimos 90 días)</h3>
-            <div class="h-64">
-                <canvas id="chartHistorial"></canvas>
+        {{-- ============ GRÁFICA 1: HISTORIAL ============ --}}
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100">
+                <h3 class="font-extrabold text-slate-800 text-base">Historial de consumo</h3>
+                <p class="text-[11px] text-slate-400">Últimos 90 días</p>
+            </div>
+            <div class="p-5">
+                <div class="h-64">
+                    <canvas id="chartHistorial"></canvas>
+                </div>
             </div>
         </div>
 
-        {{-- GRÁFICA 2: Predicción próximos 30 días --}}
-        <div class="bg-white p-6 rounded-lg shadow">
-            <div class="flex justify-between items-center mb-4">
+        {{-- ============ GRÁFICA 2: PREDICCIÓN ============ --}}
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                 <div>
-                    <h3 class="font-bold text-gray-800">Predicción — Próximos 30 días</h3>
-                    <p class="text-xs text-gray-500">
-                        Total estimado: <strong>{{ $prediccion['total_predicho'] }}</strong> unidades
+                    <h3 class="font-extrabold text-slate-800 text-base">Predicción — Próximos 30 días</h3>
+                    <p class="text-[11px] text-slate-400">
+                        Total estimado:
+                        <span class="font-bold text-slate-700">{{ $prediccion['total_predicho'] }}</span> unidades
                     </p>
                 </div>
-                <div class="flex gap-4 text-xs">
-                    <span class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
-                        Consumo diario predicho
+                <div class="flex flex-wrap gap-3 text-[11px] font-bold">
+                    <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Consumo diario
                     </span>
-                    <span class="flex items-center gap-1">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         Acumulado
                     </span>
                 </div>
             </div>
-            <div class="h-72">
-                <canvas id="chartPrediccion"></canvas>
+            <div class="p-5">
+                <div class="h-72">
+                    <canvas id="chartPrediccion"></canvas>
+                </div>
             </div>
         </div>
 
-        <div class="pt-4 flex space-x-2">
+        {{-- ============ ACCIONES ============ --}}
+        <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-wrap gap-2">
             <a href="{{ route('existencias.show', $medicamento) }}"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">Ver existencias</a>
-            <a href="{{ route('prediccion.index') }}" class="px-4 py-2 bg-gray-100 rounded-md text-sm">Volver</a>
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Ver existencias
+            </a>
+            <a href="{{ route('prediccion.index') }}"
+                class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 rounded-xl text-xs font-bold transition-all">
+                Volver
+            </a>
         </div>
     </div>
 
-    {{-- SCRIPTS DE GRÁFICAS --}}
+    {{-- ============ SCRIPTS DE GRÁFICAS ============ --}}
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
