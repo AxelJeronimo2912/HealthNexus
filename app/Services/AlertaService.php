@@ -205,7 +205,7 @@ class AlertaService
             $alerta = self::crearSiNoExiste([
                 'tipo' => 'paciente',
                 'categoria' => 'signos_criticos',
-                'nivel' => 'critico',
+                'nivel' => 'critico', 
                 'titulo' => 'Signos vitales críticos',
                 'mensaje' => "{$signo->paciente->nombre_completo}: " . implode(', ', $problemas),
                 'referencia_tipo' => 'paciente',

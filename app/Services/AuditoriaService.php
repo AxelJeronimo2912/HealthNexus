@@ -107,7 +107,7 @@ class AuditoriaService
                 : "Intento de login fallido" . ($email ? " para {$email}" : ''),
             null,
             [],
-            [],
+            [], 
             ['email_intentado' => $email]
         );
     }
