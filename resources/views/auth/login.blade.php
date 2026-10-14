@@ -10,26 +10,32 @@
         <div class="w-full max-w-5xl bg-nexus-card rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[580px] z-10 border border-white/10">
             
             <!-- SECCION IZQUIERDA: Formulario de Login -->
-            <div class="w-full md:w-1/2 p-8 sm:p-12 flex flex-col justify-between bg-white relative">
+            <div class="w-full md:w-1/2 p-8 sm:p-12 flex flex-col justify-between bg-white relative overflow-hidden">
                 
-                <div class="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-nexus-accent/20 to-transparent rounded-br-full pointer-events-none"></div>
+                <!-- Destello púrpura suave superior izquierdo (Según imagen) -->
+                <div class="absolute -top-10 -left-10 w-44 h-44 bg-purple-200/50 rounded-full blur-2xl pointer-events-none"></div>
 
-                <!-- Branding / Espacio para Logo -->
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="h-12 w-12 rounded-2xl bg-nexus-primary flex items-center justify-center shadow-md text-nexus-accent border border-nexus-accent/20">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                <!-- Branding / Espacio para Logo Exacto -->
+                <div class="flex items-center gap-4 mb-6 relative z-10">
+                    <!-- Icono Contenedor Oscuro -->
+                    <div class="h-14 w-14 rounded-2xl bg-[#172554] flex items-center justify-center shadow-lg shrink-0">
+                        <!-- SVG del Logo Exacto (Capas / Cápsulas apiladas) -->
+                        <svg class="w-8 h-8 text-[#93c5fd]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h8a3 3 0 013 3v0a3 3 0 01-3 3H8a3 3 0 01-3-3v0a3 3 0 013-3z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h12a3 3 0 013 3v0a3 3 0 01-3 3H6a3 3 0 01-3-3v0a3 3 0 013-3z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18h6a2 2 0 012 2v0a1 1 0 01-1 1H8a1 1 0 01-1-1v0a2 2 0 012-2z" />
                         </svg>
                     </div>
 
-                    <div class="border-l border-slate-200 pl-4">
-                        <h1 class="text-xl font-bold tracking-tight text-nexus-primary">NexusHealth</h1>
-                        <p class="text-xs text-nexus-muted font-medium">Doctor Web App | Login</p>
+                    <!-- Texto de Marca -->
+                    <div class="border-l border-slate-200 pl-4 py-0.5">
+                        <h1 class="text-2xl font-extrabold tracking-tight text-[#0f172a] leading-none">HealthNexus</h1>
+                        <p class="text-xs text-[#475569] font-medium mt-1.5 tracking-wide">Medicina Web App | Login</p>
                     </div>
                 </div>
 
                 <!-- Formulario -->
-                <div class="my-auto">
+                <div class="my-auto relative z-10">
                     <x-auth-session-status class="mb-4" :status="session('status')" />
 
                     <form method="POST" action="{{ route('login') }}" class="space-y-5">
@@ -39,7 +45,7 @@
                         <div>
                             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                                 class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-full text-nexus-text placeholder-nexus-muted text-sm focus:outline-none focus:ring-2 focus:ring-nexus-secondary focus:bg-white transition-all shadow-sm"
-                                placeholder="Correo electronico o Usuario" />
+                                placeholder="Correo electrónico o Usuario" />
                             <x-input-error :messages="$errors->get('email')" class="mt-2 text-xs" />
                         </div>
 
@@ -47,7 +53,7 @@
                         <div>
                             <input id="password" type="password" name="password" required autocomplete="current-password"
                                 class="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-full text-nexus-text placeholder-nexus-muted text-sm focus:outline-none focus:ring-2 focus:ring-nexus-secondary focus:bg-white transition-all shadow-sm"
-                                placeholder="Contrasena" />
+                                placeholder="Contraseña" />
                             <x-input-error :messages="$errors->get('password')" class="mt-2 text-xs" />
                         </div>
 
@@ -60,7 +66,7 @@
 
                             @if (Route::has('password.request'))
                                 <a class="hover:text-nexus-secondary transition-colors underline" href="{{ route('password.request') }}">
-                                    ¿Olvidaste tu contrasena?
+                                    ¿Olvidaste tu contraseña?
                                 </a>
                             @endif
                         </div>
@@ -68,14 +74,14 @@
                         <!-- Boton Login -->
                         <div class="pt-2">
                             <button type="submit" class="w-full py-3.5 px-6 rounded-full shadow-lg shadow-nexus-secondary/30 text-sm font-semibold text-white bg-nexus-secondary hover:bg-nexus-secondary-hover focus:outline-none focus:ring-2 focus:ring-nexus-secondary transform active:scale-95 transition-all">
-                                Iniciar Sesion
+                                Iniciar Sesión
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <div class="text-xs text-slate-400 mt-6">
-                    © {{ date('Y') }} NexusHealth System. Todos los derechos reservados.
+                <div class="text-xs text-slate-400 mt-6 relative z-10">
+                    © {{ date('Y') }} HealthNexus System. Todos los derechos reservados.
                 </div>
             </div>
 
@@ -96,7 +102,7 @@
                     </svg>
                 </div>
 
-                <!-- Icono de Estetoscopio + Pulso Cardiaco (Segun tu imagen) -->
+                <!-- Icono de Estetoscopio + Pulso Cardiaco -->
                 <div class="my-auto z-10 flex flex-col items-center text-center pl-6">
                     <div class="relative w-72 h-64 flex items-center justify-center">
                         <div class="absolute inset-0 bg-nexus-secondary/20 rounded-full blur-2xl"></div>
@@ -121,9 +127,9 @@
                         </svg>
                     </div>
 
-                    <h2 class="text-2xl font-bold text-white tracking-wide mt-2">Atencion Medica Digital</h2>
+                    <h2 class="text-2xl font-bold text-white tracking-wide mt-2">Atención Médica Digital</h2>
                     <p class="text-xs text-nexus-accent max-w-xs mt-2 font-light leading-relaxed">
-                        Accede a expedientes, citas clinicas e historial del paciente de forma instantanea.
+                        Accede a expedientes, citas clínicas e historial del paciente de forma instantánea.
                     </p>
                 </div>
 
@@ -131,5 +137,6 @@
                     Plataforma Segura • HIPAA Compliant
                 </div>
             </div>
+        </div>
     </div>
 </x-guest-layout>

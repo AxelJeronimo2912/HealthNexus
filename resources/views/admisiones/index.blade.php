@@ -7,13 +7,14 @@
                 </h2>
                 <p class="text-xs text-slate-400 mt-0.5">Registro de llegada y derivaciones de pacientes</p>
             </div>
-            <a href="{{ route('admisiones.create') }}"
-                class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                </svg>
-                Nueva Admisión
-            </a>
+            <button type="button" id="btn-abrir-admision"
+    class="group relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-nexus-accent bg-nexus-primary rounded-2xl shadow-md hover:shadow-lg hover:bg-slate-900 transition-all duration-200">
+    <svg class="w-5 h-5 me-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+    <span>Nueva Admisión</span>
+</button>
+            
         </div>
     </x-slot>
 
@@ -184,9 +185,14 @@
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end">
                                         <a href="{{ route('admisiones.show', $adm) }}"
-                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
-                                            Ver
+                                            class="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center transition-all shadow-sm"
+                                                title="Ver detalles">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
                                         </a>
+                                        
                                     </div>
                                 </td>
                             </tr>
@@ -204,4 +210,31 @@
 
         <div class="mt-4">{{ $admisiones->links() }}</div>
     </div>
+    @include('admisiones.partials._modal-admision')
+@include('admisiones.partials._modal-paciente-rapido')
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modal-admision');
+        const btnAbrir = document.getElementById('btn-abrir-admision');
+        const btnCerrar = document.getElementById('btn-cerrar-admision');
+        const btnCancelar = document.getElementById('btn-cancelar-admision');
+
+        function abrirModal() { modal.classList.remove('hidden'); }
+        function cerrarModal() { modal.classList.add('hidden'); }
+
+        if(btnAbrir) btnAbrir.addEventListener('click', abrirModal);
+        if(btnCerrar) btnCerrar.addEventListener('click', cerrarModal);
+        if(btnCancelar) btnCancelar.addEventListener('click', cerrarModal);
+
+        // Cerrar al hacer clic fuera del contenido
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) cerrarModal();
+        });
+    });
+</script>
+@endpush
 </x-app-layout>
+
+

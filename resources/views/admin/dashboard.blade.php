@@ -27,34 +27,36 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
             {{-- TARJETA DE BIENVENIDA --}}
-            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-3xl p-6 sm:p-8 shadow-lg text-white">
-                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div class="space-y-1">
-                        <h3 class="text-2xl font-bold">
-                            Bienvenido, {{ auth()->user()->name }}
-                        </h3>
-                        <p class="text-sm text-indigo-100">
-                            Rol activo:
-                            <span class="font-semibold capitalize">
-                                {{ auth()->user()->getRoleNames()->first() ?? 'Administrador' }}
-                            </span>
-                        </p>
-                        <p class="text-xs text-indigo-200">
-                            {{ now()->translatedFormat('l d \d\e F \d\e Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="flex items-center gap-3 bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/20">
-                        <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                            <x-heroicon-s-heart class="w-6 h-6 text-white" />
-                        </div>
-                        <div class="pr-2">
-                            <p class="text-xs font-bold">HealthNexus</p>
-                            <p class="text-[10px] text-indigo-200">Sistema Médico</p>
-                        </div>
-                    </div>
-                </div>
+<div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-3xl p-6 sm:p-8 shadow-lg text-white">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <h3 class="text-2xl font-bold">
+                Bienvenido, {{ auth()->user()->name }}
+            </h3>
+            <p class="text-sm text-indigo-100">
+                Rol activo:
+                <span class="font-semibold capitalize">
+                    {{ auth()->user()->getRoleNames()->first() ?? 'Administrador' }}
+                </span>
+            </p>
+            <p class="text-xs text-indigo-200">
+                {{ now()->translatedFormat('l d \d\e F \d\e Y') }}
+            </p>
+        </div>
+
+        {{-- INSIGNIA DE LA MARCA USANDO LA IMAGEN LOCAL --}}
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/20">
+            <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-md shrink-0 p-1">
+                <img src="{{ asset('images/logo-healthnexus.png') }}" alt="Logo HealthNexus" class="w-full h-full object-contain" />
             </div>
+            <div class="pr-2">
+                <p class="text-xs font-bold">HealthNexus</p>
+                <p class="text-[10px] text-indigo-200">Sistema Médico</p>
+            </div>
+        </div>
+
+    </div>
+</div>
 
             {{-- 4 CARDS PRINCIPALES (KPIs) --}}
             <div>

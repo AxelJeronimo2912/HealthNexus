@@ -1,4 +1,4 @@
-<x-app-layout>
+
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800">
@@ -96,8 +96,7 @@
         <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="font-bold text-gray-800">Personal asignado ({{ $servicio->users->count() }})</h3>
-                <a href="{{ route('servicios.personal', $servicio) }}"
-                    class="text-xs text-blue-600 hover:underline">Gestionar personal →</a>
+                
             </div>
 
             @if ($servicio->users->isEmpty())
@@ -117,11 +116,17 @@
         </div>
 
         <div class="pt-4 flex space-x-2">
-            <a href="{{ route('servicios.edit', $servicio) }}"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">Editar</a>
-            <a href="{{ route('servicios.personal', $servicio) }}"
-                class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm">Gestionar personal</a>
-            <a href="{{ route('servicios.index') }}" class="px-4 py-2 bg-gray-100 rounded-md text-sm">Volver</a>
+            
+
+            <button type="button" @click="abrirModalEditar('{{ route('servicios.edit', $servicio) }}')"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">Editar
+            </button>
+            
+            <button type="button" @click="abrirModalPersonal('{{ route('servicios.personal', $servicio) }}')"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm">
+                Gestionar personal
+            </button>
+            
         </div>
     </div>
-</x-app-layout>
+
