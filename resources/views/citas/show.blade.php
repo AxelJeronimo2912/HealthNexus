@@ -26,6 +26,34 @@
         // Solo el administrador puede reabrir una cita cerrada
         $esAdmin = auth()->user()->hasRole('administrador');
         $puedeCambiarEstado = !$esFinal || $esAdmin;
+
+        // ── Flujo de estados para el stepper ──
+        $flujo = [
+            'programada' => ['label' => 'Programada', 'siguiente' => 'confirmada', 'accion' => 'Confirmar cita'],
+            'confirmada' => ['label' => 'Confirmada', 'siguiente' => 'en_curso', 'accion' => 'Poner en curso'],
+            'en_curso' => ['label' => 'En curso', 'siguiente' => 'atendida', 'accion' => 'Marcar como atendida'],
+            'atendida' => ['label' => 'Atendida', 'siguiente' => null, 'accion' => null],
+            'cancelada' => ['label' => 'Cancelada', 'siguiente' => null, 'accion' => null],
+            'no_asistio' => ['label' => 'No asistió', 'siguiente' => null, 'accion' => null],
+        ];
+
+        $pasoActual = $flujo[$cita->estado] ?? null;
+        $siguiente = $pasoActual['siguiente'] ?? null;
+        $accionPrincipal = $pasoActual['accion'] ?? null;
+
+        // Acciones secundarias: todas menos la actual y la siguiente
+        $todasLasAcciones = [
+            'programada' => 'Programar',
+            'confirmada' => 'Confirmar',
+            'en_curso' => 'En curso',
+            'atendida' => 'Marcar atendida',
+            'no_asistio' => 'No asistió',
+            'cancelada' => 'Cancelar',
+        ];
+
+        $accionesSecundarias = collect($todasLasAcciones)->reject(
+            fn($label, $estado) => $estado === $cita->estado || $estado === $siguiente,
+        );
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -188,38 +216,137 @@
             </div>
         @endif
 
-        {{-- Acciones: cambiar estado --}}
+        {{-- ═══════════════════════════════════════════════════════════ --}}
+        {{-- ACCIONES: cambiar estado (rediseñado)                       --}}
+        {{-- ═══════════════════════════════════════════════════════════ --}}
         @if ($puedeCambiarEstado)
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Actualizar estado</h3>
-                    @if ($esFinal && $esAdmin)
-                        <span
-                            class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
-                            Modo administrador · cita cerrada
-                        </span>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+
+                {{-- Stepper de flujo --}}
+                <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider">
+                        @php
+                            $pasos = ['programada', 'confirmada', 'en_curso', 'atendida'];
+                            $indiceActual = array_search($cita->estado, $pasos);
+                            $esFinal = in_array($cita->estado, ['cancelada', 'no_asistio'], true);
+                        @endphp
+
+                        @foreach ($pasos as $i => $paso)
+                            @php
+                                $completado = !$esFinal && $indiceActual !== false && $i < $indiceActual;
+                                $activo = !$esFinal && $i === $indiceActual;
+                            @endphp
+                            <div class="flex-1 flex items-center">
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <div
+                                        class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold
+                                        {{ $completado ? 'bg-emerald-500 text-white' : ($activo ? 'bg-purple-600 text-white ring-4 ring-purple-100' : 'bg-slate-100 text-slate-400') }}">
+                                        @if ($completado)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M4.5 12.75l6 6 9-13.5" />
+                                            </svg>
+                                        @else
+                                            {{ $i + 1 }}
+                                        @endif
+                                    </div>
+                                    <span
+                                        class="{{ $activo ? 'text-purple-700' : ($completado ? 'text-emerald-600' : 'text-slate-400') }}">
+                                        {{ $flujo[$paso]['label'] }}
+                                    </span>
+                                </div>
+                                @if (!$loop->last)
+                                    <div
+                                        class="flex-1 h-0.5 mx-2 mb-5
+                                            {{ $completado ? 'bg-emerald-400' : 'bg-slate-100' }}">
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($esFinal)
+                        <div class="mt-3 flex items-center gap-2 text-xs">
+                            <span
+                                class="px-2 py-0.5 rounded-full font-semibold
+                                    {{ $cita->estado === 'cancelada' ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-600' }}">
+                                {{ $cita->estado_label }}
+                            </span>
+                            <span class="text-slate-500">— flujo finalizado</span>
+                        </div>
                     @endif
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ([
-        'programada' => 'Programar',
-        'confirmada' => 'Confirmar',
-        'en_curso' => 'En curso',
-        'atendida' => 'Marcar atendida',
-        'no_asistio' => 'No asistió',
-        'cancelada' => 'Cancelar',
-    ] as $estado => $label)
-                        @if ($cita->estado !== $estado)
-                            <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST" class="inline">
-                                @csrf
-                                <input type="hidden" name="estado" value="{{ $estado }}">
-                                <button
-                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-all">
-                                    {{ $label }}
-                                </button>
-                            </form>
+
+                {{-- Acción principal --}}
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Siguiente acción</h3>
+                        @if ($esFinal && $esAdmin)
+                            <span
+                                class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                                Modo admin · cita cerrada
+                            </span>
                         @endif
-                    @endforeach
+                    </div>
+
+                    @if ($siguiente && $accionPrincipal)
+                        @php
+                            $estilosPrincipal = match ($siguiente) {
+                                'confirmada' => 'bg-blue-600 hover:bg-blue-500 text-white',
+                                'en_curso' => 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+                                'atendida' => 'bg-emerald-600 hover:bg-emerald-500 text-white',
+                                default => 'bg-purple-600 hover:bg-purple-500 text-white',
+                            };
+                        @endphp
+                        <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="estado" value="{{ $siguiente }}">
+                            <button
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3
+                                       rounded-xl text-sm font-bold shadow-sm transition-all {{ $estilosPrincipal }}">
+                                {{ $accionPrincipal }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                            </button>
+                        </form>
+                    @else
+                        <p class="text-sm text-slate-500">
+                            No hay una siguiente acción natural para esta cita.
+                        </p>
+                    @endif
+
+                    {{-- Acciones secundarias --}}
+                    @if ($accionesSecundarias->isNotEmpty())
+                        <div class="mt-6 pt-5 border-t border-slate-100">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                                Otras acciones
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($accionesSecundarias as $estado => $label)
+                                    @php
+                                        $esNegativo = in_array($estado, ['cancelada', 'no_asistio'], true);
+                                        $clase = $esNegativo
+                                            ? 'border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300'
+                                            : 'border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700';
+                                    @endphp
+                                    <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST"
+                                        @if ($esNegativo) onsubmit="return confirm('¿Confirmas cambiar el estado a «{{ $label }}»?')" @endif
+                                        class="inline">
+                                        @csrf
+                                        <input type="hidden" name="estado" value="{{ $estado }}">
+                                        <button
+                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg border bg-white transition-all {{ $clase }}">
+                                            {{ $label }}
+                                        </button>
+                                    </form>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         @else
@@ -244,14 +371,16 @@
             </div>
         @endif
 
+        {{-- Zona de administración --}}
         @if (auth()->user()->hasRole('administrador'))
             <div class="bg-rose-50/50 p-6 rounded-2xl border border-rose-100 flex items-center justify-between">
                 <span class="text-xs text-rose-700 font-medium">Zona de administración</span>
                 <form action="{{ route('citas.destroy', $cita) }}" method="POST"
                     onsubmit="return confirm('¿Confirma que desea eliminar esta cita de forma permanente?')">
                     @csrf @method('DELETE')
-                    <button class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">Eliminar
-                        cita</button>
+                    <button class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">
+                        Eliminar cita
+                    </button>
                 </form>
             </div>
         @endif
