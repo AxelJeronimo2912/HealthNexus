@@ -1,4 +1,4 @@
-{{-- MODAL DE CREAR --}}
+
 <div x-show="modalCrear" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
     class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
@@ -84,33 +84,68 @@
                 </div>
             </div>
 
-            {{-- FECHA / HORA / DURACIÓN --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {{-- FECHA / TURNO --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label for="fecha"
                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Fecha *
                     </label>
-                    <input type="date" name="fecha" id="fecha" x-model="form.fecha" @change="cargarMedicos()"
-                        required min="{{ now()->format('Y-m-d') }}"
+                    <input type="date" name="fecha" id="fecha" x-model="form.fecha" required
+                        min="{{ now()->format('Y-m-d') }}"
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
                 </div>
+
+                <div>
+                    <label for="turno_id"
+                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        Turno *
+                    </label>
+                    <select name="turno_id" id="turno_id" x-model="form.turno_id" @change="cargarHorasTurno()" required
+                        :disabled="cargandoTurnos"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none disabled:opacity-60">
+                        <option value="">— Selecciona un turno —</option>
+                        <template x-for="t in turnos" :key="t.id">
+                            <option :value="t.id" x-text="`${t.nombre} (${t.hora_inicio} - ${t.hora_fin})`">
+                            </option>
+                        </template>
+                    </select>
+                    <p x-show="cargandoTurnos" class="text-xs text-slate-500 mt-1">Cargando turnos...</p>
+                    @error('turno_id')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- HORA / DURACIÓN --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label for="hora"
                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Hora *
                     </label>
-                    <input type="time" name="hora" id="hora" x-model="form.hora" @change="cargarMedicos()"
-                        required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                    <select name="hora" id="hora" x-model="form.hora" @change="cargarMedicos()" required
+                        :disabled="!form.turno_id"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none disabled:opacity-60">
+                        <option value="">— Selecciona una hora —</option>
+                        <template x-for="h in horasDisponibles" :key="h">
+                            <option :value="h" x-text="h"></option>
+                        </template>
+                    </select>
+                    <p x-show="form.turno_id && horasDisponibles.length === 0" class="text-xs text-red-500 mt-1">No hay
+                        horas disponibles en este turno.</p>
+                    @error('hora')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
+
                 <div>
                     <label for="duracion_minutos"
                         class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Duración *
                     </label>
                     <select name="duracion_minutos" id="duracion_minutos" x-model="form.duracion_minutos"
-                        @change="cargarMedicos()"
+                        @change="cargarHorasTurno(); cargarMedicos()"
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
                         <option value="15">15 min</option>
                         <option value="30">30 min</option>
@@ -164,7 +199,7 @@
                 </label>
                 <select name="medico_id" id="medico_id" x-model="form.medico_id" required
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
-                    <option value="">— Selecciona fecha, hora y especialidad —</option>
+                    <option value="">— Selecciona fecha, turno y hora —</option>
                     <template x-for="m in medicos" :key="m.id">
                         <option :value="m.id"
                             x-text="`${m.nombre} (${m.rol})${m.ocupado ? ' — OCUPADO' : ''}`" :disabled="m.ocupado">
@@ -217,3 +252,4 @@
         </form>
     </div>
 </div>
+

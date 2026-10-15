@@ -6,9 +6,7 @@
         let calendar = null;
 
         return {
-            // ============================================================
             // ESTADO
-            // ============================================================
             modalCrear: false,
             modalDetalle: false,
             citaDetalle: {},
@@ -21,13 +19,19 @@
             mensajeMedicos: '— Selecciona fecha y hora —',
             medicoSelectDisabled: true,
 
+            // Turnos y horas
+            turnos: [],
+            cargandoTurnos: false,
+            horasDisponibles: [],
+
             form: {
                 paciente_id: '',
                 especialidad_id: '',
                 servicio_id: '',
                 medico_id: '',
+                turno_id: '',
                 fecha: '{{ now()->format('Y-m-d') }}',
-                hora: '09:00',
+                hora: '',
                 duracion_minutos: '30',
                 motivo: '',
                 notas: '',
@@ -180,6 +184,18 @@
 
                 @if ($errors->any())
                     this.modalCrear = true;
+                    this.$nextTick(() => {
+                        this.cargarTurnos().then(() => {
+                            @if (old('turno_id'))
+                                this.form.turno_id = '{{ old('turno_id') }}';
+                                this.cargarHorasTurno();
+                            @endif
+                            @if (old('hora'))
+                                this.form.hora = '{{ old('hora') }}';
+                            @endif
+                            this.cargarMedicos();
+                        });
+                    });
                 @endif
             },
 
@@ -188,9 +204,26 @@
             // ============================================================
             abrirModal(fecha = null, hora = null) {
                 if (fecha) this.form.fecha = fecha;
-                if (hora) this.form.hora = hora;
+                this.form.hora = hora || '';
+                this.form.turno_id = '';
+                this.horasDisponibles = [];
                 this.modalCrear = true;
-                this.$nextTick(() => this.cargarMedicos());
+
+                this.$nextTick(() => {
+                    this.cargarTurnos().then(() => {
+                        if (hora) {
+                            const turno = this.turnos.find(t =>
+                                hora >= t.hora_inicio && hora <= t.hora_fin
+                            );
+                            if (turno) {
+                                this.form.turno_id = turno.id;
+                                this.cargarHorasTurno();
+                                this.form.hora = hora;
+                                this.cargarMedicos();
+                            }
+                        }
+                    });
+                });
             },
 
             abrirDetalle(data) {
@@ -220,6 +253,89 @@
                 this.medicoSelectDisabled = disabled;
                 this.medicos = [];
                 this.form.medico_id = '';
+            },
+
+            // ============================================================
+            // TURNOS Y HORAS
+            // ============================================================
+            async cargarTurnos() {
+                // Reset dependientes
+                this.form.turno_id = '';
+                this.form.hora = '';
+                this.horasDisponibles = [];
+                this.resetMedicoSelect('— Selecciona una hora —');
+
+                if (!this.form.fecha) return;
+
+                this.cargandoTurnos = true;
+                this.turnos = [];
+
+                try {
+                    const params = new URLSearchParams({
+                        fecha: this.form.fecha
+                    });
+                    if (this.form.medico_id) params.append('medico_id', this.form.medico_id);
+
+                    const res = await fetch(`{{ route('agenda.turnos-disponibles') }}?${params}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const data = await res.json();
+                    this.turnos = Array.isArray(data) ? data : [];
+                } catch (e) {
+                    console.error('Error al cargar turnos:', e);
+                    this.turnos = [];
+                } finally {
+                    this.cargandoTurnos = false;
+                }
+            },
+
+            cargarHorasTurno() {
+                this.form.hora = '';
+                this.resetMedicoSelect('— Selecciona una hora —');
+
+                const turno = this.turnos.find(t => String(t.id) === String(this.form.turno_id));
+                if (!turno) {
+                    this.horasDisponibles = [];
+                    return;
+                }
+
+                const duracion = parseInt(this.form.duracion_minutos || 30, 10);
+
+                this.horasDisponibles = this.generarHoras(
+                    turno.hora_inicio,
+                    turno.hora_fin,
+                    duracion
+                );
+
+                // Auto-selección si solo hay una hora
+                if (this.horasDisponibles.length === 1) {
+                    this.form.hora = this.horasDisponibles[0];
+                    this.cargarMedicos();
+                }
+            },
+
+            generarHoras(inicio, fin, duracion) {
+                const horas = [];
+                const [hI, mI] = inicio.split(':').map(Number);
+                const [hF, mF] = fin.split(':').map(Number);
+
+                let actual = hI * 60 + mI;
+                const limite = hF * 60 + mF;
+
+                while (actual + duracion <= limite) {
+                    const h = String(Math.floor(actual / 60)).padStart(2, '0');
+                    const m = String(actual % 60).padStart(2, '0');
+                    horas.push(`${h}:${m}`);
+                    actual += duracion;
+                }
+
+                return horas;
             },
 
             // ============================================================
@@ -355,7 +471,6 @@
             },
 
             aplicarFiltros() {
-                // Feedback visual en el contador
                 this.filtrando = true;
                 clearTimeout(this._filtrandoTimeout);
                 this._filtrandoTimeout = setTimeout(() => this.filtrando = false, 300);
@@ -368,24 +483,20 @@
                     const p = ev.extendedProps || {};
                     let cumple = true;
 
-                    // Estado
                     if (this.filtros.estados.length && !this.filtros.estados.includes(p.estado_raw)) {
                         cumple = false;
                     }
 
-                    // Triage
                     if (cumple && this.filtros.triages.length) {
                         const triageVal = p.triage_raw || 'sin_triage';
                         if (!this.filtros.triages.includes(triageVal)) cumple = false;
                     }
 
-                    // Médico
                     if (cumple && this.filtros.medico_id && String(p.medico_id) !== String(this.filtros
                             .medico_id)) {
                         cumple = false;
                     }
 
-                    // Especialidad
                     if (cumple && this.filtros.especialidad_id && String(p.especialidad_id) !== String(this
                             .filtros.especialidad_id)) {
                         cumple = false;
@@ -402,4 +513,3 @@
         };
     }
 </script>
-
