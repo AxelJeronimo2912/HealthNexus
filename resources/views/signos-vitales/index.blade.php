@@ -1,4 +1,12 @@
 <x-app-layout>
+    @php
+        // Carga de pacientes para el modal de creación (sin tocar el controlador)
+        $pacientes = \App\Models\Paciente::orderBy('apellido_paterno')->get();
+
+        $inputCls = '...'; // el que ya tienes
+        $labelCls = '...';
+        $thCls = '...';
+    @endphp
     <x-slot name="header">
         <div class="flex justify-between items-center gap-3">
             <div class="min-w-0">
@@ -7,13 +15,13 @@
                 </h2>
                 <p class="text-xs text-slate-400 mt-0.5">Registro y clasificación de triage por paciente</p>
             </div>
-            <a href="{{ route('signos-vitales.create') }}"
+            <button type="button" x-data x-on:click="$dispatch('open-modal-signos')"
                 class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
                 Nuevo Registro
-            </a>
+            </button>
         </div>
     </x-slot>
 
@@ -24,7 +32,9 @@
         $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
-    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    {{-- Contenedor principal con estado Alpine del modal --}}
+    <div x-data="{ modalSignos: @js($errors->any() && old('_modal') === 'signos') }" x-on:open-modal-signos.window="modalSignos = true"
+        x-on:keydown.escape.window="modalSignos = false" class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         @if (session('success'))
             <div
@@ -142,5 +152,8 @@
         </div>
 
         <div class="mt-4">{{ $registros->links() }}</div>
+
+        {{-- Modal de creación (partial) --}}
+        @include('signos-vitales._modal')
     </div>
 </x-app-layout>

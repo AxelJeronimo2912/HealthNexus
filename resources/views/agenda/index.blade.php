@@ -1,4 +1,3 @@
-
 <x-app-layout>
     @php
         $esMedico = auth()
@@ -114,6 +113,28 @@
             .dia-cita {
                 transition: none;
             }
+        }
+
+        /* Tooltip de ayuda de la agenda */
+        .ayuda-tooltip {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 320px;
+            z-index: 50;
+        }
+
+        .ayuda-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 14px;
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border-left: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+            transform: rotate(45deg);
         }
     </style>
 
@@ -549,14 +570,79 @@
             </div>
         </div>
 
-        {{-- ==================== SELECTOR DE VISTA ==================== --}}
-        <div class="inline-flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold" role="tablist">
-            <button type="button" role="tab" :aria-selected="vista === 'calendario'" @click="vista = 'calendario'"
-                :class="vista === 'calendario' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-1.5 rounded-lg transition">Calendario</button>
-            <button type="button" role="tab" :aria-selected="vista === 'diaria'" @click="vista = 'diaria'"
-                :class="vista === 'diaria' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-1.5 rounded-lg transition">Agenda diaria por médico</button>
+        {{-- ==================== SELECTOR DE VISTA + AYUDA ==================== --}}
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="inline-flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold" role="tablist">
+                <button type="button" role="tab" :aria-selected="vista === 'calendario'"
+                    @click="vista = 'calendario'"
+                    :class="vista === 'calendario' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                    class="px-4 py-1.5 rounded-lg transition">Calendario</button>
+                <button type="button" role="tab" :aria-selected="vista === 'diaria'"
+                    @click="vista = 'diaria'"
+                    :class="vista === 'diaria' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                    class="px-4 py-1.5 rounded-lg transition">Agenda diaria por médico</button>
+            </div>
+
+            {{-- Botón de ayuda (?) con tooltip explicativo --}}
+            <div x-data="{ ayudaAbierta: false }" class="relative">
+                <button type="button" @click="ayudaAbierta = !ayudaAbierta" @click.outside="ayudaAbierta = false"
+                    class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 font-bold text-sm flex items-center justify-center shadow-sm transition-all"
+                    aria-label="Ayuda sobre la agenda" :aria-expanded="ayudaAbierta">
+                    ?
+                </button>
+
+                <div x-show="ayudaAbierta" x-cloak x-transition.opacity.duration.150ms
+                    class="ayuda-tooltip bg-white border border-slate-200 rounded-2xl shadow-xl p-4 text-left">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-2">
+                        Guía rápida de la agenda
+                    </p>
+
+                    <ul class="space-y-2.5 text-[11px] text-slate-600 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">1</span>
+                            <span><strong class="text-slate-800">Calendario:</strong> vista mensual/semanal con todas
+                                las citas. Haz clic en un evento para ver el detalle.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">2</span>
+                            <span><strong class="text-slate-800">Agenda diaria:</strong> una columna por médico con las
+                                citas posicionadas por hora. Útil para ver traslapes.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">3</span>
+                            <span><strong class="text-slate-800">Filtros:</strong> filtra por estado, triage, médico o
+                                especialidad. El contador muestra cuántas citas coinciden.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">4</span>
+                            <span><strong class="text-slate-800">Colores de triage:</strong> el color del evento indica
+                                la prioridad (rojo = crítico, azul = sin urgencia).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">5</span>
+                            <span><strong class="text-slate-800">Traslapes:</strong> las citas que se encimen se marcan
+                                con un anillo rojo y la etiqueta <em>⚠ Traslape</em>.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">6</span>
+                            <span><strong class="text-slate-800">Crear cita:</strong> haz clic en un espacio libre de
+                                la agenda diaria para agendar en ese horario.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span
+                                class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">★</span>
+                            <span><strong class="text-slate-800">Línea roja:</strong> indica la hora actual del día en
+                                curso.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         {{-- ==================== CALENDARIO ==================== --}}
@@ -622,7 +708,7 @@
 
                             <div class="relative" :class="puedeCrear ? 'cursor-pointer' : ''"
                                 :style="`height:${horas.length * pxHora}px;
-                                                                                                    background-image: repeating-linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 1px, transparent 1px, transparent ${pxHora / 2}px)`"
+                                                                                                                                                                                                                                                                    background-image: repeating-linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 1px, transparent 1px, transparent ${pxHora / 2}px)`"
                                 @mousemove="moverHueco($event, m)" @mouseleave="huecoY = null"
                                 @click="$event.target === $event.currentTarget && clickHueco($event, m)">
 
