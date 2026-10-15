@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Paciente;
+use App\Services\TriageService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -48,18 +49,18 @@ class StoreSignoVitalRequest extends FormRequest
             'paciente_id.required' => 'Debes seleccionar un paciente.',
             'paciente_id.exists'   => 'El paciente seleccionado no existe.',
 
-            'temperatura.between' => 'La temperatura debe estar entre 30 y 45 °C.',
-            'frecuencia_cardiaca.between' => 'La frecuencia cardíaca debe estar entre 20 y 250 lpm.',
+            'temperatura.between'             => 'La temperatura debe estar entre 30 y 45 °C.',
+            'frecuencia_cardiaca.between'     => 'La frecuencia cardíaca debe estar entre 20 y 250 lpm.',
             'frecuencia_respiratoria.between' => 'La frecuencia respiratoria debe estar entre 5 y 80 rpm.',
-            'presion_arterial.regex' => 'La presión debe tener el formato 120/80.',
-            'saturacion_oxigeno.between' => 'La saturación debe estar entre 50 y 100%.',
-            'glucosa.between' => 'La glucosa debe estar entre 20 y 800 mg/dL.',
+            'presion_arterial.regex'          => 'La presión debe tener el formato 120/80.',
+            'saturacion_oxigeno.between'      => 'La saturación debe estar entre 50 y 100%.',
+            'glucosa.between'                 => 'La glucosa debe estar entre 20 y 800 mg/dL.',
 
             'peso.between'  => 'El peso debe estar entre 0.5 y 500 kg.',
             'talla.between' => 'La talla debe estar entre 0.3 y 2.5 m.',
 
             'escala_dolor.between' => 'La escala de dolor va de 0 a 10.',
-            'triage.in' => 'El triage debe ser rojo, naranja, amarillo, verde o azul.',
+            'triage.in'            => 'El triage debe ser rojo, naranja, amarillo, verde o azul.',
         ];
     }
 
@@ -131,16 +132,35 @@ class StoreSignoVitalRequest extends FormRequest
                 $v->errors()->add('notas',
                     'Glucosa > 300 mg/dL: agrega una nota clínica.');
             }
+
+            // ===== Regla 8: Triaje manual no puede contradecir signos críticos =====
+            if ($this->boolean('triage_manual') && $this->triage) {
+
+                $triageManual    = $this->triage;
+                $triageCalculado = TriageService::calcular($this->all());
+
+                // Jerarquía de severidad: rojo > naranja > amarillo > verde > azul
+                $peso = ['rojo' => 5, 'naranja' => 4, 'amarillo' => 3, 'verde' => 2, 'azul' => 1];
+
+                $nivelManual    = $peso[$triageManual]    ?? 0;
+                $nivelCalculado = $peso[$triageCalculado] ?? 0;
+
+                // Si el usuario quiere bajar la severidad respecto al cálculo automático
+                // y el cálculo automático es crítico (rojo/naranja), lo bloqueamos.
+                if ($nivelCalculado >= 4 && $nivelManual < $nivelCalculado) {
+                    $v->errors()->add('triage',
+                        "El triage automático es {$triageCalculado} y no puedes bajarlo manualmente a {$triageManual} sin justificación clínica.");
+                }
+            }
         });
     }
 
     /**
-     * Normaliza el nombre completo del paciente (opcional).
+     * Normaliza la presión arterial (quita espacios).
      */
     protected function prepareForValidation(): void
     {
         if ($this->presion_arterial) {
-            // Quitar espacios: "120 / 80" → "120/80"
             $this->merge([
                 'presion_arterial' => preg_replace('/\s+/', '', $this->presion_arterial),
             ]);
