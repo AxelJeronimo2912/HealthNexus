@@ -242,19 +242,21 @@ Route::middleware(['auth', 'permission:signos-vitales.ver'])
 | Módulo de Agenda
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'permission:agenda.ver'])
-    ->prefix('agenda')
-    ->name('agenda.')
-    ->group(function () {
-        Route::get('/', [AgendaController::class, 'index'])->name('index');
-        Route::get('/dia', [AgendaController::class, 'dia'])->name('dia');
-        Route::get('/crear', [AgendaController::class, 'create'])->name('create');
-        Route::post('/', [AgendaController::class, 'store'])->name('store');
-        Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
-        Route::get('/api/medicos-disponibles', [AgendaController::class, 'medicosDisponibles'])->name('medicos-disponibles');
-        Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
-        Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
-    });
+        ->prefix('agenda')
+        ->name('agenda.')
+        ->group(function () {
+            Route::get('/', [AgendaController::class, 'index'])->name('index');
+            Route::get('/dia', [AgendaController::class, 'dia'])->name('dia');
+            Route::get('/crear', [AgendaController::class, 'create'])->name('create');
+            Route::post('/', [AgendaController::class, 'store'])->name('store');
+            Route::get('/eventos', [AgendaController::class, 'eventos'])->name('eventos');
+            Route::get('/api/medicos-disponibles', [AgendaController::class, 'medicosDisponibles'])->name('medicos-disponibles');
+            Route::get('/api/pacientes-disponibles', [AgendaController::class, 'pacientesDisponibles'])->name('pacientes-disponibles');
+            Route::get('/api/turnos-disponibles', [AgendaController::class, 'turnosDisponibles'])->name('turnos-disponibles');
+        });
+
 /*
 |--------------------------------------------------------------------------
 | Módulo de Citas

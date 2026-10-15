@@ -1,4 +1,3 @@
-<?php
 
 namespace App\Http\Controllers;
 
@@ -13,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\Turno;
 use App\Models\Servicio;
 class AgendaController extends Controller
 {
@@ -584,4 +584,41 @@ public function eventos(Request $request): JsonResponse
                 || str_contains($n, 'médic');
         });
     }
+
+    /**
+ * Endpoint AJAX: turnos disponibles para una fecha (y opcionalmente un médico).
+ */
+public function turnosDisponibles(Request $request): JsonResponse
+{
+    try {
+        $request->validate([
+            'medico_id' => ['nullable', 'exists:users,id'],
+        ]);
+
+        // Solo devolvemos los turnos activos (sin depender de fecha)
+        $turnos = Turno::where('activo', true)
+            ->orderBy('hora_inicio')
+            ->get()
+            ->map(fn ($t) => [
+                'id'          => $t->id,
+                'nombre'      => $t->nombre ?? $t->codigo,
+                'codigo'      => $t->codigo,
+                'hora_inicio' => substr($t->hora_inicio, 0, 5),
+                'hora_fin'    => substr($t->hora_fin, 0, 5),
+            ])
+            ->values();
+
+        return response()->json($turnos);
+    } catch (\Throwable $e) {
+        \Log::error('Error en turnosDisponibles: ' . $e->getMessage(), [
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return response()->json([
+            'error'   => true,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
 }
