@@ -1,4 +1,16 @@
+
 <x-app-layout>
+    @php
+        $esMedico = auth()
+            ->user()
+            ->getRoleNames()
+            ->contains(function ($rol) {
+                $rol = strtolower(trim($rol));
+                return $rol === 'm' || str_starts_with($rol, 'medic');
+            });
+        $puedeCrear = !$esMedico;
+    @endphp
+
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div>
@@ -6,13 +18,15 @@
                 <p class="text-xs text-slate-400 mt-0.5">Control de citas y disponibilidad de especialistas</p>
             </div>
 
-            <button type="button" @click="$dispatch('abrir-modal-crear')"
-                class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm hover:shadow-indigo-200 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                </svg>
-                Nueva Cita
-            </button>
+            @if ($puedeCrear)
+                <button type="button" @click="$dispatch('abrir-modal-crear')"
+                    class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm hover:shadow-indigo-200 hover:shadow-lg transition-all duration-200 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Cita
+                </button>
+            @endif
         </div>
     </x-slot>
 
@@ -69,11 +83,327 @@
         [x-cloak] {
             display: none !important;
         }
+
+        /* Agenda diaria */
+        .dia-col-cabecera {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .dia-cita {
+            transition: filter .15s, transform .15s;
+        }
+
+        .dia-cita:hover {
+            filter: brightness(1.08);
+            z-index: 15;
+        }
+
+        .dia-hueco-hover {
+            position: absolute;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            background: rgba(99, 102, 241, .10);
+            border-top: 1px dashed #6366f1;
+            z-index: 5;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .dia-cita {
+                transition: none;
+            }
+        }
     </style>
 
     @include('agenda._scripts')
 
-    <div x-data="agendaData()" x-init="initCalendar()" @abrir-modal-crear.window="abrirModal()"
+    {{-- ==================== LÓGICA DE LA AGENDA DIARIA ====================
+         Se compone con agendaData() (de _scripts) sin modificarlo:
+         x-data="agendaCompleta()" = agendaData() + agendaDiaria()
+         Lee las citas del calendario (FullCalendar) o de `this.citas` si existe.
+         Campos esperados en extendedProps de cada evento:
+         medico_id, paciente_id, estado, triage, especialidad_id
+    --}}
+    <script>
+        // Fecha local en formato YYYY-MM-DD (evita el desfase de UTC de toISOString)
+        function fechaLocal(d = new Date()) {
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+        }
+
+        // Une objetos conservando getters (el spread {...a, ...b} los evaluaría y los perdería)
+        function mezclarObjetos(...objs) {
+            const destino = {};
+            objs.forEach(o => Object.defineProperties(destino, Object.getOwnPropertyDescriptors(o)));
+            return destino;
+        }
+
+        function agendaDiaria(base, medicosIniciales, puedeCrear) {
+            return {
+                // ---------- estado ----------
+                vista: 'calendario',
+                fechaDia: fechaLocal(),
+                medicosLista: medicosIniciales,
+                puedeCrear: puedeCrear,
+                citasDia: [],
+                horaIni: 7,
+                horaFin: 21,
+                pxHora: 64,
+                huecoY: null,
+                huecoMedico: null,
+                ahoraMin: null,
+
+                // ---------- ciclo de vida ----------
+                initCalendar() {
+                    base.initCalendar.call(this);
+
+                    // Mantiene la agenda diaria sincronizada con el calendario
+                    this.$nextTick(() => {
+                        const cal = this.calendarioRef();
+                        try {
+                            cal?.on('eventsSet', () => this.refrescarDia());
+                        } catch (e) {}
+                        this.refrescarDia();
+                    });
+
+                    this.$watch('fechaDia', () => this.refrescarDia());
+                    this.$watch('vista', v => {
+                        if (v === 'calendario') this.$nextTick(() => this.calendarioRef()?.updateSize());
+                        if (v === 'diaria') this.refrescarDia();
+                    });
+                    this.$watch('filtros', () => this.refrescarDia(), {
+                        deep: true
+                    });
+
+                    this.actualizarAhora();
+                    setInterval(() => this.actualizarAhora(), 60000);
+                },
+
+                calendarioRef() {
+                    return this.calendar || window.calendar || null;
+                },
+
+                actualizarAhora() {
+                    const d = new Date();
+                    this.ahoraMin = d.getHours() * 60 + d.getMinutes();
+                },
+
+                // ---------- datos ----------
+                refrescarDia() {
+                    let origen = [];
+                    if (Array.isArray(this.citas)) {
+                        origen = this.citas.map(c => ({
+                            id: c.id,
+                            title: c.title,
+                            start: new Date(c.start),
+                            end: c.end ? new Date(c.end) : new Date(new Date(c.start).getTime() + 30 * 60000),
+                            color: c.color || c.backgroundColor,
+                            ...(c.extendedProps || {}),
+                            medico_id: c.medico_id ?? c.extendedProps?.medico_id,
+                            paciente_id: c.paciente_id ?? c.extendedProps?.paciente_id,
+                            estado: c.estado ?? c.extendedProps?.estado,
+                            triage: c.triage ?? c.extendedProps?.triage,
+                            especialidad_id: c.especialidad_id ?? c.extendedProps?.especialidad_id,
+                        }));
+                    } else {
+                        const cal = this.calendarioRef();
+                        origen = (cal ? cal.getEvents() : []).map(e => ({
+                            id: e.id,
+                            title: e.title,
+                            start: e.start,
+                            end: e.end || new Date(e.start.getTime() + 30 * 60000),
+                            color: e.backgroundColor,
+                            ...e.extendedProps,
+                        }));
+                    }
+                    this.citasDia = origen.filter(c => c.start);
+                },
+
+                get horas() {
+                    return Array.from({
+                        length: this.horaFin - this.horaIni
+                    }, (_, i) => this.horaIni + i);
+                },
+
+                get medicosDia() {
+                    const id = this.filtros?.medico_id;
+                    return id ? this.medicosLista.filter(m => m.id == id) : this.medicosLista;
+                },
+
+                // Aplica los mismos filtros del panel (estado, triage, especialidad)
+                pasaFiltros(c) {
+                    const f = this.filtros || {};
+                    if (f.estados?.length && !f.estados.includes(c.estado)) return false;
+                    if (f.triages?.length && !f.triages.includes(c.triage)) return false;
+                    if (f.especialidad_id && c.especialidad_id != f.especialidad_id) return false;
+                    return true;
+                },
+
+                citasDeMedico(medicoId) {
+                    return this.citasDia
+                        .filter(c => c.medico_id == medicoId &&
+                            fechaLocal(c.start) === this.fechaDia &&
+                            c.estado !== 'cancelada' &&
+                            this.pasaFiltros(c))
+                        .sort((a, b) => a.start - b.start);
+                },
+
+                get totalDia() {
+                    return this.medicosDia.reduce((n, m) => n + this.citasDeMedico(m.id).length, 0);
+                },
+
+                // ---------- fechas ----------
+                hoy() {
+                    return fechaLocal();
+                },
+                esHoy() {
+                    return this.fechaDia === fechaLocal();
+                },
+
+                cambiarDia(n) {
+                    const d = new Date(this.fechaDia + 'T00:00:00');
+                    d.setDate(d.getDate() + n);
+                    this.fechaDia = fechaLocal(d);
+                },
+
+                fechaLegible() {
+                    return new Date(this.fechaDia + 'T00:00:00')
+                        .toLocaleDateString('es-MX', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                },
+
+                minutos(d) {
+                    d = new Date(d);
+                    return d.getHours() * 60 + d.getMinutes();
+                },
+                horaCorta(d) {
+                    return new Date(d).toLocaleTimeString('es-MX', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                },
+                etiquetaHora(h) {
+                    return String(h).padStart(2, '0') + ':00';
+                },
+
+                // ---------- posicionamiento ----------
+                estiloCita(c) {
+                    const ppm = this.pxHora / 60;
+                    const top = (this.minutos(c.start) - this.horaIni * 60) * ppm;
+                    const alto = Math.max((this.minutos(c.end) - this.minutos(c.start)) * ppm, 24);
+                    return `top:${top}px;height:${alto - 2}px;background:${c.color || '#64748b'}`;
+                },
+
+                get estiloAhora() {
+                    if (!this.esHoy() || this.ahoraMin === null) return 'display:none';
+                    const top = (this.ahoraMin - this.horaIni * 60) * (this.pxHora / 60);
+                    if (top < 0 || top > this.horas.length * this.pxHora) return 'display:none';
+                    return `top:${top}px`;
+                },
+
+                // ---------- clic en hueco ----------
+                minutoDesdeClic(e) {
+                    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+                    return Math.floor(((y / this.pxHora) * 60) / 15) * 15 + this.horaIni * 60;
+                },
+
+                moverHueco(e, medico) {
+                    if (!this.puedeCrear) return;
+                    if (e.target !== e.currentTarget) {
+                        this.huecoY = null;
+                        return;
+                    }
+                    const min = this.minutoDesdeClic(e);
+                    this.huecoMedico = medico.id;
+                    this.huecoY = (min - this.horaIni * 60) * (this.pxHora / 60);
+                },
+
+                clickHueco(e, medico) {
+                    if (!this.puedeCrear) return;
+                    const min = this.minutoDesdeClic(e);
+                    const hora = `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+                    this.$dispatch('abrir-modal-crear', {
+                        medico_id: medico.id,
+                        fecha: this.fechaDia,
+                        hora
+                    });
+                },
+
+                verDetalle(c) {
+                    // Reutiliza el modal de detalle existente
+                    if (typeof base.verDetalle === 'function') return base.verDetalle.call(this, c);
+                    this.$dispatch('abrir-modal-detalle', {
+                        id: c.id
+                    });
+                },
+
+                // ---------- modal crear (con datos precargados) ----------
+                abrirModal(d = {}) {
+                    if (!this.puedeCrear) return;
+                    base.abrirModal.call(this);
+                    const f = this.form;
+                    if (f) {
+                        if (d.medico_id) f.medico_id = d.medico_id;
+                        f.fecha = d.fecha ?? f.fecha ?? this.fechaDia;
+                        if (d.hora) f.hora = d.hora;
+                    }
+                    // Por si tu modal escucha un evento en lugar de usar `form`
+                    this.$dispatch('precargar-cita', d);
+                },
+
+                // ---------- traslapes ----------
+                solapan(a, b) {
+                    return a.start < b.end && a.end > b.start;
+                },
+
+                // Úsalo desde el modal: busca choques de médico y de paciente
+                conflictos({
+                    medico_id,
+                    paciente_id,
+                    inicio,
+                    fin,
+                    ignorarId = null
+                }) {
+                    const ini = new Date(inicio),
+                        f = new Date(fin);
+                    const choca = c => c.id != ignorarId && c.estado !== 'cancelada' && c.start < f && c.end > ini;
+                    return {
+                        medico: medico_id ? this.citasDia.filter(c => c.medico_id == medico_id && choca(c)) : [],
+                        paciente: paciente_id ? this.citasDia.filter(c => c.paciente_id == paciente_id && choca(c)) : [],
+                    };
+                },
+
+                // Citas del día que ya se traslapan entre sí (se marcan en rojo)
+                get idsConflicto() {
+                    const ids = new Set();
+                    this.medicosDia.forEach(m => {
+                        const lista = this.citasDeMedico(m.id);
+                        lista.forEach((a, i) => lista.slice(i + 1).forEach(b => {
+                            if (this.solapan(a, b)) {
+                                ids.add(a.id);
+                                ids.add(b.id);
+                            }
+                        }));
+                    });
+                    return ids;
+                },
+            };
+        }
+
+        window.agendaCompleta = function(medicos, puedeCrear = true) {
+            const base = agendaData();
+            return mezclarObjetos(base, agendaDiaria(base, medicos, puedeCrear));
+        };
+    </script>
+
+    <div x-data="agendaCompleta(@js($medicos->map(fn($m) => ['id' => $m->id, 'nombre' => trim($m->name . ' ' . $m->apellido_paterno)])->values()), @js($puedeCrear))" x-init="initCalendar()" @abrir-modal-crear.window="abrirModal($event.detail || {})"
         class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         @if (session('success'))
@@ -83,6 +413,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold">
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
             </div>
         @endif
 
@@ -182,7 +520,7 @@
                     </div>
                 </div>
 
-                {{-- Médico (solo admin) --}}
+                {{-- Médico (admin y enfermería) --}}
                 @if ($medicos->isNotEmpty())
                     <div>
                         <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Médico</p>
@@ -211,9 +549,112 @@
             </div>
         </div>
 
-        {{-- CALENDARIO --}}
-        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-sm">
+        {{-- ==================== SELECTOR DE VISTA ==================== --}}
+        <div class="inline-flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold" role="tablist">
+            <button type="button" role="tab" :aria-selected="vista === 'calendario'" @click="vista = 'calendario'"
+                :class="vista === 'calendario' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                class="px-4 py-1.5 rounded-lg transition">Calendario</button>
+            <button type="button" role="tab" :aria-selected="vista === 'diaria'" @click="vista = 'diaria'"
+                :class="vista === 'diaria' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                class="px-4 py-1.5 rounded-lg transition">Agenda diaria por médico</button>
+        </div>
+
+        {{-- ==================== CALENDARIO ==================== --}}
+        <div x-show="vista === 'calendario'"
+            class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-sm">
             <div id="calendar"></div>
+        </div>
+
+        {{-- ==================== AGENDA DIARIA POR MÉDICO ==================== --}}
+        <div x-show="vista === 'diaria'" x-cloak
+            class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+
+            {{-- Navegación de fecha --}}
+            <div class="flex items-center justify-between flex-wrap gap-3 p-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="cambiarDia(-1)" aria-label="Día anterior"
+                        class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 font-bold text-slate-600">‹</button>
+                    <input type="date" x-model="fechaDia"
+                        class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                    <button type="button" @click="cambiarDia(1)" aria-label="Día siguiente"
+                        class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 font-bold text-slate-600">›</button>
+                    <button type="button" @click="fechaDia = hoy()"
+                        class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition">Hoy</button>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-sm font-extrabold text-slate-700 capitalize" x-text="fechaLegible()"></p>
+                    <p class="text-[11px] text-slate-400"><span x-text="totalDia"></span> citas en el día</p>
+                </div>
+
+                <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                    <span class="flex items-center gap-1">
+                        <i class="w-3 h-3 rounded ring-2 ring-red-600 bg-white inline-block"></i> Traslape
+                    </span>
+                    <span x-show="puedeCrear">Haz clic en un espacio libre para agendar</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[70vh] overflow-y-auto">
+                <div class="flex min-w-max">
+
+                    {{-- Columna de horas --}}
+                    <div class="w-14 shrink-0 border-r border-slate-100 bg-slate-50/50 sticky left-0 z-30">
+                        <div class="h-12 border-b border-slate-100 bg-slate-50 dia-col-cabecera"></div>
+                        <template x-for="h in horas" :key="h">
+                            <div class="text-[10px] font-bold text-slate-400 text-right pr-2"
+                                :style="`height:${pxHora}px`">
+                                <span class="relative -top-1.5" x-text="etiquetaHora(h)"></span>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Una columna por médico --}}
+                    <template x-for="m in medicosDia" :key="m.id">
+                        <div class="w-56 shrink-0 border-r border-slate-100">
+                            <div
+                                class="h-12 flex flex-col items-center justify-center border-b border-slate-100 bg-slate-50 dia-col-cabecera">
+                                <p class="text-[11px] font-extrabold text-slate-700 truncate max-w-full px-2"
+                                    x-text="m.nombre"></p>
+                                <p class="text-[10px] text-slate-400" x-text="citasDeMedico(m.id).length + ' citas'">
+                                </p>
+                            </div>
+
+                            <div class="relative" :class="puedeCrear ? 'cursor-pointer' : ''"
+                                :style="`height:${horas.length * pxHora}px;
+                                                                                                    background-image: repeating-linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 1px, transparent 1px, transparent ${pxHora / 2}px)`"
+                                @mousemove="moverHueco($event, m)" @mouseleave="huecoY = null"
+                                @click="$event.target === $event.currentTarget && clickHueco($event, m)">
+
+                                {{-- Resalte del hueco bajo el cursor --}}
+                                <div x-show="huecoY !== null && huecoMedico === m.id" class="dia-hueco-hover"
+                                    :style="`top:${huecoY}px;height:${pxHora / 4}px`"></div>
+
+                                {{-- Línea de hora actual --}}
+                                <div class="absolute left-0 right-0 z-10 border-t-2 border-rose-500 pointer-events-none"
+                                    :style="estiloAhora"></div>
+
+                                <template x-for="c in citasDeMedico(m.id)" :key="c.id">
+                                    <div @click.stop="verDetalle(c)" role="button" tabindex="0"
+                                        @keydown.enter="verDetalle(c)"
+                                        class="dia-cita absolute left-1 right-1 rounded-lg px-2 py-1 text-white text-[10px] font-semibold overflow-hidden shadow-sm z-10"
+                                        :class="idsConflicto.has(c.id) ? 'ring-2 ring-red-600 ring-offset-1' : ''"
+                                        :style="estiloCita(c)">
+                                        <p class="truncate" x-text="c.title"></p>
+                                        <p class="opacity-80" x-text="horaCorta(c.start) + ' – ' + horaCorta(c.end)">
+                                        </p>
+                                        <p x-show="idsConflicto.has(c.id)" class="font-black">⚠ Traslape</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div x-show="medicosDia.length === 0" class="p-10 text-xs text-slate-400">
+                        No hay médicos para mostrar con los filtros actuales.
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- MODALES --}}
