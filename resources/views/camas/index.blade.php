@@ -45,7 +45,7 @@
             </div>
         @endif
 
-        {{-- Tarjetas de Métricas estilo HealthNexus --}}
+        {{-- Tarjetas de Métricas --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
             <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
                 <div class="p-3.5 bg-slate-100 text-slate-600 rounded-2xl">
@@ -136,9 +136,7 @@
             @endif
         </form>
 
-        {{-- ══════════════════════════════════════════════════════════════ --}}
-        {{-- GRID VISUAL DE CAMAS (BED BOARD)                              --}}
-        {{-- ══════════════════════════════════════════════════════════════ --}}
+        {{-- GRID VISUAL DE CAMAS (BED BOARD) --}}
         <div class="bg-white shadow-sm rounded-3xl border border-slate-100 p-6">
 
             {{-- Leyenda --}}
@@ -167,7 +165,6 @@
 
             @forelse ($camasPorArea as $area => $camasArea)
                 <div class="mb-8 last:mb-0">
-                    {{-- Título del área --}}
                     <div class="flex items-center gap-2 mb-4">
                         <svg class="w-4 h-4 text-indigo-950" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -180,7 +177,6 @@
                         </span>
                     </div>
 
-                    {{-- Grid de camas --}}
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         @foreach ($camasArea as $cama)
                             @php
@@ -211,15 +207,41 @@
                                         'bg-slate-300',
                                     ],
                                 };
+
+                                // 🔽 Solo mostrar paciente si la cama está OCUPADA
+                                $paciente = null;
+                                $triage = null;
+                                $signoId = null;
+
+                                if ($cama->estado === 'ocupada') {
+                                    $asignacion = $cama->pacienteActual;
+                                    $paciente = $asignacion?->paciente;
+                                    $triage = $cama->triage_actual; // ← accessor: signo más reciente
+                                    $signoId = $cama->signo_vital_actual_id; // ← accessor: id del más reciente
+                                }
+
+                                $triageColor = match ($triage) {
+                                    'rojo' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                    'naranja' => 'bg-orange-100 text-orange-700 border-orange-200',
+                                    'amarillo' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                    'verde' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                    'azul' => 'bg-sky-100 text-sky-700 border-sky-200',
+                                    default => null,
+                                };
                             @endphp
 
                             <div class="relative group">
-                                {{-- Cuerpo de la cama (click → ver detalle) --}}
                                 <button type="button"
-                                    @click="modalDetalle = {{ $cama->toJson() }}; $dispatch('open-modal', 'modal-ver-cama')"
+                                    @click="
+                                        modalDetalle = {{ $cama->toJson() }};
+                                        @if ($paciente) modalDetalle.paciente = {{ $paciente->toJson() }};
+                                            modalDetalle.triage = '{{ $triage ?? 'sin_triage' }}';
+                                            modalDetalle.fecha_ingreso = '{{ $cama->pacienteActual?->fecha_ingreso?->toIso8601String() }}';
+                                            modalDetalle.signo_vital_id = {{ $signoId ?? 'null' }}; @endif
+                                        $dispatch('open-modal', 'modal-ver-cama')
+                                    "
                                     class="w-full border-2 {{ $colorClasses[0] }} rounded-2xl p-3 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 text-left">
 
-                                    {{-- Ícono cama vista cenital --}}
                                     <div class="flex items-center justify-center mb-2">
                                         <div class="relative">
                                             <svg class="w-14 h-14 {{ $colorClasses[1] }}" viewBox="0 0 64 64"
@@ -241,27 +263,43 @@
                                         </div>
                                     </div>
 
-                                    {{-- Info --}}
                                     <div class="text-center">
                                         <p class="font-bold text-sm {{ $colorClasses[1] }} truncate">
                                             {{ $cama->codigo }}</p>
-                                        <p class="text-[10px] font-medium text-slate-500 truncate mt-0.5">
-                                            {{ $cama->habitacion ? 'Hab. ' . $cama->habitacion : 'Sin hab.' }}
-                                            @if ($cama->piso)
-                                                · {{ $cama->piso }}
+
+                                        @if ($paciente)
+                                            <p
+                                                class="text-[11px] font-bold text-slate-800 truncate mt-1 leading-tight">
+                                                {{ $paciente->nombre_completo }}
+                                            </p>
+                                            <p class="text-[9px] text-slate-500 truncate">
+                                                ID: {{ $paciente->id }}
+                                            </p>
+
+                                            @if ($triage)
+                                                <span
+                                                    class="inline-block mt-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase border {{ $triageColor }}">
+                                                    {{ $triage }}
+                                                </span>
                                             @endif
-                                        </p>
-                                        <p
-                                            class="text-[10px] font-semibold uppercase tracking-wider mt-1 {{ $colorClasses[1] }} opacity-80">
-                                            {{ $cama->estado_label }}
-                                        </p>
+                                        @else
+                                            <p class="text-[10px] font-medium text-slate-500 truncate mt-0.5">
+                                                {{ $cama->habitacion ? 'Hab. ' . $cama->habitacion : 'Sin hab.' }}
+                                                @if ($cama->piso)
+                                                    · {{ $cama->piso }}
+                                                @endif
+                                            </p>
+                                            <p
+                                                class="text-[10px] font-semibold uppercase tracking-wider mt-1 {{ $colorClasses[1] }} opacity-80">
+                                                {{ $cama->estado_label }}
+                                            </p>
+                                        @endif
                                     </div>
                                 </button>
 
                                 {{-- Acciones rápidas al hover --}}
                                 <div
                                     class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {{-- Editar --}}
                                     <button type="button"
                                         @click.stop="modalEditar = {{ $cama->toJson() }}; $dispatch('open-modal', 'modal-editar-cama')"
                                         class="w-7 h-7 flex items-center justify-center bg-white/95 backdrop-blur rounded-lg shadow-sm text-purple-600 hover:bg-purple-50 transition-colors"
@@ -273,7 +311,6 @@
                                         </svg>
                                     </button>
 
-                                    {{-- Eliminar --}}
                                     <form action="{{ route('camas.destroy', $cama) }}" method="POST" class="inline"
                                         onsubmit="return confirm('¿Eliminar la cama {{ $cama->codigo }}?')">
                                         @csrf @method('DELETE')
@@ -302,7 +339,6 @@
                                         </svg>
                                     </button>
 
-                                    {{-- Dropdown de estados --}}
                                     <div x-show="openEstado" x-transition @click.outside="openEstado = false"
                                         class="absolute bottom-9 right-0 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
                                         @foreach (['disponible' => 'Disponible', 'ocupada' => 'Ocupada', 'limpieza' => 'Limpieza', 'mantenimiento' => 'Mantenimiento', 'fuera_servicio' => 'Fuera de Servicio'] as $val => $lbl)
@@ -360,6 +396,7 @@
                 @endif
             </p>
         </div>
+
         {{-- Modal Crear Cama --}}
         <x-modal name="modal-crear-cama" :show="$errors->any()" focusable>
             <form action="{{ route('camas.store') }}" method="POST" class="p-6">
@@ -429,7 +466,8 @@
                                 </span>
                             </template>
                         </div>
-                        <button type="button" @click="$dispatch('close-modal', 'modal-ver-cama')"
+                        <button type="button"
+                            @click="modalDetalle = null; $dispatch('close-modal', 'modal-ver-cama')"
                             class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
                     </div>
 
@@ -459,6 +497,77 @@
                             </div>
                         </div>
 
+                        {{-- Paciente asignado --}}
+                        <template x-if="modalDetalle.paciente">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Paciente
+                                    asignado</h4>
+                                <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl space-y-2">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-bold text-slate-800 truncate"
+                                                x-text="modalDetalle.paciente.nombre_completo"></p>
+                                            <p class="text-[11px] text-slate-500">
+                                                ID: <span x-text="modalDetalle.paciente.id"></span>
+                                            </p>
+                                        </div>
+                                        <template x-if="modalDetalle.triage">
+                                            <span
+                                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border shrink-0"
+                                                :class="{
+                                                    'bg-rose-100 text-rose-700 border-rose-200': modalDetalle
+                                                        .triage === 'rojo',
+                                                    'bg-orange-100 text-orange-700 border-orange-200': modalDetalle
+                                                        .triage === 'naranja',
+                                                    'bg-amber-100 text-amber-700 border-amber-200': modalDetalle
+                                                        .triage === 'amarillo',
+                                                    'bg-emerald-100 text-emerald-700 border-emerald-200': modalDetalle
+                                                        .triage === 'verde',
+                                                    'bg-sky-100 text-sky-700 border-sky-200': modalDetalle
+                                                        .triage === 'azul',
+                                                }"
+                                                x-text="modalDetalle.triage">
+                                            </span>
+                                        </template>
+                                    </div>
+
+                                    <template x-if="modalDetalle.fecha_ingreso">
+                                        <p class="text-[11px] text-slate-500">
+                                            Ingreso:
+                                            <span class="font-semibold text-slate-700"
+                                                x-text="new Date(modalDetalle.fecha_ingreso).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })"></span>
+                                        </p>
+                                    </template>
+
+                                    <div class="flex flex-wrap gap-3 pt-2">
+                                        <template x-if="modalDetalle.paciente.id">
+                                            <a :href="`/pacientes/${modalDetalle.paciente.id}`"
+                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">
+                                                Ver expediente →
+                                            </a>
+                                        </template>
+
+                                        <template x-if="modalDetalle.signo_vital_id">
+                                            <a :href="`/signos-vitales/${modalDetalle.signo_vital_id}`"
+                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">
+                                                Ver signos vitales →
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="!modalDetalle.paciente">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Paciente
+                                    asignado</h4>
+                                <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-center">
+                                    <p class="text-xs text-slate-500">Cama disponible — sin paciente asignado</p>
+                                </div>
+                            </div>
+                        </template>
+
                         <div class="grid grid-cols-2 gap-6">
                             <div>
                                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo</h4>
@@ -483,7 +592,8 @@
                     </div>
 
                     <div class="flex justify-end pt-4 border-t border-slate-100">
-                        <button type="button" @click="$dispatch('close-modal', 'modal-ver-cama')"
+                        <button type="button"
+                            @click="modalDetalle = null; $dispatch('close-modal', 'modal-ver-cama')"
                             class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-medium transition-colors">
                             Volver
                         </button>

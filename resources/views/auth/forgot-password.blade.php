@@ -156,5 +156,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>Actualizar estado
+
 </x-guest-layout>
