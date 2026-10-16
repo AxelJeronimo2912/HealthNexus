@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cama;
+use App\Models\CamaPaciente;
 use App\Models\Servicio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,35 +16,42 @@ class CamaController extends Controller
 {
     public function index(Request $request): View
     {
-        $busqueda = $request->input('buscar');
+        $busqueda     = $request->input('buscar');
         $filtroEstado = $request->input('estado');
 
-       $camas = Cama::query()
-    ->when($busqueda, function ($q) use ($busqueda) {
-        $q->where(function ($query) use ($busqueda) {
-            $query->where('codigo', 'like', "%{$busqueda}%")
-                ->orWhere('habitacion', 'like', "%{$busqueda}%")
-                ->orWhere('area', 'like', "%{$busqueda}%");
-        });
-    })
-    ->when(
-        $filtroEstado,
-        fn ($q) => $q->where('estado', $filtroEstado)
-    )
-    ->orderBy('area')
-    ->orderBy('piso')
-    ->orderBy('codigo')
-    ->get();   
+        // 🔧 Auto-reparación: cierra asignaciones huérfanas
+        // (camas en 'disponible' con asignación activa en pivote).
+        $this->limpiarAsignacionesHuerfanas();
+
+        $camas = Cama::query()
+            ->with([
+                // Asignación activa (o null) + su paciente
+                'pacienteActual.paciente',
+
+                // El signo vital MÁS RECIENTE del paciente asignado.
+                'pacienteActual.paciente.signosVitales' => function ($q) {
+                    $q->latest()->limit(1);
+                },
+            ])
+            ->when($busqueda, function ($q) use ($busqueda) {
+                $q->where(function ($query) use ($busqueda) {
+                    $query->where('codigo', 'like', "%{$busqueda}%")
+                        ->orWhere('habitacion', 'like', "%{$busqueda}%")
+                        ->orWhere('area', 'like', "%{$busqueda}%");
+                });
+            })
+            ->when($filtroEstado, fn ($q) => $q->where('estado', $filtroEstado))
+            ->orderBy('area')
+            ->orderBy('piso')
+            ->orderBy('codigo')
+            ->get();
 
         // Estadísticas rápidas
         $stats = [
-            'total' => Cama::count(),
-            'disponibles' => Cama::where('estado', 'disponible')->count(),
-            'ocupadas' => Cama::where('estado', 'ocupada')->count(),
-            'mantenimiento' => Cama::whereIn(
-                'estado',
-                ['mantenimiento', 'fuera_servicio']
-            )->count(),
+            'total'         => Cama::count(),
+            'disponibles'   => Cama::where('estado', 'disponible')->count(),
+            'ocupadas'      => Cama::where('estado', 'ocupada')->count(),
+            'mantenimiento' => Cama::whereIn('estado', ['mantenimiento', 'fuera_servicio'])->count(),
         ];
 
         // Servicios activos para el formulario de camas
@@ -73,10 +81,10 @@ class CamaController extends Controller
     {
         $data = $this->validar($request);
 
-        $data['oxigeno'] = $request->boolean('oxigeno');
-        $data['monitor'] = $request->boolean('monitor');
+        $data['oxigeno']    = $request->boolean('oxigeno');
+        $data['monitor']    = $request->boolean('monitor');
         $data['ventilador'] = $request->boolean('ventilador');
-        $data['activo'] = $request->boolean('activo');
+        $data['activo']     = $request->boolean('activo');
 
         Cama::create($data);
 
@@ -97,7 +105,7 @@ class CamaController extends Controller
             ->get();
 
         return view('camas.edit', [
-            'cama' => $cama,
+            'cama'      => $cama,
             'servicios' => $servicios,
         ]);
     }
@@ -106,10 +114,10 @@ class CamaController extends Controller
     {
         $data = $this->validar($request, $cama->id);
 
-        $data['oxigeno'] = $request->boolean('oxigeno');
-        $data['monitor'] = $request->boolean('monitor');
+        $data['oxigeno']    = $request->boolean('oxigeno');
+        $data['monitor']    = $request->boolean('monitor');
         $data['ventilador'] = $request->boolean('ventilador');
-        $data['activo'] = $request->boolean('activo');
+        $data['activo']     = $request->boolean('activo');
 
         $cama->update($data);
 
@@ -119,87 +127,133 @@ class CamaController extends Controller
     }
 
     public function destroy(Cama $cama): RedirectResponse
-{
-    if ($cama->pacienteActual()->exists()) {
-        AuditoriaService::registrar(
-            AuditEvent::ACCESO_DENEGADO,
-            'camas',
-            "Intento de eliminar la cama {$cama->etiqueta} bloqueado por tener un paciente asignado",
-            $cama
-        );
+    {
+        if ($cama->pacienteActual()->exists()) {
+            AuditoriaService::registrar(
+                AuditEvent::ACCESO_DENEGADO,
+                'camas',
+                "Intento de eliminar la cama {$cama->etiqueta} bloqueado por tener un paciente asignado",
+                $cama
+            );
 
-        return back()->with('error', 'No puedes eliminar una cama con un paciente asignado.');
+            return back()->with('error', 'No puedes eliminar una cama con un paciente asignado.');
+        }
+
+        if ($cama->estado === 'ocupada') {
+            AuditoriaService::registrar(
+                AuditEvent::ACCESO_DENEGADO,
+                'camas',
+                "Intento de eliminar la cama {$cama->etiqueta} bloqueado porque está marcada como ocupada",
+                $cama
+            );
+
+            return back()->with('error', 'No puedes eliminar una cama marcada como ocupada.');
+        }
+
+        $cama->delete(); // el trait registra 'deleted'
+
+        return redirect()
+            ->route('camas.index')
+            ->with('success', 'Cama eliminada correctamente.');
     }
-
-    if ($cama->estado === 'ocupada') {
-        AuditoriaService::registrar(
-            AuditEvent::ACCESO_DENEGADO,
-            'camas',
-            "Intento de eliminar la cama {$cama->etiqueta} bloqueado porque está marcada como ocupada",
-            $cama
-        );
-
-        return back()->with('error', 'No puedes eliminar una cama marcada como ocupada.');
-    }
-
-    $cama->delete(); // el trait registra 'deleted'
-
-    return redirect()
-        ->route('camas.index')
-        ->with('success', 'Cama eliminada correctamente.');
-}
 
     /**
      * Cambia el estado de una cama desde el listado.
      */
     public function cambiarEstado(Request $request, Cama $cama): RedirectResponse
-{
-    $request->validate([
-        'estado' => [
-            'required',
-            Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio']),
-        ],
-    ]);
+    {
+        $request->validate([
+            'estado' => [
+                'required',
+                Rule::in(['disponible', 'ocupada', 'mantenimiento', 'limpieza', 'fuera_servicio']),
+            ],
+        ]);
 
-    $estadoAnterior = $cama->estado;
-    $nuevoEstado    = $request->estado;
+        $estadoAnterior = $cama->estado;
+        $nuevoEstado    = $request->estado;
 
-    if ($estadoAnterior === $nuevoEstado) {
-        return back()->with('info', 'La cama ya estaba en ese estado.');
+        if ($estadoAnterior === $nuevoEstado) {
+            return back()->with('info', 'La cama ya estaba en ese estado.');
+        }
+
+        $cama->update(['estado' => $nuevoEstado]);
+
+        // 🔧 Si se marca como disponible, cerrar asignaciones activas
+        if ($nuevoEstado === 'disponible') {
+            $this->cerrarAsignacionesActivas($cama);
+        }
+
+        // ── Evento semántico según el estado destino ──
+        $evento = match ($nuevoEstado) {
+            'ocupada'        => AuditEvent::ASIGNACION_CAMA,
+            'disponible'     => AuditEvent::LIBERACION_CAMA,
+            'mantenimiento',
+            'limpieza',
+            'fuera_servicio' => AuditEvent::HOSPITALIZACION,
+            default          => AuditEvent::UPDATED,
+        };
+
+        AuditoriaService::registrar(
+            $evento,
+            'camas',
+            "Cama {$cama->etiqueta} cambió de '{$estadoAnterior}' a '{$nuevoEstado}'",
+            $cama,
+            ['estado' => $estadoAnterior],
+            ['estado' => $nuevoEstado],
+            [
+                'cama_id'     => $cama->id,
+                'cama_codigo' => $cama->codigo,
+                'servicio_id' => $cama->servicio_id,
+            ]
+        );
+
+        return back()->with('success', 'Estado actualizado a: ' . $cama->estado_label);
     }
 
-    $cama->update(['estado' => $nuevoEstado]);
+    /* =========================================================
+     | HELPERS DE LIMPIEZA
+     ========================================================= */
 
-    // ── Evento semántico según el estado destino ──
-    $evento = match ($nuevoEstado) {
-        'ocupada'        => AuditEvent::ASIGNACION_CAMA,
-        'disponible'     => AuditEvent::LIBERACION_CAMA,
-        'mantenimiento',
-        'limpieza',
-        'fuera_servicio' => AuditEvent::HOSPITALIZACION,
-        default          => AuditEvent::UPDATED,
-    };
+    /**
+     * Cierra las asignaciones activas de una cama específica.
+     */
+    private function cerrarAsignacionesActivas(Cama $cama): void
+    {
+        CamaPaciente::where('cama_id', $cama->id)
+            ->where('activa', true)
+            ->update([
+                'activa'       => false,
+                'fecha_egreso' => now(),
+            ]);
+    }
 
-    AuditoriaService::registrar(
-        $evento,
-        'camas',
-        "Cama {$cama->etiqueta} cambió de '{$estadoAnterior}' a '{$nuevoEstado}'",
-        $cama,
-        ['estado' => $estadoAnterior],
-        ['estado' => $nuevoEstado],
-        [
-            'cama_id'      => $cama->id,
-            'cama_codigo'  => $cama->codigo,
-            'servicio_id'  => $cama->servicio_id,
-        ]
-    );
+    /**
+     * Repara datos huérfanos: camas en estado 'disponible' pero con
+     * una asignación activa en cama_paciente. Esto puede pasar si el
+     * estado se cambió manualmente sin cerrar la asignación.
+     *
+     * Se ejecuta al cargar el index (operación idempotente y ligera).
+     */
+    private function limpiarAsignacionesHuerfanas(): void
+    {
+        // IDs de camas marcadas como disponible
+        $camasDisponibles = Cama::where('estado', 'disponible')->pluck('id');
 
-    return back()->with('success', 'Estado actualizado a: ' . $cama->estado_label);
-}
-    private function validar(
-        Request $request,
-        ?int $id = null
-    ): array {
+        if ($camasDisponibles->isEmpty()) {
+            return;
+        }
+
+        CamaPaciente::whereIn('cama_id', $camasDisponibles)
+            ->where('activa', true)
+            ->update([
+                'activa'       => false,
+                'fecha_egreso' => now(),
+                'motivo'       => \DB::raw("CONCAT(COALESCE(motivo, ''), ' | Cierre automático: cama marcada como disponible')"),
+            ]);
+    }
+
+    private function validar(Request $request, ?int $id = null): array
+    {
         return $request->validate([
             'codigo' => [
                 'required',
@@ -207,38 +261,12 @@ class CamaController extends Controller
                 'max:50',
                 Rule::unique('camas', 'codigo')->ignore($id),
             ],
-
-            'nombre' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
-
-            'piso' => [
-                'nullable',
-                'string',
-                'max:50',
-            ],
-
-            'ala' => [
-                'nullable',
-                'string',
-                'max:50',
-            ],
-
-            'habitacion' => [
-                'nullable',
-                'string',
-                'max:50',
-            ],
-
-            'area' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
-
-            'tipo' => [
+            'nombre'     => ['nullable', 'string', 'max:100'],
+            'piso'       => ['nullable', 'string', 'max:50'],
+            'ala'        => ['nullable', 'string', 'max:50'],
+            'habitacion' => ['nullable', 'string', 'max:50'],
+            'area'       => ['nullable', 'string', 'max:100'],
+            'tipo'       => [
                 'required',
                 Rule::in([
                     'general',
@@ -249,7 +277,6 @@ class CamaController extends Controller
                     'urgencias',
                 ]),
             ],
-
             'estado' => [
                 'required',
                 Rule::in([
@@ -260,19 +287,11 @@ class CamaController extends Controller
                     'fuera_servicio',
                 ]),
             ],
-
-            'notas' => [
-                'nullable',
-                'string',
-            ],
-
-            'servicio_id' => [
-                'nullable',
-                'exists:servicios,id',
-            ],
+            'notas'       => ['nullable', 'string'],
+            'servicio_id' => ['nullable', 'exists:servicios,id'],
         ], [
             'codigo.required' => 'El código de la cama es obligatorio.',
-            'codigo.unique' => 'Ya existe una cama con ese código.',
+            'codigo.unique'   => 'Ya existe una cama con ese código.',
         ]);
     }
 }

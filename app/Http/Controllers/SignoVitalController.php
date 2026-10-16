@@ -12,6 +12,8 @@ use App\Services\TriageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 
 class SignoVitalController extends Controller
 {
@@ -63,11 +65,25 @@ class SignoVitalController extends Controller
 
         $registro = SignoVital::create($data);
 
+        // ── Liberación automática por mejoría clínica ──
+        // Si el paciente está hospitalizado y el nuevo triage es verde/azul,
+        // se libera la cama automáticamente.
+        $liberada = false;
+        if (in_array($registro->triage, ['verde', 'azul'])) {
+            $liberada = $this->liberarCamaPorMejoria($registro);
+        }
+
         // Si el triage es rojo o naranja → ofrecer asignar cama
         if (in_array($registro->triage, ['rojo', 'naranja'])) {
             return redirect()->route('signos-vitales.show', $registro)
                 ->with('sugerir_cama', true)
                 ->with('success', 'Signos vitales registrados. Se recomienda asignar cama.');
+        }
+
+        // Si se liberó la cama automáticamente, informar al usuario
+        if ($liberada) {
+            return redirect()->route('signos-vitales.show', $registro)
+                ->with('success', 'Signos vitales registrados. Paciente estable: cama liberada automáticamente.');
         }
 
         return redirect()->route('signos-vitales.show', $registro)
@@ -158,7 +174,7 @@ class SignoVitalController extends Controller
     }
 
     /**
-     * Libera la cama asociada al signo vital.
+     * Libera la cama asociada al signo vital (manual).
      */
     public function liberarCama(SignoVital $signoVital): RedirectResponse
     {
@@ -177,5 +193,51 @@ class SignoVitalController extends Controller
 
         return redirect()->route('signos-vitales.show', $signoVital)
             ->with('success', 'Cama liberada correctamente.');
+    }
+
+    /**
+     * Libera la cama activa del paciente cuando su nuevo triage es verde/azul.
+     * Devuelve true si liberó alguna cama, false si no había asignación activa.
+     */
+    private function liberarCamaPorMejoria(SignoVital $registro): bool
+    {
+        // Buscar la asignación activa del paciente
+        $asignacion = CamaPaciente::where('paciente_id', $registro->paciente_id)
+            ->where('activa', true)
+            ->first();
+
+        if (! $asignacion) {
+            return false;
+        }
+
+        // Liberar la asignación
+        $asignacion->update([
+            'activa'       => false,
+            'fecha_egreso' => now(),
+            'motivo'       => trim(($asignacion->motivo ?? '') . ' | Egreso por mejoría clínica (triage ' . $registro->triage . ')'),
+        ]);
+
+        // Liberar la cama
+        $cama = $asignacion->cama;
+        if ($cama) {
+            $cama->update(['estado' => 'disponible']);
+
+            AuditoriaService::registrar(
+                AuditEvent::LIBERACION_CAMA,
+                'camas',
+                "Cama {$cama->codigo} liberada automáticamente por mejoría clínica del paciente (triage {$registro->triage})",
+                $cama,
+                ['estado' => 'ocupada'],
+                ['estado' => 'disponible'],
+                [
+                    'cama_id'        => $cama->id,
+                    'paciente_id'    => $registro->paciente_id,
+                    'signo_vital_id' => $registro->id,
+                    'motivo'         => 'mejoria_clinica',
+                ]
+            );
+        }
+
+        return true;
     }
 }

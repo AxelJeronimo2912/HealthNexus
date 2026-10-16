@@ -50,12 +50,12 @@ class Cama extends Model
         return $this->hasMany(CamaPaciente::class);
     }
 
-    public function pacienteActual()
-    {
-        return $this->hasOne(CamaPaciente::class)
-            ->where('activa', true)
-            ->latestOfMany();
-    }
+   public function pacienteActual()
+{
+    return $this->hasOne(CamaPaciente::class)
+        ->where('activa', true)
+        ->latest('id');
+}
 
     /* ---------- Accessors ---------- */
     public function getEtiquetaAttribute(): string
@@ -99,4 +99,35 @@ class Cama extends Model
             default          => 'bg-gray-100 text-gray-800',
         };
     }
+
+    /**
+ * Triage del signo vital MÁS RECIENTE del paciente actual.
+ * NO usa el signo del ingreso a la cama.
+ */
+public function getTriageActualAttribute(): ?string
+{
+    if (! $this->pacienteActual) {
+        return null;
+    }
+
+    return $this->pacienteActual->paciente
+        ?->signosVitales()
+        ->latest()
+        ->value('triage');
+}
+
+/**
+ * ID del signo vital MÁS RECIENTE del paciente actual.
+ */
+public function getSignoVitalActualIdAttribute(): ?int
+{
+    if (! $this->pacienteActual) {
+        return null;
+    }
+
+    return $this->pacienteActual->paciente
+        ?->signosVitales()
+        ->latest()
+        ->value('id');
+}
 }
