@@ -13,8 +13,14 @@ class Turno extends Model
     protected $table = 'turnos';
 
     protected $fillable = [
-        'nombre', 'codigo', 'hora_inicio', 'hora_fin',
-        'cruza_medianoche', 'duracion_horas', 'descripcion', 'activo',
+        'nombre',
+        'codigo',
+        'hora_inicio',
+        'hora_fin',
+        'cruza_medianoche',
+        'duracion_horas',
+        'descripcion',
+        'activo',
     ];
 
     protected $casts = [
@@ -62,5 +68,30 @@ class Turno extends Model
         $inicio = substr($this->hora_inicio, 0, 5);
         $fin    = substr($this->hora_fin, 0, 5);
         return "{$inicio} — {$fin}";
+    }
+
+    public function seSolapaConHorario(Turno $otro): bool
+    {
+        $iniA = $this->hora_a_minutos($this->hora_inicio);
+        $finA = $this->hora_a_minutos($this->hora_fin);
+
+        if ($this->cruza_medianoche || $finA <= $iniA) {
+            $finA += 24 * 60;
+        }
+
+        $iniB = $this->hora_a_minutos($otro->hora_inicio);
+        $finB = $this->hora_a_minutos($otro->hora_fin);
+
+        if ($otro->cruza_medianoche || $finB <= $iniB) {
+            $finB += 24 * 60;
+        }
+
+        return $iniA < $finB && $finA > $iniB;
+    }
+
+    private function hora_a_minutos(?string $hora): int
+    {
+        [$h, $m] = array_pad(explode(':', $hora ?? '00:00'), 2, 0);
+        return ((int) $h) * 60 + ((int) $m);
     }
 }
