@@ -24,11 +24,24 @@ class DashboardController extends Controller
         $alertasCriticas = Alerta::where('nivel', 'critico')
             ->whereIn('estado', ['activa', 'vista'])->count();
 
-        // 2. Medicamentos con stock bajo
-        $medicamentosBajos = Medicamento::where('activo', true)
-            ->with('lotes')
-            ->get()
-            ->filter(fn($m) => $m->stock_total_calculado <= $m->stock_minimo)
+        // Stock de lotes vigentes calculado en SQL.
+        $medicamentosConStock = Medicamento::query()
+            ->where('activo', true)
+            ->withSum([
+                'lotes as stock_lotes_vigentes' => function ($query) {
+                    $query->where('cantidad_disponible', '>', 0)
+                        ->where('fecha_caducidad', '>=', now())
+                        ->where('activo', true);
+                },
+            ], 'cantidad_disponible')
+            ->get();
+
+        // 2. Medicamentos con stock bajo.
+        $medicamentosBajos = $medicamentosConStock
+            ->filter(
+                fn($m) =>
+                (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo
+            )
             ->count();
 
         // 3. Camas disponibles
@@ -65,13 +78,22 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        // Medicamentos en riesgo
-        $medicamentosCriticos = Medicamento::where('activo', true)
-            ->with('lotes')
-            ->get()
-            ->filter(fn($m) => $m->stock_total_calculado <= $m->stock_minimo)
-            ->sortBy(fn($m) => $m->stock_total_calculado)
-            ->take(10);
+        // Medicamentos en riesgo.
+        $medicamentosCriticos = $medicamentosConStock
+            ->filter(
+                fn($m) =>
+                (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo
+            )
+            ->sortBy(
+                fn($m) =>
+                (int) ($m->stock_lotes_vigentes ?? 0)
+            )
+            ->take(10)
+            ->values();
+
+        // Cargar los lotes de los 10 medicamentos mostrados,
+        // si la vista los necesita.
+        $medicamentosCriticos->load('lotes');
 
         // Camas por área
         $camasPorArea = Cama::select('area')
@@ -97,53 +119,53 @@ class DashboardController extends Controller
         ));
     }
     public function slaData(): \Illuminate\Http\JsonResponse
-{
-    // Asegurar que existan eventos recientes
-    if (\App\Models\SlaEvento::count() === 0) {
-        SlaService::generarDesdeDatos(30);
-    }
+    {
+        // Asegurar que existan eventos recientes
+        if (\App\Models\SlaEvento::count() === 0) {
+            SlaService::generarDesdeDatos(30);
+        }
 
-    $resumen = SlaService::resumen();
+        $resumen = SlaService::resumen();
 
-    // Top 10 outliers más recientes
-    $outliers = \App\Models\SlaEvento::where('is_outlier', true)
-        ->with('user')
-        ->orderByDesc('evento_en')
-        ->limit(10)
-        ->get()
-        ->map(fn($e) => [
-            'id' => $e->id,
-            'modulo' => $e->modulo_label,
-            'modulo_color' => $e->modulo_color,
-            'fecha' => $e->evento_en->format('d/m/Y H:i'),
-            'duracion' => round($e->duration_minutes, 1),
-            'z_score' => round($e->outlier_z_score, 2),
-            'severidad' => $e->severidad_z,
+        // Top 10 outliers más recientes
+        $outliers = \App\Models\SlaEvento::where('is_outlier', true)
+            ->with('user')
+            ->orderByDesc('evento_en')
+            ->limit(10)
+            ->get()
+            ->map(fn($e) => [
+                'id' => $e->id,
+                'modulo' => $e->modulo_label,
+                'modulo_color' => $e->modulo_color,
+                'fecha' => $e->evento_en->format('d/m/Y H:i'),
+                'duracion' => round($e->duration_minutes, 1),
+                'z_score' => round($e->outlier_z_score, 2),
+                'severidad' => $e->severidad_z,
+            ]);
+
+        // Distribución por hora de outliers
+        $outliersPorHora = \App\Models\SlaEvento::where('is_outlier', true)
+            ->selectRaw('start_hour, COUNT(*) as total')
+            ->groupBy('start_hour')
+            ->orderBy('start_hour')
+            ->pluck('total', 'start_hour')
+            ->toArray();
+
+        // Rellenar horas faltantes con 0
+        $distribucionHoraria = [];
+        for ($h = 0; $h < 24; $h++) {
+            $distribucionHoraria[$h] = $outliersPorHora[$h] ?? 0;
+        }
+
+        return response()->json([
+            'resumen' => $resumen,
+            'outliers' => $outliers,
+            'distribucion_horaria' => $distribucionHoraria,
         ]);
-
-    // Distribución por hora de outliers
-    $outliersPorHora = \App\Models\SlaEvento::where('is_outlier', true)
-        ->selectRaw('start_hour, COUNT(*) as total')
-        ->groupBy('start_hour')
-        ->orderBy('start_hour')
-        ->pluck('total', 'start_hour')
-        ->toArray();
-
-    // Rellenar horas faltantes con 0
-    $distribucionHoraria = [];
-    for ($h = 0; $h < 24; $h++) {
-        $distribucionHoraria[$h] = $outliersPorHora[$h] ?? 0;
     }
 
-    return response()->json([
-        'resumen' => $resumen,
-        'outliers' => $outliers,
-        'distribucion_horaria' => $distribucionHoraria,
-    ]);
-}
-
-public function dwhData(DwhService $dwh): \Illuminate\Http\JsonResponse
-{
-    return response()->json($dwh->metricas());
-}
+    public function dwhData(DwhService $dwh): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($dwh->metricas());
+    }
 }

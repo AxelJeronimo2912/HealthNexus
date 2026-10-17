@@ -35,46 +35,99 @@ class AsignacionTurnoController extends Controller
     /**
      * Guarda una nueva asignación.
      */
-    public function store(Request $request, User $user): RedirectResponse
-    {
-        $data = $request->validate([
-            'turno_id' => ['required', 'exists:turnos,id'],
-            'dia_semana' => ['nullable', 'integer', 'between:0,6'],
-            'fecha_inicio' => ['required', 'date'],
-            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
-            'area' => ['nullable', 'string', 'max:100'],
-            'notas' => ['nullable', 'string'],
-        ]);
+   public function store(Request $request, User $user): RedirectResponse
+{
+    $data = $request->validate([
+        'turno_id'     => ['required', 'exists:turnos,id'],
+        'dia_semana'   => ['nullable', 'integer', 'between:0,6'],
+        'fecha_inicio' => ['required', 'date'],
+        'fecha_fin'    => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
+        'area'         => ['nullable', 'string', 'max:100'],
+        'notas'        => ['nullable', 'string'],
+    ]);
 
-        // Evitar duplicado exacto
-        $existe = $user->turnos()
-            ->wherePivot('turno_id', $data['turno_id'])
-            ->wherePivot('dia_semana', $data['dia_semana'] ?? null)
-            ->wherePivot('fecha_inicio', $data['fecha_inicio'])
-            ->wherePivot('activo', true)
-            ->exists();
-
-        if ($existe) {
-            return back()->with('error', 'Ese turno ya está asignado al usuario en esa fecha.')
-                ->withInput();
-        }
-
-        $user->turnos()->attach($data['turno_id'], [
-            'dia_semana' => $data['dia_semana'] ?? null,
-            'fecha_inicio' => $data['fecha_inicio'],
-            'fecha_fin' => $data['fecha_fin'] ?? null,
-            'area' => $data['area'] ?? null,
-            'notas' => $data['notas'] ?? null,
-            'activo' => true,
-        ]);
-
-        return redirect()->route('admin.users.turnos.index', $user)
-            ->with('success', 'Turno asignado correctamente.');
+    // 🔴 VALIDACIÓN: no solapar turnos del mismo usuario
+    if ($this->turnoSeSolapa($user, $data)) {
+        return back()
+            ->withErrors([
+                'turno_id' => 'Este usuario ya tiene un turno asignado que se solapa en horario y fecha. Elige otro turno o ajusta las fechas.',
+            ])
+            ->withInput();
     }
 
-    /**
-     * Elimina una asignación específica.
-     */
+    $user->turnos()->attach($data['turno_id'], [
+        'dia_semana'   => $data['dia_semana']   ?? null,
+        'fecha_inicio' => $data['fecha_inicio'],
+        'fecha_fin'    => $data['fecha_fin']    ?? null,
+        'area'         => $data['area']         ?? null,
+        'notas'        => $data['notas']        ?? null,
+        'activo'       => true,
+    ]);
+
+    return redirect()
+        ->route('admin.users.turnos.index', $user)
+        ->with('success', 'Turno asignado correctamente.');
+}
+
+
+private function turnoSeSolapa(User $user, array $data): bool
+{
+    $nuevoTurno = Turno::find($data['turno_id']);
+    if (! $nuevoTurno) {
+        return false;
+    }
+
+    $nuevoInicio = $data['fecha_inicio'];
+    $nuevoFin    = $data['fecha_fin'] ?? null;
+    $nuevoDia    = $data['dia_semana'] ?? null;
+
+    $turnosActuales = $user->turnos()
+        ->wherePivot('activo', true)
+        ->get();
+
+    foreach ($turnosActuales as $actual) {
+        $pivot          = $actual->pivot;
+        $actualDia      = $pivot->dia_semana;
+        $actualInicio   = $pivot->fecha_inicio;
+        $actualFin      = $pivot->fecha_fin;
+
+
+        if ($nuevoDia !== null && $actualDia !== null && $nuevoDia != $actualDia) {
+            continue;
+        }
+        ─
+        $fechasSolapan = $this->rangosFechaSolapan(
+            $nuevoInicio, $nuevoFin,
+            $actualInicio, $actualFin
+        );
+
+        if (! $fechasSolapan) {
+            continue;
+        }
+
+        if ($nuevoTurno->seSolapaConHorario($actual)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Comprueba si dos rangos de fechas se intersectan.
+ * null en $fin significa "indefinido".
+ */
+private function rangosFechaSolapan(
+    string $iniA, ?string $finA,
+    string $iniB, ?string $finB
+): bool {
+    $finA = $finA ?? '9999-12-31';
+    $finB = $finB ?? '9999-12-31';
+
+    return $iniA <= $finB && $finA >= $iniB;
+}
+
+
    public function destroy(User $user, $pivotId): RedirectResponse
 {
     $user->turnos()->newPivotStatement()

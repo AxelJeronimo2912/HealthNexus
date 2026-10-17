@@ -54,16 +54,32 @@
                 </a>
             </div>
 
+            {{-- 💡 Ayuda compacta (una sola línea) --}}
+            <div class="px-5 py-3 bg-indigo-50/50 border-b border-indigo-100/60 flex items-start gap-2">
+                <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-[11px] text-indigo-800 leading-relaxed">
+                    <strong>Día = "Todos"</strong> aplica cualquier día de la semana.
+                    <strong>Vigencia "indefinido"</strong> no tiene fecha de término.
+                    No se permiten turnos con <strong>horario solapado</strong> para el mismo usuario.
+                </p>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full">
                     <thead class="bg-slate-50/70 border-b border-slate-100">
                         <tr>
-                            <th class="{{ $thCls }} text-left">Turno</th>
-                            <th class="{{ $thCls }} text-left">Horario</th>
-                            <th class="{{ $thCls }} text-left">Día</th>
-                            <th class="{{ $thCls }} text-left">Vigencia</th>
-                            <th class="{{ $thCls }} text-left">Área</th>
-                            <th class="{{ $thCls }} text-left">Estado</th>
+                            <th class="{{ $thCls }} text-left" title="Nombre y código del turno">Turno</th>
+                            <th class="{{ $thCls }} text-left" title="Rango de horas del turno">Horario</th>
+                            <th class="{{ $thCls }} text-left" title="Día de la semana en que aplica">Día</th>
+                            <th class="{{ $thCls }} text-left" title="Desde cuándo y hasta cuándo es válido">
+                                Vigencia</th>
+                            <th class="{{ $thCls }} text-left" title="Área o servicio donde se desempeña">Área
+                            </th>
+                            <th class="{{ $thCls }} text-left" title="Estado de la asignación">Estado</th>
                             <th class="px-5 py-3.5"></th>
                         </tr>
                     </thead>
@@ -73,13 +89,16 @@
                                 $p = $turno->pivot;
                                 $pivotId = $p->id;
                                 $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                                $esIndefinido = is_null($p->fecha_fin);
+                                $esTodosDias = is_null($p->dia_semana);
                             @endphp
                             <tr class="hover:bg-indigo-50/30 transition-colors">
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-bold text-slate-800">{{ $turno->nombre }}</p>
                                     @if ($turno->codigo)
                                         <p class="text-[10px] font-mono font-bold text-slate-400 mt-0.5">
-                                            {{ $turno->codigo }}</p>
+                                            {{ $turno->codigo }}
+                                        </p>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
@@ -89,16 +108,30 @@
                                     </span>
                                 </td>
                                 <td class="px-5 py-3.5">
-                                    <span
-                                        class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wide">
-                                        {{ $p->dia_semana !== null ? $dias[$p->dia_semana] : 'Todos los días' }}
-                                    </span>
+                                    @if ($esTodosDias)
+                                        <span
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                                            title="Aplica cualquier día de la semana">
+                                            Todos
+                                        </span>
+                                    @else
+                                        <span
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                                            title="Solo aplica ese día de la semana">
+                                            {{ $dias[$p->dia_semana] }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-medium text-slate-600">
                                         {{ \Carbon\Carbon::parse($p->fecha_inicio)->format('d/m/Y') }}
                                         <span class="text-slate-300">—</span>
-                                        {{ $p->fecha_fin ? \Carbon\Carbon::parse($p->fecha_fin)->format('d/m/Y') : 'indefinido' }}
+                                        @if ($esIndefinido)
+                                            <span class="italic text-slate-400"
+                                                title="Sin fecha de término">indefinido</span>
+                                        @else
+                                            {{ \Carbon\Carbon::parse($p->fecha_fin)->format('d/m/Y') }}
+                                        @endif
                                     </p>
                                 </td>
                                 <td class="px-5 py-3.5">
@@ -114,12 +147,16 @@
                                 <td class="px-5 py-3.5">
                                     @if ($p->activo)
                                         <span
-                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                                            title="Turno vigente y aplicable">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                             Activo
                                         </span>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                                            title="Turno desactivado (no aplica)">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                                             Inactivo
                                         </span>
                                     @endif
@@ -130,6 +167,7 @@
                                             method="POST">
                                             @csrf
                                             <button
+                                                title="{{ $p->activo ? 'Desactivar esta asignación' : 'Reactivar esta asignación' }}"
                                                 class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
                                                 {{ $p->activo ? 'Desactivar' : 'Activar' }}
                                             </button>
@@ -137,7 +175,7 @@
                                         <form action="{{ route('admin.users.turnos.destroy', [$user, $pivotId]) }}"
                                             method="POST" onsubmit="return confirm('¿Eliminar esta asignación?')">
                                             @csrf @method('DELETE')
-                                            <button
+                                            <button title="Eliminar definitivamente esta asignación"
                                                 class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
                                                 Eliminar
                                             </button>
@@ -148,7 +186,16 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="px-5 py-12 text-center">
+                                    <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
                                     <p class="text-xs font-semibold text-slate-400">Sin turnos asignados.</p>
+                                    <a href="{{ route('admin.users.turnos.create', $user) }}"
+                                        class="inline-block mt-3 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                                        Asignar el primer turno →
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse
