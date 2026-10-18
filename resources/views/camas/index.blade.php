@@ -38,70 +38,47 @@
                 {{ session('error') }}
             </div>
         @endif
-        @if (session('info'))
+
+        {{-- Tarjetas de Métricas Mejoradas --}}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Camas</p>
+                <p class="text-2xl font-black text-slate-800">{{ $stats['total'] }}</p>
+            </div>
             <div
-                class="p-4 bg-sky-50 border-l-4 border-sky-500 text-sky-800 rounded-r-xl shadow-sm text-sm font-medium">
-                {{ session('info') }}
-            </div>
-        @endif
-
-        {{-- Tarjetas de Métricas --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="p-3.5 bg-slate-100 text-slate-600 rounded-2xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col justify-center relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 opacity-10 text-emerald-600">
+                    <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL CAMAS</p>
-                    <p class="text-2xl font-black text-slate-800">{{ $stats['total'] }}</p>
-                </div>
+                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Disponibles</p>
+                <p class="text-2xl font-black text-emerald-700">{{ $stats['disponibles'] }}</p>
             </div>
-
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="p-3.5 bg-purple-50 text-purple-600 rounded-2xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">DISPONIBLES</p>
-                    <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 mt-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {{ $stats['disponibles'] }} Libres
-                    </span>
-                </div>
+            <div
+                class="bg-amber-50/50 p-4 rounded-2xl border border-amber-100 shadow-sm flex flex-col justify-center relative overflow-hidden">
+                <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Ocupadas</p>
+                <p class="text-2xl font-black text-amber-700">{{ $stats['ocupadas'] }}</p>
             </div>
-
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="p-3.5 bg-amber-50 text-amber-500 rounded-2xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">OCUPADAS</p>
-                    <p class="text-xl font-bold text-slate-800 mt-0.5">{{ $stats['ocupadas'] }} Pacientes</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="p-3.5 bg-rose-50 text-rose-500 rounded-2xl">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">EN MANTENIMIENTO</p>
-                    <p class="text-xl font-bold text-slate-800 mt-0.5">{{ $stats['mantenimiento'] }} Camas</p>
-                </div>
+            <div
+                class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 shadow-sm flex flex-col justify-center relative overflow-hidden">
+                <p class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">En Mantenimiento</p>
+                <p class="text-2xl font-black text-rose-700">{{ $stats['mantenimiento'] }}</p>
             </div>
         </div>
+
+        {{-- Alerta de camas no disponibles --}}
+        @if (($stats['mantenimiento'] ?? 0) > 0)
+            <div
+                class="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-xs text-rose-800 shadow-sm">
+                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Hay <strong>{{ $stats['mantenimiento'] }}</strong> cama(s) fuera de servicio o en mantenimiento.
+            </div>
+        @endif
 
         {{-- Barra de Filtros --}}
         <form method="GET" action="{{ route('camas.index') }}"
@@ -136,7 +113,7 @@
             @endif
         </form>
 
-        {{-- GRID VISUAL DE CAMAS (BED BOARD) --}}
+        {{-- GRID VISUAL DE CAMAS (BED BOARD) - DISEÑO ORIGINAL --}}
         <div class="bg-white shadow-sm rounded-3xl border border-slate-100 p-6">
 
             {{-- Leyenda --}}
@@ -166,8 +143,7 @@
             @forelse ($camasPorArea as $area => $camasArea)
                 <div class="mb-8 last:mb-0">
                     <div class="flex items-center gap-2 mb-4">
-                        <svg class="w-4 h-4 text-indigo-950" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-indigo-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
@@ -397,7 +373,7 @@
             </p>
         </div>
 
-        {{-- Modal Crear Cama --}}
+        {{-- MODALES --}}
         <x-modal name="modal-crear-cama" :show="$errors->any()" focusable>
             <form action="{{ route('camas.store') }}" method="POST" class="p-6">
                 @csrf
@@ -418,7 +394,6 @@
             </form>
         </x-modal>
 
-        {{-- Modal Editar Cama --}}
         <x-modal name="modal-editar-cama" focusable>
             <template x-if="modalEditar">
                 <form :action="`/camas/${modalEditar.id}`" method="POST" class="p-6">
@@ -444,7 +419,6 @@
             </template>
         </x-modal>
 
-        {{-- Modal Ver Cama --}}
         <x-modal name="modal-ver-cama" focusable>
             <template x-if="modalDetalle">
                 <div class="p-6">
@@ -604,3 +578,4 @@
 
     </div>
 </x-app-layout>
+git checkout -b HAL-40-mejorar-el-panel-visual-de-camas-por-estado-disponible-ocupada-mantenimiento
