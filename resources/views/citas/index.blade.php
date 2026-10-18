@@ -4,24 +4,25 @@
             <h2 class="font-bold text-2xl text-slate-800 tracking-tight">
                 Citas del {{ $fecha->format('d/m/Y') }}
             </h2>
-            @can('agenda.crear')
-                <a href="{{ route('agenda.create', ['fecha' => $fecha->format('Y-m-d')]) }}"
-                    class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-md shadow-purple-500/10 transition-all">
-                    <x-heroicon-o-plus class="w-4 h-4 mr-1.5 stroke-2" />
-                    Nueva Cita
-                </a>
-            @endcan
+            <div class="flex items-center gap-3">
+                @can('agenda.crear')
+                    <a href="{{ route('agenda.create', ['fecha' => $fecha->format('Y-m-d')]) }}"
+                        class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-md shadow-purple-500/10 transition-all">
+                        <x-heroicon-o-plus class="w-4 h-4 mr-1.5 stroke-2" />
+                        Nueva Cita
+                    </a>
+                @endcan
 
-            <button type="button" onclick="abrirModalHistorial()"
-                class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-sm transition-all">
-                <x-heroicon-o-clock class="w-4 h-4 mr-1.5 stroke-2" />
-                Historial
-            </button>
+                <button type="button" onclick="abrirModalHistorial()"
+                    class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-sm transition-all">
+                    <x-heroicon-o-clock class="w-4 h-4 mr-1.5 stroke-2" />
+                    Historial
+                </button>
+            </div>
         </div>
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
-
         @if (session('success'))
             <div
                 class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
@@ -166,50 +167,117 @@
     </div>
 
     {{-- Contenedor del modal de historial (se carga por AJAX) --}}
+    {{-- AQUI ESTA LA MAGIA: Quitamos la limitacion de overflow para que no se corten los filtros --}}
     <div id="modal-historial"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden">
-            <div id="modal-historial-content">
-                <div class="p-10 text-center text-slate-400">Cargando historial...</div>
+        class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm overflow-y-auto overflow-x-hidden">
+        <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden relative">
+                <div id="modal-historial-content">
+                    <div class="p-10 text-center text-slate-400">Cargando historial...</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ---------- MODAL HISTORIAL: ABRIR / CERRAR ----------
         function abrirModalHistorial() {
             const modal = document.getElementById('modal-historial');
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
 
-            fetch('{{ route('citas.historial') }}', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
+            // Efecto de carga inicial
+            document.getElementById('modal-historial-content').innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+            // 🔴 AQUÍ ESTÁ EL CAMBIO: Quitamos el header X-Requested-With para que el controlador
+            // nos devuelva el modal completo (con filtros) la primera vez.
+            fetch('{{ route('citas.historial') }}')
                 .then(r => r.text())
                 .then(html => {
                     document.getElementById('modal-historial-content').innerHTML = html;
                 })
                 .catch(() => {
                     document.getElementById('modal-historial-content').innerHTML =
-                        '<div class="p-6 text-rose-600">Error al cargar el historial.</div>';
+                        '<div class="p-6 text-rose-600 font-bold text-center">Error al cargar el historial.</div>';
                 });
         }
 
         function cerrarModalHistorial() {
-            const modal = document.getElementById('modal-historial');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.getElementById('modal-historial').classList.add('hidden');
         }
 
-        // Cerrar al hacer clic fuera del modal
         document.getElementById('modal-historial').addEventListener('click', function(e) {
-            if (e.target === this) cerrarModalHistorial();
+            // Si el clic fue directamente en el fondo oscuro (no en el contenido blanco)
+            if (e.target === this || e.target.parentElement === this) cerrarModalHistorial();
         });
 
-        // Cerrar con ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') cerrarModalHistorial();
         });
+
+        // ---------- FILTRADO EN TIEMPO REAL DEL HISTORIAL ----------
+        let timeoutHistorial;
+
+        // Escuchamos lo que se escribe en cualquier input del documento
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'filtro-buscar') {
+                clearTimeout(timeoutHistorial);
+                timeoutHistorial = setTimeout(() => filtrarHistorial(), 300);
+            }
+        });
+
+        // Escuchamos cuando se cambia el valor de cualquier select del documento
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'filtro-estado') {
+                filtrarHistorial();
+            }
+        });
+
+        function filtrarHistorial() {
+            const inputBuscar = document.getElementById('filtro-buscar');
+            const selectEstado = document.getElementById('filtro-estado');
+            const contenedorResultados = document.getElementById('resultados-historial');
+            const btnLimpiar = document.getElementById('contenedor-btn-limpiar');
+
+            if (!inputBuscar || !selectEstado || !contenedorResultados) return;
+
+            const buscar = inputBuscar.value;
+            const estado = selectEstado.value;
+            const url = new URL('{{ route('citas.historial') }}');
+
+            if (buscar) url.searchParams.set('buscar', buscar);
+            if (estado) url.searchParams.set('estado', estado);
+
+            if (buscar || estado) {
+                btnLimpiar.classList.remove('hidden');
+            } else {
+                btnLimpiar.classList.add('hidden');
+            }
+
+            contenedorResultados.style.opacity = '0.3';
+
+            fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    contenedorResultados.innerHTML = html;
+                    contenedorResultados.style.opacity = '1';
+                })
+                .catch(error => {
+                    console.error('Error al filtrar:', error);
+                    contenedorResultados.style.opacity = '1';
+                });
+        }
+
+        window.limpiarFiltrosHistorial = function() {
+            const inputBuscar = document.getElementById('filtro-buscar');
+            const selectEstado = document.getElementById('filtro-estado');
+            if (inputBuscar) inputBuscar.value = '';
+            if (selectEstado) selectEstado.value = '';
+            filtrarHistorial();
+        };
     </script>
 </x-app-layout>
