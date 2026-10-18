@@ -72,9 +72,14 @@ class MovimientoController extends Controller
     /**
      * Detalle de un movimiento individual.
      */
-    public function show(MovimientoInventario $movimiento): View
+    public function show(Request $request, MovimientoInventario $movimiento) // <-- Quitamos el ": View" y agregamos $request
     {
         $movimiento->load(['medicamento', 'lote', 'user']);
+
+        // Si es una petición del modal por AJAX, devolvemos solo el HTML
+        if ($request->ajax()) {
+            return view('movimientos.show', compact('movimiento'))->render();
+        }
 
         return view('movimientos.show', compact('movimiento'));
     }

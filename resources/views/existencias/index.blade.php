@@ -2,7 +2,9 @@
     document.addEventListener('alpine:init', () => {
         Alpine.store('inventario', {
             openMovimiento: false,
-            openAlertaCaducidad: false, // Nuevo estado para la alerta
+            openAlertaCaducidad: false,
+            openLotes: false,
+            openDetalle: false,
         });
     });
 </script>
@@ -28,7 +30,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-                {{-- BOTÓN QUE ABRE EL MODAL (usa el store global) --}}
+                {{-- BOTÓN QUE ABRE EL MODAL DE MOVIMIENTO --}}
                 <button @click="$store.inventario.openMovimiento = true" type="button"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-nexus-accent bg-nexus-primary hover:bg-slate-900 rounded-2xl transition-all shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,14 +39,15 @@
                     Nuevo Movimiento
                 </button>
 
-                <a href="{{ route('existencias.lotes') }}"
+                {{-- BOTÓN QUE ABRE EL MODAL DE LOTES --}}
+                <button onclick="abrirModalLotes('{{ route('existencias.lotes') }}')" type="button"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl transition-all shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                     Ver por lotes
-                </a>
+                </button>
             </div>
         </div>
     </x-slot>
@@ -115,7 +118,7 @@
                 </a>
             </div>
 
-            <!-- 🔴 BANNER DE ALERTA DE CADUCIDAD 🔴 -->
+            <!-- BANNER DE ALERTA DE CADUCIDAD -->
             @if (isset($lotesPorCaducar) && $lotesPorCaducar->count() > 0)
                 <div
                     class="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
@@ -131,8 +134,7 @@
                             <h4 class="text-sm font-extrabold text-amber-900">Atención: Lotes próximos a caducar</h4>
                             <p class="text-xs text-amber-700 mt-1">
                                 Hay <strong>{{ $lotesPorCaducar->count() }} lotes</strong> que vencerán en los próximos
-                                30 días.
-                                Revisa el inventario para tomar acción a tiempo.
+                                30 días. Revisa el inventario para tomar acción a tiempo.
                             </p>
                         </div>
                     </div>
@@ -211,7 +213,6 @@
                                 @php
                                     $stock = $med->stock_total_calculado;
                                     $bajo = $stock <= $med->stock_minimo;
-
                                     $loteProximo = $med->lotes
                                         ->where('cantidad_disponible', '>', 0)
                                         ->where('activo', true)
@@ -284,10 +285,12 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('existencias.show', $med) }}"
-                                            class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-nexus-secondary bg-nexus-secondary/10 hover:bg-nexus-secondary hover:text-white rounded-xl transition-all">
+                                        {{-- BOTÓN QUE ABRE EL MODAL DE DETALLE --}}
+                                        <button type="button"
+                                            onclick="abrirModalDetalle('{{ route('existencias.show', $med) }}')"
+                                            class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all">
                                             Ver detalle
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -323,7 +326,9 @@
         </div>
     </div>
 
-    {{-- MODAL: ALERTA DE CADUCIDAD (Usa $store.inventario.openAlertaCaducidad) --}}
+    {{-- ==================== MODALES ==================== --}}
+
+    {{-- 1. MODAL: ALERTA DE CADUCIDAD --}}
     <template x-teleport="body">
         <div x-show="$store.inventario.openAlertaCaducidad" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
@@ -375,7 +380,7 @@
                                                 {{ $lote->medicamento->nombre ?? '—' }}</p>
                                         </td>
                                         <td class="px-4 py-3">
-                                            <p class="font-mono text-xs text-slate-600">{{ $lote->numero_lote }}</p>
+                                            <p class="font-mono text-xs text-slate-600">{{ $lote->codigo_lote }}</p>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span
@@ -414,7 +419,7 @@
         </div>
     </template>
 
-    {{-- MODAL: NUEVO MOVIMIENTO (Controlado por $store.inventario.openMovimiento) --}}
+    {{-- 2. MODAL: NUEVO MOVIMIENTO --}}
     <template x-teleport="body">
         <div x-show="$store.inventario.openMovimiento" x-cloak x-data="{ tipo: '{{ old('tipo', '') }}' }"
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
@@ -519,5 +524,89 @@
             </div>
         </div>
     </template>
+
+    {{-- 3. MODAL: LISTA DE LOTES (Se carga por AJAX) --}}
+    <template x-teleport="body">
+        <div x-show="$store.inventario.openLotes" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div @click.away="$store.inventario.openLotes = false"
+                class="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                <div id="modal-lotes-content">
+                    <div class="p-10 text-center text-slate-400">Cargando lotes...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- 4. MODAL: DETALLE DEL MEDICAMENTO (Se carga por AJAX) --}}
+    <template x-teleport="body">
+        <div x-show="$store.inventario.openDetalle" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div @click.away="$store.inventario.openDetalle = false"
+                class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                <div id="modal-detalle-content">
+                    <div class="p-10 text-center text-slate-400">Cargando detalle...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- SCRIPT PARA LAS FUNCIONES AJAX --}}
+    <script>
+        function abrirModalLotes(url) {
+            Alpine.store('inventario').openLotes = true;
+            document.getElementById('modal-lotes-content').innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.text())
+                .then(html => document.getElementById('modal-lotes-content').innerHTML = html);
+        }
+
+        function abrirModalDetalle(url) {
+            Alpine.store('inventario').openDetalle = true;
+            document.getElementById('modal-detalle-content').innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.text())
+                .then(html => document.getElementById('modal-detalle-content').innerHTML = html);
+        }
+
+        // ---------- FILTRADO DE LOTES (Delegación de Eventos) ----------
+        document.addEventListener('click', function(e) {
+            // Si el clic fue en un botón de filtro de lotes
+            if (e.target && e.target.classList.contains('btn-filtro-lote')) {
+                const url = e.target.getAttribute('data-url');
+                if (!url) return;
+
+                const contenedor = document.getElementById('modal-lotes-content');
+                contenedor.style.opacity = '0.5';
+
+                fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        contenedor.innerHTML = html;
+                        contenedor.style.opacity = '1';
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        contenedor.style.opacity = '1';
+                    });
+            }
+        });
+    </script>
+
 
 </x-app-layout>
