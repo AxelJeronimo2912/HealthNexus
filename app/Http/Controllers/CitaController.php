@@ -214,12 +214,12 @@ class CitaController extends Controller
  * Historial completo de citas (para el modal).
  * Médico: solo las suyas. Admin: todas.
  */
-public function historial(Request $request): View
+public function historial(Request $request)
 {
     $user = auth()->user();
 
     $query = Cita::with(['paciente', 'medico'])
-        ->whereIn('estado', ['atendida', 'cancelada', 'no_asistio'])
+        ->whereIn('estado', ['atendida', 'cancelada', 'no_asistio', 'confirmada', 'programada', 'en_curso'])
         ->orderByDesc('fecha_hora');
 
     if ($this->esMedico($user) && !$user->hasRole('administrador')) {
@@ -230,8 +230,28 @@ public function historial(Request $request): View
         $query->where('paciente_id', $request->paciente_id);
     }
 
-    $historial = $query->paginate(15);
+    if ($request->filled('buscar')) {
+        $buscar = $request->buscar;
+        $query->whereHas('paciente', function($q) use ($buscar) {
+            $q->where('nombre', 'like', "%{$buscar}%")
+              ->orWhere('apellido', 'like', "%{$buscar}%")
+              ->orWhereRaw("CONCAT(nombre, ' ', apellido) LIKE ?", ["%{$buscar}%"]);
+        });
+    }
 
+    if ($request->filled('estado')) {
+        $query->where('estado', $request->estado);
+    }
+
+    $historial = $query->paginate(15)->withQueryString();
+
+    // 👇 ESTA ES LA ÚNICA LÍNEA QUE DEBES VERIFICAR 👇
+    if ($request->ajax()) {
+        // IMPORTANTE: Debe devolver SOLO el archivo de la tabla, NO el del modal.
+        return view('citas.partials.tabla-historial', compact('historial'))->render();
+    }
+
+    // Y aquí afuera, cuando abres el modal por primera vez, sí devuelve el modal completo
     return view('citas.partials.historial-modal', compact('historial'));
 }
 }

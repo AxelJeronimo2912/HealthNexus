@@ -6,6 +6,7 @@ use App\Models\Lote;
 use App\Models\Medicamento;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class ExistenciaController extends Controller
 {
@@ -57,9 +58,16 @@ class ExistenciaController extends Controller
                 ->where('cantidad_disponible', '>', 0)->count(),
         ];
 
-        return view('existencias.index', compact('medicamentos', 'busqueda', 'filtro', 'stats'));
-    }
+        // 🔴 NUEVO: Obtener la lista detallada de lotes por caducar para el modal/banner
+        $lotesPorCaducar = Lote::with('medicamento')
+            ->whereBetween('fecha_caducidad', [now(), now()->addDays(30)])
+            ->where('cantidad_disponible', '>', 0)
+            ->orderBy('fecha_caducidad', 'asc')
+            ->get();
 
+        // Retornamos la vista con TODAS las variables, incluyendo $lotesPorCaducar
+        return view('existencias.index', compact('medicamentos', 'busqueda', 'filtro', 'stats', 'lotesPorCaducar'));
+    }
     /**
      * Detalle de un medicamento: sus lotes y movimientos.
      */
