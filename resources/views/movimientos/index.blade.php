@@ -1,3 +1,11 @@
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('movimientosStore', {
+            openDetalle: false,
+        });
+    });
+</script>
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center gap-3">
@@ -178,10 +186,12 @@
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end">
-                                        <a href="{{ route('movimientos.show', $mov) }}"
+                                        {{-- BOTÓN MODIFICADO PARA ABRIR EL MODAL --}}
+                                        <button type="button"
+                                            onclick="abrirModalDetalleMovimiento('{{ route('movimientos.show', $mov) }}')"
                                             class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
                                             Ver
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -201,4 +211,34 @@
 
         <div class="mt-4">{{ $movimientos->links() }}</div>
     </div>
+
+    {{-- MODAL: DETALLE DEL MOVIMIENTO --}}
+    <template x-teleport="body">
+        <div x-show="$store.movimientosStore.openDetalle" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div @click.away="$store.movimientosStore.openDetalle = false"
+                class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                <div id="modal-detalle-movimiento-content">
+                    <div class="p-10 text-center text-slate-400">Cargando detalle...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- SCRIPT PARA CARGAR EL MODAL POR AJAX --}}
+    <script>
+        function abrirModalDetalleMovimiento(url) {
+            Alpine.store('movimientosStore').openDetalle = true;
+            document.getElementById('modal-detalle-movimiento-content').innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.text())
+                .then(html => document.getElementById('modal-detalle-movimiento-content').innerHTML = html);
+        }
+    </script>
 </x-app-layout>
