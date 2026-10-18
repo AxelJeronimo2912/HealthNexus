@@ -24,7 +24,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{ modalDetalle: null, modalEditar: null }">
+    {{-- Inicializamos Alpine con el estado de búsqueda en vivo --}}
+    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{
+        modalDetalle: null,
+        modalEditar: null,
+        busquedaLive: ''
+    }">
 
         @if (session('success'))
             <div
@@ -39,7 +44,7 @@
             </div>
         @endif
 
-        {{-- Tarjetas de Métricas Mejoradas --}}
+        {{-- Tarjetas de Métricas --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Camas</p>
@@ -80,9 +85,58 @@
             </div>
         @endif
 
-        {{-- Barra de Filtros --}}
-        <form method="GET" action="{{ route('camas.index') }}"
-            class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-3 items-center">
+        {{-- Filtros Rápidos --}}
+        <div class="flex flex-wrap gap-2 pb-2">
+            @php
+                $estados = [
+                    '' => [
+                        'label' => 'Todas',
+                        'count' => $stats['total'],
+                        'color' => 'bg-slate-800 text-white border-slate-800',
+                        'inactive' => 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200',
+                    ],
+                    'disponible' => [
+                        'label' => 'Disponibles',
+                        'count' => $stats['disponibles'],
+                        'color' => 'bg-emerald-500 text-white border-emerald-500',
+                        'inactive' => 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50',
+                    ],
+                    'ocupada' => [
+                        'label' => 'Ocupadas',
+                        'count' => $stats['ocupadas'],
+                        'color' => 'bg-amber-500 text-white border-amber-500',
+                        'inactive' => 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50',
+                    ],
+                    'mantenimiento' => [
+                        'label' => 'Mantenimiento',
+                        'count' => $stats['mantenimiento'],
+                        'color' => 'bg-rose-500 text-white border-rose-500',
+                        'inactive' => 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50',
+                    ],
+                    'limpieza' => [
+                        'label' => 'Limpieza',
+                        'count' => $camas->where('estado', 'limpieza')->count(),
+                        'color' => 'bg-sky-500 text-white border-sky-500',
+                        'inactive' => 'bg-white text-sky-700 border-sky-200 hover:bg-sky-50',
+                    ],
+                ];
+            @endphp
+
+            @foreach ($estados as $val => $config)
+                <a href="{{ route('camas.index', array_merge(request()->query(), ['estado' => $val])) }}"
+                    class="px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2
+                          {{ $filtroEstado === $val || ($val === '' && !$filtroEstado) ? $config['color'] . ' shadow-sm' : $config['inactive'] }}">
+                    {{ $config['label'] }}
+                    <span
+                        class="px-1.5 py-0.5 rounded-md text-[10px] {{ $filtroEstado === $val || ($val === '' && !$filtroEstado) ? 'bg-white/20' : 'bg-slate-100' }}">
+                        {{ $config['count'] }}
+                    </span>
+                </a>
+            @endforeach
+        </div>
+
+        {{-- 🔽 BÚSQUEDA EN TIEMPO REAL (Frontend) --}}
+        <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-3 items-center">
             <div class="flex-1 min-w-[240px] relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,30 +144,27 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </span>
-                <input type="text" name="buscar" value="{{ $busqueda }}"
-                    placeholder="Buscar por código, área o habitación..."
-                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-950">
+                <input type="text" x-model="busquedaLive"
+                    placeholder="Buscar en tiempo real por código, área, piso o paciente..."
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-950 transition-all">
             </div>
-            <select name="estado"
-                class="bg-slate-50 border-0 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-indigo-950 text-slate-600">
-                <option value="">Todos los estados</option>
-                @foreach (['disponible' => 'Disponible', 'ocupada' => 'Ocupada', 'mantenimiento' => 'Mantenimiento', 'limpieza' => 'Limpieza', 'fuera_servicio' => 'Fuera de Servicio'] as $val => $lbl)
-                    <option value="{{ $val }}" @selected($filtroEstado == $val)>{{ $lbl }}</option>
-                @endforeach
-            </select>
-            <button type="submit"
-                class="px-5 py-2 bg-indigo-950 hover:bg-indigo-900 text-white font-medium rounded-xl text-sm shadow-sm transition-all">
-                Filtrar
-            </button>
-            @if ($busqueda || $filtroEstado)
-                <a href="{{ route('camas.index') }}"
-                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl text-sm transition-all">
-                    Limpiar
-                </a>
-            @endif
-        </form>
 
-        {{-- GRID VISUAL DE CAMAS (BED BOARD) - DISEÑO ORIGINAL --}}
+            <button x-show="busquedaLive !== ''" @click="busquedaLive = ''" x-cloak
+                class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl text-sm transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Limpiar
+            </button>
+
+            {{-- Indicador visual de coincidencias --}}
+            <div x-show="busquedaLive !== ''" x-cloak
+                class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                Filtrando en vivo...
+            </div>
+        </div>
+
+        {{-- GRID VISUAL DE CAMAS (BED BOARD) --}}
         <div class="bg-white shadow-sm rounded-3xl border border-slate-100 p-6">
 
             {{-- Leyenda --}}
@@ -153,7 +204,8 @@
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[600px] overflow-y-auto pr-2 pb-2">
                         @foreach ($camasArea as $cama)
                             @php
                                 $colorClasses = match ($cama->estado) {
@@ -184,7 +236,6 @@
                                     ],
                                 };
 
-                                // 🔽 Solo mostrar paciente si la cama está OCUPADA
                                 $paciente = null;
                                 $triage = null;
                                 $signoId = null;
@@ -192,8 +243,8 @@
                                 if ($cama->estado === 'ocupada') {
                                     $asignacion = $cama->pacienteActual;
                                     $paciente = $asignacion?->paciente;
-                                    $triage = $cama->triage_actual; // ← accessor: signo más reciente
-                                    $signoId = $cama->signo_vital_actual_id; // ← accessor: id del más reciente
+                                    $triage = $cama->triage_actual;
+                                    $signoId = $cama->signo_vital_actual_id;
                                 }
 
                                 $triageColor = match ($triage) {
@@ -204,9 +255,29 @@
                                     'azul' => 'bg-sky-100 text-sky-700 border-sky-200',
                                     default => null,
                                 };
+
+                                // 🔽 Armamos un "string" con todos los datos buscables de la cama
+                                $textoBuscable = strtolower(
+                                    trim(
+                                        $cama->codigo .
+                                            ' ' .
+                                            ($cama->area ?? '') .
+                                            ' ' .
+                                            ($cama->habitacion ?? '') .
+                                            ' ' .
+                                            ($cama->piso ?? '') .
+                                            ' ' .
+                                            ($cama->nombre ?? '') .
+                                            ' ' .
+                                            ($paciente ? $paciente->nombre_completo . ' ' . $paciente->id : ''),
+                                    ),
+                                );
                             @endphp
 
-                            <div class="relative group">
+                            {{-- 🔽 Lógica de filtro en tiempo real (Alpine) --}}
+                            <div class="relative group"
+                                x-show="busquedaLive === '' || '{{ $textoBuscable }}'.includes(busquedaLive.toLowerCase())">
+
                                 <button type="button"
                                     @click="
                                         modalDetalle = {{ $cama->toJson() }};
@@ -248,9 +319,7 @@
                                                 class="text-[11px] font-bold text-slate-800 truncate mt-1 leading-tight">
                                                 {{ $paciente->nombre_completo }}
                                             </p>
-                                            <p class="text-[9px] text-slate-500 truncate">
-                                                ID: {{ $paciente->id }}
-                                            </p>
+                                            <p class="text-[9px] text-slate-500 truncate">ID: {{ $paciente->id }}</p>
 
                                             @if ($triage)
                                                 <span
@@ -471,7 +540,6 @@
                             </div>
                         </div>
 
-                        {{-- Paciente asignado --}}
                         <template x-if="modalDetalle.paciente">
                             <div>
                                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Paciente
@@ -481,9 +549,8 @@
                                         <div class="min-w-0">
                                             <p class="text-sm font-bold text-slate-800 truncate"
                                                 x-text="modalDetalle.paciente.nombre_completo"></p>
-                                            <p class="text-[11px] text-slate-500">
-                                                ID: <span x-text="modalDetalle.paciente.id"></span>
-                                            </p>
+                                            <p class="text-[11px] text-slate-500">ID: <span
+                                                    x-text="modalDetalle.paciente.id"></span></p>
                                         </div>
                                         <template x-if="modalDetalle.triage">
                                             <span
@@ -516,16 +583,13 @@
                                     <div class="flex flex-wrap gap-3 pt-2">
                                         <template x-if="modalDetalle.paciente.id">
                                             <a :href="`/pacientes/${modalDetalle.paciente.id}`"
-                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">
-                                                Ver expediente →
-                                            </a>
+                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">Ver
+                                                expediente →</a>
                                         </template>
-
                                         <template x-if="modalDetalle.signo_vital_id">
                                             <a :href="`/signos-vitales/${modalDetalle.signo_vital_id}`"
-                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">
-                                                Ver signos vitales →
-                                            </a>
+                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">Ver
+                                                signos vitales →</a>
                                         </template>
                                     </div>
                                 </div>
@@ -578,4 +642,3 @@
 
     </div>
 </x-app-layout>
-git checkout -b HAL-40-mejorar-el-panel-visual-de-camas-por-estado-disponible-ocupada-mantenimiento
