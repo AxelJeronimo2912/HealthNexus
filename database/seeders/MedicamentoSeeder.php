@@ -4,12 +4,21 @@ namespace Database\Seeders;
 
 use App\Models\Medicamento;
 use App\Models\MovimientoInventario;
+use App\Models\Lote; 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB; // 🔴 IMPORTANTE: Para limpiar la BD
 
 class MedicamentoSeeder extends Seeder
 {
     public function run(): void
     {
+        // 🔴 LIMPIAR TABLAS ANTES DE INSERTAR (Para no duplicar registros)
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        MovimientoInventario::truncate();
+        Lote::truncate();
+        Medicamento::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $medicamentos = [
             // Analgésicos / Antiinflamatorios
             ['Paracetamol', 'Paracetamol', 'Tableta', '500 mg', 'Oral', 'Analgésico'],
@@ -269,6 +278,7 @@ class MedicamentoSeeder extends Seeder
 
             $stockInicial = rand(50, 200);
 
+            // 1. CREAMOS EL MEDICAMENTO
             $medicamento = Medicamento::create([
                 'nombre' => $nombre,
                 'sustancia_activa' => $sustancia,
@@ -293,9 +303,23 @@ class MedicamentoSeeder extends Seeder
 
             $totalMedicamentos++;
 
+        
+$lote = Lote::create([
+    'medicamento_id' => $medicamento->id,
+    'codigo_lote' => 'LOTE-' . str_pad((string) ($index + 1), 5, '0', STR_PAD_LEFT), // 🔴 Cambiado a codigo_lote
+    'fecha_caducidad' => now()->addMonths(rand(6, 24)),
+    'fecha_ingreso' => now(), // Agregado por si es requerido
+    'cantidad_inicial' => $stockInicial, // Agregado por si es requerido
+    'cantidad_disponible' => $stockInicial,
+    'precio_compra' => $medicamento->precio_compra,
+    'activo' => true,
+]);
+
+            // 3. CREAMOS EL MOVIMIENTO ASOCIADO AL LOTE
             MovimientoInventario::create([
                 'medicamento_id' => $medicamento->id,
-                'user_id' => null,   // sin usuario (fue el sistema)
+                'user_id' => null,   
+                'lote_id'        => $lote->id, // 🔴 Ahora sí, la variable existe
                 'tipo' => 'entrada',
                 'cantidad' => $stockInicial,
                 'stock_anterior' => 0,
@@ -308,7 +332,7 @@ class MedicamentoSeeder extends Seeder
             $totalMovimientos++;
         }
 
-        $this->command->info("✅ {$totalMedicamentos} medicamentos creados con stock inicial.");
-        $this->command->info("✅ {$totalMovimientos} movimientos de inventario creados.");
+        $this->command->info(" {$totalMedicamentos} medicamentos creados con stock inicial.");
+        $this->command->info(" {$totalMovimientos} movimientos de inventario creados.");
     }
 }

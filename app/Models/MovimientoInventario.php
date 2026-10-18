@@ -9,7 +9,7 @@ class MovimientoInventario extends Model
     protected $table = 'movimientos_inventario';
 
     protected $fillable = [
-        'medicamento_id', 'user_id', 'tipo',
+        'medicamento_id', 'user_id', 'lote_id', 'tipo',
         'cantidad', 'stock_anterior', 'stock_nuevo',
         'referencia_tipo', 'referencia_id', 'motivo',
     ];

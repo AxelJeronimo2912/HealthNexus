@@ -7,7 +7,7 @@ use App\Traits\Auditable;
 
 class Medicamento extends Model
 {
-        use Auditable;
+    use Auditable;
 
     protected $table = 'medicamentos';
 
@@ -52,10 +52,12 @@ class Medicamento extends Model
     {
         return $this->hasMany(MovimientoInventario::class)->orderByDesc('created_at');
     }
-public function administraciones()
-{
-    return $this->hasMany(AdministracionMedicamento::class);
-}
+
+    public function administraciones()
+    {
+        return $this->hasMany(AdministracionMedicamento::class);
+    }
+
     /**
      * ¿Tiene stock suficiente?
      */
@@ -73,28 +75,32 @@ public function administraciones()
     }
 
     public function lotes()
-{
-    return $this->hasMany(Lote::class)->orderBy('fecha_caducidad');
-}
+    {
+        return $this->hasMany(Lote::class)->orderBy('fecha_caducidad');
+    }
 
-public function lotesDisponibles()
-{
-    return $this->hasMany(Lote::class)
-        ->where('cantidad_disponible', '>', 0)
-        ->where('fecha_caducidad', '>=', now())
-        ->where('activo', true)
-        ->orderBy('fecha_caducidad');
-}
+    public function lotesDisponibles()
+    {
+        return $this->hasMany(Lote::class)
+            ->where('cantidad_disponible', '>', 0)
+            ->where('fecha_caducidad', '>=', now())
+            ->where('activo', true)
+            ->orderBy('fecha_caducidad');
+    }
 
-/**
- * Stock total calculado sumando los lotes vigentes.
- */
-public function getStockTotalCalculadoAttribute(): int
-{
-    return $this->lotes()
-        ->where('cantidad_disponible', '>', 0)
-        ->where('fecha_caducidad', '>=', now())
-        ->where('activo', true)
-        ->sum('cantidad_disponible');
-}
+    /**
+     * Stock total calculado sumando los lotes vigentes.
+     */
+    public function getStockTotalCalculadoAttribute(): int
+    {
+        if (array_key_exists('stock_calculado_sql', $this->attributes)) {
+            return (int) $this->attributes['stock_calculado_sql'];
+        }
+
+        return (int) $this->lotes()
+            ->where('cantidad_disponible', '>', 0)
+            ->where('fecha_caducidad', '>=', now())
+            ->where('activo', true)
+            ->sum('cantidad_disponible');
+    }
 }
