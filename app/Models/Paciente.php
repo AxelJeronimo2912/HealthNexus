@@ -85,6 +85,7 @@ public function ultimoSignoVital()
 }
 
 
+
 public function admisiones()
 {
     return $this->hasMany(Admision::class);
@@ -164,4 +165,6 @@ public function obtenerCuentaAbierta(): Cuenta
             'estado'      => 'abierta',
         ]);
 }
+
+
 }

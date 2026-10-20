@@ -10,6 +10,7 @@ class AdministracionMedicamento extends Model
 
     protected $fillable = [
         'paciente_id', 'medicamento_id', 'user_id', 'consulta_id',
+        'seguimiento_id',
         'dosis', 'via', 'administrado_en', 'reaccion_adversa', 'observaciones',
     ];
 
