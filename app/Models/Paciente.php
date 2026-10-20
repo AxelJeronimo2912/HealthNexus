@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;              
+use Illuminate\Database\Eloquent\Relations\HasMany; 
 
 class Paciente extends Model
 {
@@ -165,6 +166,9 @@ public function obtenerCuentaAbierta(): Cuenta
             'estado'      => 'abierta',
         ]);
 }
-
+public function camas(): HasMany
+{
+    return $this->hasMany(CamaPaciente::class);
+}
 
 }
