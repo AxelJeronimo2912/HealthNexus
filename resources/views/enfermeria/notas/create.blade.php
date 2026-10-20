@@ -12,7 +12,6 @@
         $inputCls =
             'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none';
         $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $errorCls = 'text-rose-600 text-xs mt-1 font-medium';
     @endphp
 
     <div x-data="{
@@ -46,22 +45,12 @@
             }
         }
     }">
-        <form action="{{ route('enfermeria.notas.store') }}" method="POST" class="space-y-6">
+        {{-- AQUÍ LLAMAMOS A LA FUNCIÓN GLOBAL --}}
+        <form action="{{ route('enfermeria.notas.store') }}" method="POST"
+            onsubmit="event.preventDefault(); window.guardarNota(this);" class="space-y-6">
             @csrf
+            <input type="hidden" name="tipo" value="nota_enfermeria">
 
-            @if (session('error'))
-                <div
-                    class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                    <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-            @endif
-
-            {{-- Paciente --}}
             <div>
                 <label class="{{ $labelCls }}">Paciente *</label>
                 <select name="paciente_id" required class="{{ $inputCls }}">
@@ -72,12 +61,8 @@
                         </option>
                     @endforeach
                 </select>
-                @error('paciente_id')
-                    <p class="{{ $errorCls }}">{{ $message }}</p>
-                @enderror
             </div>
 
-            {{-- Estado --}}
             <div>
                 <label class="{{ $labelCls }}">Estado del paciente (Calculado) *</label>
                 <select name="estado_paciente" x-model="estadoCalculado" class="{{ $inputCls }}" required>
@@ -87,22 +72,14 @@
                     <option value="grave">Grave</option>
                     <option value="critico">Crítico</option>
                 </select>
-                @error('estado_paciente')
-                    <p class="{{ $errorCls }}">{{ $message }}</p>
-                @enderror
             </div>
 
-            {{-- Contenido --}}
             <div>
                 <label class="{{ $labelCls }}">Contenido de la nota *</label>
                 <textarea name="contenido" rows="4" required placeholder="Describe los cuidados u observaciones..."
                     class="{{ $inputCls }} resize-none">{{ old('contenido') }}</textarea>
-                @error('contenido')
-                    <p class="{{ $errorCls }}">{{ $message }}</p>
-                @enderror
             </div>
 
-            {{-- Signos Vitales --}}
             <div class="pt-5 border-t border-slate-100">
                 <div class="flex items-center gap-2 mb-4">
                     <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
@@ -113,7 +90,6 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-sm">Signos vitales del momento *</h3>
-                        <p class="text-[11px] text-slate-400">El estado se calculará automáticamente</p>
                     </div>
                 </div>
 
@@ -122,53 +98,36 @@
                         <label class="{{ $labelCls }}">Temperatura (°C) *</label>
                         <input type="number" step="0.1" min="34" max="42" name="temperatura"
                             x-model="temp" @input="calcularEstado()" required class="{{ $inputCls }}">
-                        @error('temperatura')
-                            <p class="{{ $errorCls }}">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label class="{{ $labelCls }}">Frec. cardíaca *</label>
                         <input type="number" min="30" max="200" name="frecuencia_cardiaca" x-model="fc"
                             @input="calcularEstado()" required class="{{ $inputCls }}">
-                        @error('frecuencia_cardiaca')
-                            <p class="{{ $errorCls }}">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label class="{{ $labelCls }}">Frec. respiratoria *</label>
                         <input type="number" min="8" max="60" name="frecuencia_respiratoria"
                             x-model="fr" @input="calcularEstado()" required class="{{ $inputCls }}">
-                        @error('frecuencia_respiratoria')
-                            <p class="{{ $errorCls }}">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label class="{{ $labelCls }}">Presión arterial *</label>
                         <input type="text" name="presion_arterial" value="{{ old('presion_arterial') }}"
                             placeholder="120/80" pattern="\d{2,3}/\d{2,3}" required class="{{ $inputCls }}">
-                        @error('presion_arterial')
-                            <p class="{{ $errorCls }}">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label class="{{ $labelCls }}">Saturación O₂ (%) *</label>
                         <input type="number" min="50" max="100" name="saturacion_oxigeno" x-model="spo2"
                             @input="calcularEstado()" required class="{{ $inputCls }}">
-                        @error('saturacion_oxigeno')
-                            <p class="{{ $errorCls }}">{{ $message }}</p>
-                        @enderror
                     </div>
                 </div>
             </div>
 
-            {{-- Botones --}}
             <div class="pt-5 border-t border-slate-100 flex flex-wrap justify-end items-center gap-3">
-                <button type="button"
-                    onclick="Alpine.$data(document.getElementById('modal-nota-create')).open = false"
+                <button type="button" onclick="Alpine.$data(document.getElementById('modal-nota-create')).open = false"
                     class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 rounded-xl text-xs font-bold transition-all">
                     Cancelar
                 </button>
-                <button type="submit"
+                <button type="submit" id="btn-submit-nota"
                     class="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -179,3 +138,4 @@
         </form>
     </div>
 </div>
+

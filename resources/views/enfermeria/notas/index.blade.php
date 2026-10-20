@@ -7,15 +7,24 @@
                 </h2>
                 <p class="text-xs text-slate-400 mt-0.5">Registro de notas y seguimiento de pacientes</p>
             </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="abrirModalAdministrar()"
+                    class="bg-white border border-pink-200 hover:bg-pink-50 text-pink-700 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    Administrar Medicamento
+                </button>
 
-            {{-- BOTÓN MODIFICADO PARA ABRIR EL MODAL --}}
-            <button type="button" onclick="abrirModalNota('{{ route('enfermeria.notas.create') }}')"
-                class="bg-pink-600 hover:bg-pink-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                </svg>
-                Nueva Nota
-            </button>
+                <button type="button" onclick="abrirModalNota('{{ route('enfermeria.notas.create') }}')"
+                    class="bg-pink-600 hover:bg-pink-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Nota
+                </button>
+            </div>
         </div>
     </x-slot>
 
@@ -27,7 +36,6 @@
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-
         @if (session('success'))
             <div
                 class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
@@ -37,17 +45,8 @@
                 <span>{{ session('success') }}</span>
             </div>
         @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
 
-        {{-- ============ STATS ============ --}}
+        {{-- STATS --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total notas</p>
@@ -63,7 +62,7 @@
             </div>
         </div>
 
-        {{-- ============ FILTROS ============ --}}
+        {{-- FILTROS --}}
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
             <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                 <div class="md:col-span-2">
@@ -103,7 +102,7 @@
             </form>
         </div>
 
-        {{-- ============ TABLA ============ --}}
+        {{-- TABLA --}}
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Notas registradas</h3>
@@ -158,7 +157,6 @@
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end gap-2">
-                                        {{-- BOTÓN MODIFICADO A MODAL --}}
                                         <button type="button"
                                             onclick="abrirModalVerNota('{{ route('enfermeria.notas.show', $nota) }}')"
                                             class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
@@ -219,8 +217,41 @@
         </div>
     </template>
 
+    {{-- MODAL DE ADMINISTRAR --}}
+    <template x-teleport="body">
+        <div id="modal-administrar" x-data="{ open: false }" x-show="open" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div @click.away="open = false"
+                class="bg-white rounded-3xl max-w-xl w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative custom-scrollbar">
+                <div id="modal-administrar-content">
+                    <div class="p-10 text-center text-slate-400">Cargando formulario...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <script>
-        // Abrir Modal Crear
+        // ==========================================
+        // LÓGICA PARA EL MODAL DE VER NOTA
+        // ==========================================
+        function abrirModalVerNota(url) {
+            const modalElement = document.getElementById('modal-nota-show');
+            Alpine.$data(modalElement).open = true;
+            const contenedor = document.getElementById('modal-nota-show-content');
+            contenedor.innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.text())
+                .then(html => contenedor.innerHTML = html);
+        }
+
+        // ==========================================
+        // LÓGICA PARA CREAR NUEVA NOTA
+        // ==========================================
         function abrirModalNota(url) {
             const modalElement = document.getElementById('modal-nota-create');
             Alpine.$data(modalElement).open = true;
@@ -236,14 +267,61 @@
                 .then(html => contenedor.innerHTML = html);
         }
 
-        // Abrir Modal Ver
-        function abrirModalVerNota(url) {
-            const modalElement = document.getElementById('modal-nota-show');
+        // Esta función se ejecuta cuando el formulario se inyecta por AJAX
+        window.guardarNota = function(form) {
+            const btn = document.getElementById('btn-submit-nota');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = 'Guardando...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) {
+                        // Si hay errores de validación, mostramos el mensaje
+                        let mensaje = data.message || 'Error al guardar';
+                        if (data.errors) {
+                            const primerError = Object.values(data.errors)[0][0];
+                            mensaje = primerError;
+                        }
+                        throw new Error(mensaje);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    if (data.success) {
+                        Alpine.$data(document.getElementById('modal-nota-create')).open = false;
+                        window.location.reload();
+                    }
+                })
+                .catch(err => {
+                    alert(err.message); // Muestra el error en un alert
+                    btn.innerHTML = txtOriginal;
+                    btn.disabled = false;
+                });
+        };
+
+        // ==========================================
+        // LÓGICA PARA ADMINISTRAR MEDICAMENTO
+        // ==========================================
+        function abrirModalAdministrar() {
+            const modalElement = document.getElementById('modal-administrar');
             Alpine.$data(modalElement).open = true;
-            const contenedor = document.getElementById('modal-nota-show-content');
+            const contenedor = document.getElementById('modal-administrar-content');
             contenedor.innerHTML =
                 '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-            fetch(url, {
+
+            fetch('{{ route('enfermeria.notas.create') }}?modal=administrar', {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
@@ -251,5 +329,48 @@
                 .then(res => res.text())
                 .then(html => contenedor.innerHTML = html);
         }
+
+        window.guardarMedicamento = function(form) {
+            const btn = document.getElementById('btn-submit-administrar');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = 'Procesando...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) {
+                        let mensaje = data.message || 'Error al administrar';
+                        if (data.errors) {
+                            mensaje = Object.values(data.errors)[0][0];
+                        }
+                        throw new Error(mensaje);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    if (data.success) {
+                        Alpine.$data(document.getElementById('modal-administrar')).open = false;
+                        abrirModalVerNota(data.redirect);
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                })
+                .catch(err => {
+                    alert(err.message);
+                    btn.innerHTML = txtOriginal;
+                    btn.disabled = false;
+                });
+        };
     </script>
 </x-app-layout>
+
