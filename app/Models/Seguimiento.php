@@ -19,6 +19,10 @@ class Seguimiento extends Model
         'temperatura' => 'decimal:1',
     ];
 
+     protected $attributes = [
+        'tipo' => 'nota_enfermeria',
+    ];
+
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
@@ -57,4 +61,10 @@ class Seguimiento extends Model
             default => 'bg-gray-100 text-gray-800',
         };
     }
+
+        public function administracion()
+    {
+        return $this->hasOne(AdministracionMedicamento::class, 'seguimiento_id');
+    }
 }
+

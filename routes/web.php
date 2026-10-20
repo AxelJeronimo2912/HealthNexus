@@ -440,7 +440,9 @@ Route::middleware(['auth', 'permission:enfermeria.ver'])
         Route::get('/', [NotaEnfermeriaController::class, 'index'])->name('index');
         Route::get('/crear', [NotaEnfermeriaController::class, 'create'])->name('create');
         Route::post('/', [NotaEnfermeriaController::class, 'store'])->name('store');
-        Route::get('/{nota}', [NotaEnfermeriaController::class, 'show'])->name('show');
+        Route::post('/enfermeria/administraciones', [NotaEnfermeriaController::class, 'administrarMedicamento'])->name('enfermeria.administraciones.store');
+       Route::get('/enfermeria/notas/api/medicamentos', [NotaEnfermeriaController::class, 'getMedicamentos'])->name('enfermeria.notas.api.medicamentos');
+       Route::get('/{nota}', [NotaEnfermeriaController::class, 'show'])->name('show');
         Route::delete('/{nota}', [NotaEnfermeriaController::class, 'destroy'])->name('destroy');
     });
 

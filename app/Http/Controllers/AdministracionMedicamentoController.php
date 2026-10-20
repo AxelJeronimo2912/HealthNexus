@@ -87,44 +87,89 @@ class AdministracionMedicamentoController extends Controller
     /**
      * Guarda la administración y descuenta stock.
      */
-   public function store(Request $request): RedirectResponse
-{
-    $data = $request->validate([
-        'paciente_id' => ['required', 'exists:pacientes,id'],
-        'tipo' => ['required', 'in:urgencias,consulta_externa,hospitalizacion,traslado'],
-        'triage' => ['nullable', 'in:rojo,naranja,amarillo,verde,azul'],
-        'motivo' => ['required', 'string'],
-        'diagnostico_presuntivo' => ['nullable', 'string'],
-        'notas' => ['nullable', 'string'],
-    ]);
+    public function store(Request $request)    {
+        // 1. Validamos los campos de Enfermería
+        $request->validate([
+            'paciente_id' => ['required', 'exists:pacientes,id'],
+            'medicamento_id' => ['required', 'exists:medicamentos,id'],
+            'dosis' => ['required', 'string', 'max:50'],
+            'via' => ['required', 'string', 'max:50'],
+            'observaciones' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-    $paciente = Paciente::findOrFail($data['paciente_id']);
-    $ultimoSigno = $paciente->signosVitales()->orderByDesc('created_at')->first();
+        $paciente = Paciente::findOrFail($request->paciente_id);
+        $medicamento = Medicamento::findOrFail($request->medicamento_id);
 
-    // Triage: si el usuario no eligió uno, usa el del último signo vital
-    $triageFinal = $data['triage'] ?? $ultimoSigno?->triage;
+        $cama = \App\Models\CamaPaciente::where('paciente_id', $paciente->id)->where('activa', true)->first();
+        if (!$cama && !auth()->user()->hasRole('administrador')) {
+            return response()->json(['success' => false, 'message' => 'El paciente no está hospitalizado.'], 400);
+        }
 
-    $folio = 'ADM-' . now()->format('Ymd') . '-' . str_pad(
-        Admision::whereDate('created_at', today())->count() + 1,
-        3, '0', STR_PAD_LEFT
-    );
+        if (!InventarioService::tieneStock($medicamento, 1)) {
+            return response()->json(['success' => false, 'message' => "Sin stock suficiente de {$medicamento->nombre}."], 400);
+        }
 
-    $admision = Admision::create([
-        'paciente_id' => $paciente->id,
-        'user_id' => auth()->id(),
-        'folio' => $folio,
-        'fecha_hora_llegada' => now(),
-        'tipo' => $data['tipo'],
-        'triage' => $triageFinal,
-        'motivo' => $data['motivo'],
-        'diagnostico_presuntivo' => $data['diagnostico_presuntivo'] ?? null,
-        'estado' => 'en_espera',
-        'notas' => $data['notas'] ?? null,
-    ]);
+        DB::beginTransaction();
 
-    return redirect()->route('admisiones.show', $admision)
-        ->with('success', 'Paciente admitido. Folio: ' . $folio);
-}
+        try {
+            // 2. Descontar Stock
+            InventarioService::salida(
+                $medicamento,
+                1,
+                'Administración de enfermería: ' . $request->dosis . ' vía ' . $request->via,
+                ['tipo' => 'nota_enfermeria', 'id' => $paciente->id]
+            );
+
+            // 3. Crear la Nota Clínica (El famoso Seguimiento)
+            $nota = \App\Models\Seguimiento::create([
+                'paciente_id' => $paciente->id,
+                'user_id' => auth()->id(),
+                'cama_id' => $cama?->cama_id,
+                'tipo' => 'nota_enfermeria', 
+                'contenido' => "Se administró {$medicamento->nombre} ({$medicamento->concentracion}). Dosis: {$request->dosis}. Vía: {$request->via}. " . ($request->observaciones ?? ''),
+                'estado_paciente' => 'estable',
+                'temperatura' => null,
+                'frecuencia_cardiaca' => null,
+                'frecuencia_respiratoria' => null,
+                'presion_arterial' => null,
+                'saturacion_oxigeno' => null,
+            ]);
+
+            // 4. Guardar en la tabla de administraciones
+            \App\Models\AdministracionMedicamento::create([
+                'paciente_id' => $paciente->id,
+                'medicamento_id' => $medicamento->id,
+                'user_id' => auth()->id(),
+                'consulta_id' => null,
+                'seguimiento_id' => $nota->id,
+                'dosis' => $request->dosis,
+                'via' => $request->via,
+                'administrado_en' => now(),
+                'reaccion_adversa' => false,
+                'observaciones' => $request->observaciones,
+            ]);
+
+            DB::commit();
+
+            // 5. Si es una petición AJAX, devolvemos JSON para que el JS sepa qué hacer
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Medicamento administrado.',
+                    'redirect' => route('enfermeria.notas.show', $nota) 
+                ]);
+            }
+
+            return redirect()->route('enfermeria.notas.show', $nota)->with('success', 'Medicamento administrado.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            }
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
     /**
      * Detalle.
      */
@@ -175,3 +220,5 @@ class AdministracionMedicamentoController extends Controller
         return $user->roles->contains(fn($rol) => str_contains(strtolower($rol->name), 'enfermer'));
     }
 }
+
+
