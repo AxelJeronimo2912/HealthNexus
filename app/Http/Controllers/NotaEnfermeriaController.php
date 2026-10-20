@@ -28,12 +28,10 @@ class NotaEnfermeriaController extends Controller
             ->where('tipo', 'nota_enfermeria')
             ->orderByDesc('created_at');
 
-        // Filtro por paciente
         if ($pacienteId) {
             $query->where('paciente_id', $pacienteId);
         }
 
-        // Filtro por rango de fechas
         if ($desde) {
             $query->whereDate('created_at', '>=', $desde);
         }
@@ -50,7 +48,6 @@ class NotaEnfermeriaController extends Controller
             });
         }
 
-        // 🔒 Si es enfermería, solo ve sus propias notas
         if ($esEnfermeria && !$esAdmin) {
             $query->where('user_id', $user->id);
         }
@@ -90,42 +87,103 @@ class NotaEnfermeriaController extends Controller
     /**
      * Guarda la nota.
      */
-    public function store(Request $request): RedirectResponse
+        public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
-            'contenido' => ['required', 'string'],
-            'estado_paciente' => ['nullable', 'in:estable,mejorando,grave,critico'],
-            'temperatura' => ['nullable', 'numeric', 'min:30', 'max:45'],
-            'frecuencia_cardiaca' => ['nullable', 'integer', 'min:20', 'max:250'],
-            'frecuencia_respiratoria' => ['nullable', 'integer', 'min:5', 'max:80'],
-            'presion_arterial' => ['nullable', 'string', 'max:20'],
-            'saturacion_oxigeno' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
-        // Cama actual si la tiene
-        $cama = \App\Models\CamaPaciente::where('paciente_id', $data['paciente_id'])
+        $paciente = Paciente::findOrFail($request->paciente_id);
+
+        $cama = \App\Models\CamaPaciente::where('paciente_id', $paciente->id)
             ->where('activa', true)
             ->first();
 
+        if (!$cama && !auth()->user()->hasRole('administrador')) {
+            return back()->withErrors(['paciente_id' => 'El paciente no tiene una cama activa. No puedes registrar una nota de enfermería a un paciente que no está hospitalizado.'])->withInput();
+        }
+
+        $data = $request->validate([
+            'contenido' => ['required', 'string', 'min:10', 'max:5000'],
+            'estado_paciente' => ['nullable', 'in:estable,mejorando,grave,critico'],
+            
+            'temperatura' => ['required', 'numeric', 'min:34', 'max:42'],
+            'frecuencia_cardiaca' => ['required', 'integer', 'min:30', 'max:200'],
+            'frecuencia_respiratoria' => ['required', 'integer', 'min:8', 'max:60'],
+            'presion_arterial' => ['required', 'string', 'regex:/^\d{2,3}\/\d{2,3}$/'],
+            'saturacion_oxigeno' => ['required', 'integer', 'min:50', 'max:100'],
+        ], [
+            'contenido.required' => 'El contenido de la nota es obligatorio.',
+            'contenido.min' => 'La nota debe ser más detallada (mínimo 10 caracteres).',
+            
+            'temperatura.required' => 'La temperatura es obligatoria.',
+            'temperatura.min' => 'La temperatura no puede ser menor a 34°C.',
+            'temperatura.max' => 'La temperatura no puede ser mayor a 42°C.',
+            
+            'frecuencia_cardiaca.required' => 'La frecuencia cardíaca es obligatoria.',
+            'frecuencia_cardiaca.min' => 'La frecuencia cardíaca parece demasiado baja.',
+            'frecuencia_cardiaca.max' => 'La frecuencia cardíaca parece demasiado alta.',
+            
+            'frecuencia_respiratoria.required' => 'La frecuencia respiratoria es obligatoria.',
+            'frecuencia_respiratoria.min' => 'La frecuencia respiratoria parece demasiado baja.',
+            'frecuencia_respiratoria.max' => 'La frecuencia respiratoria parece demasiado alta.',
+            
+            'presion_arterial.required' => 'La presión arterial es obligatoria.',
+            'presion_arterial.regex' => 'El formato de la presión arterial debe ser similar a 120/80.',
+            
+            'saturacion_oxigeno.required' => 'La saturación de oxígeno es obligatoria.',
+            'saturacion_oxigeno.max' => 'La saturación no puede superar el 100%.',
+            'saturacion_oxigeno.min' => 'La saturación de oxígeno es peligrosamente baja (mínimo 50%).',
+        ]);
+
+        // 4. Calcular el estado del paciente automáticamente si no viene en el request
+        if (empty($data['estado_paciente'])) {
+            $data['estado_paciente'] = $this->calcularEstado(
+                $data['temperatura'],
+                $data['frecuencia_cardiaca'],
+                $data['frecuencia_respiratoria'],
+                $data['saturacion_oxigeno']
+            );
+        }
+
+        // 5. Guardar la nota
         Seguimiento::create([
-            'paciente_id' => $data['paciente_id'],
+            'paciente_id' => $paciente->id,
             'user_id' => auth()->id(),
             'cama_id' => $cama?->cama_id,
             'tipo' => 'nota_enfermeria',
-            'estado_paciente' => $data['estado_paciente'] ?? null,
+            'estado_paciente' => $data['estado_paciente'],
             'contenido' => $data['contenido'],
-            'temperatura' => $data['temperatura'] ?? null,
-            'frecuencia_cardiaca' => $data['frecuencia_cardiaca'] ?? null,
-            'frecuencia_respiratoria' => $data['frecuencia_respiratoria'] ?? null,
-            'presion_arterial' => $data['presion_arterial'] ?? null,
-            'saturacion_oxigeno' => $data['saturacion_oxigeno'] ?? null,
+            'temperatura' => $data['temperatura'],
+            'frecuencia_cardiaca' => $data['frecuencia_cardiaca'],
+            'frecuencia_respiratoria' => $data['frecuencia_respiratoria'],
+            'presion_arterial' => $data['presion_arterial'],
+            'saturacion_oxigeno' => $data['saturacion_oxigeno'],
         ]);
 
         return redirect()->route('enfermeria.notas.index')
-            ->with('success', 'Nota de enfermería registrada.');
+            ->with('success', 'Nota de enfermería registrada correctamente.');
     }
 
+    /**
+     * Calcula el estado del paciente basado en los signos vitales.
+     */
+    private function calcularEstado($temp, $fc, $fr, $spo2): string
+    {
+        if ($spo2 < 90 || $temp >= 39 || $fc > 120 || $fr > 30) {
+            return 'critico';
+        }
+        
+        if ($temp >= 37.5 || $fc > 100 || $fr > 20 || $spo2 < 94) {
+            return 'grave';
+        }
+        
+        if ($temp >= 37.2) {
+            return 'mejorando'; 
+        }
+
+        return 'estable';
+    }
     /**
      * Ver una nota.
      */
@@ -150,7 +208,6 @@ class NotaEnfermeriaController extends Controller
             abort(404);
         }
 
-        // Solo el autor o admin pueden eliminar
         if ($nota->user_id !== auth()->id() && !auth()->user()->hasRole('administrador')) {
             abort(403, 'No puedes eliminar notas de otros usuarios.');
         }
