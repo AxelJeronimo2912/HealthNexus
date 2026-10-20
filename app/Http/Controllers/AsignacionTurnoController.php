@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Turno;
@@ -95,7 +94,6 @@ private function turnoSeSolapa(User $user, array $data): bool
         if ($nuevoDia !== null && $actualDia !== null && $nuevoDia != $actualDia) {
             continue;
         }
-        ─
         $fechasSolapan = $this->rangosFechaSolapan(
             $nuevoInicio, $nuevoFin,
             $actualInicio, $actualFin
