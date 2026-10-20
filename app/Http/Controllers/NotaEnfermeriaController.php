@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use App\Models\Seguimiento;
+use App\Models\CamaPaciente;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -39,7 +40,6 @@ class NotaEnfermeriaController extends Controller
             $query->whereDate('created_at', '<=', $hasta);
         }
 
-        // Búsqueda por nombre de paciente
         if ($buscar) {
             $query->whereHas('paciente', function ($q) use ($buscar) {
                 $q->where('nombre', 'like', "%{$buscar}%")
@@ -54,10 +54,8 @@ class NotaEnfermeriaController extends Controller
 
         $notas = $query->paginate(20)->withQueryString();
 
-        // Pacientes para el filtro
         $pacientes = Paciente::orderBy('apellido_paterno')->get(['id', 'nombre', 'apellido_paterno', 'apellido_materno']);
 
-        // Stats
         $stats = [
             'total' => Seguimiento::where('tipo', 'nota_enfermeria')->count(),
             'hoy' => Seguimiento::where('tipo', 'nota_enfermeria')->whereDate('created_at', today())->count(),
@@ -66,28 +64,30 @@ class NotaEnfermeriaController extends Controller
                 ->count(),
         ];
 
-        return view('enfermeria.notas.index', compact(
-            'notas', 'pacientes', 'pacienteId', 'desde', 'hasta', 'buscar', 'stats'
-        ));
+        return view('enfermeria.notas.index', compact('notas', 'pacientes', 'pacienteId', 'desde', 'hasta', 'buscar', 'stats'));
     }
 
     /**
-     * Formulario para crear una nota.
+     * Formulario para crear una nota (Vía Modal AJAX).
      */
-    public function create(Request $request): View
+    public function create(Request $request) 
     {
         $pacienteId = $request->input('paciente_id');
         $paciente = $pacienteId ? Paciente::find($pacienteId) : null;
 
         $pacientes = Paciente::orderBy('apellido_paterno')->get();
 
+        if ($request->ajax()) {
+            return view('enfermeria.notas.create', compact('pacientes', 'paciente'))->render();
+        }
+
         return view('enfermeria.notas.create', compact('pacientes', 'paciente'));
     }
 
     /**
-     * Guarda la nota.
+     * Guarda la nota en la base de datos.
      */
-        public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
@@ -95,7 +95,7 @@ class NotaEnfermeriaController extends Controller
 
         $paciente = Paciente::findOrFail($request->paciente_id);
 
-        $cama = \App\Models\CamaPaciente::where('paciente_id', $paciente->id)
+        $cama = CamaPaciente::where('paciente_id', $paciente->id)
             ->where('activa', true)
             ->first();
 
@@ -136,7 +136,6 @@ class NotaEnfermeriaController extends Controller
             'saturacion_oxigeno.min' => 'La saturación de oxígeno es peligrosamente baja (mínimo 50%).',
         ]);
 
-        // 4. Calcular el estado del paciente automáticamente si no viene en el request
         if (empty($data['estado_paciente'])) {
             $data['estado_paciente'] = $this->calcularEstado(
                 $data['temperatura'],
@@ -146,7 +145,6 @@ class NotaEnfermeriaController extends Controller
             );
         }
 
-        // 5. Guardar la nota
         Seguimiento::create([
             'paciente_id' => $paciente->id,
             'user_id' => auth()->id(),
@@ -166,35 +164,23 @@ class NotaEnfermeriaController extends Controller
     }
 
     /**
-     * Calcula el estado del paciente basado en los signos vitales.
+     * Ver una nota (Vía Modal AJAX).
      */
-    private function calcularEstado($temp, $fc, $fr, $spo2): string
+     public function show(Request $request, Seguimiento $nota)
     {
-        if ($spo2 < 90 || $temp >= 39 || $fc > 120 || $fr > 30) {
-            return 'critico';
-        }
-        
-        if ($temp >= 37.5 || $fc > 100 || $fr > 20 || $spo2 < 94) {
-            return 'grave';
-        }
-        
-        if ($temp >= 37.2) {
-            return 'mejorando'; 
-        }
-
-        return 'estable';
-    }
-    /**
-     * Ver una nota.
-     */
-    public function show(Seguimiento $nota): View
-    {
-        // Verificar que sea una nota de enfermería
         if ($nota->tipo !== 'nota_enfermeria') {
             abort(404);
         }
 
+        if ($this->esEnfermeria(auth()->user()) && $nota->user_id !== auth()->id() && !auth()->user()->hasRole('administrador')) {
+            abort(403, 'No tienes permiso para ver esta nota.');
+        }
+
         $nota->load(['paciente', 'user', 'cama']);
+
+        if ($request->ajax()) {
+            return view('enfermeria.notas.show', compact('nota'))->render();
+        }
 
         return view('enfermeria.notas.show', compact('nota'));
     }
@@ -216,6 +202,26 @@ class NotaEnfermeriaController extends Controller
 
         return redirect()->route('enfermeria.notas.index')
             ->with('success', 'Nota eliminada.');
+    }
+
+    /**
+     * Calcula el estado del paciente basado en los signos vitales.
+     */
+    private function calcularEstado($temp, $fc, $fr, $spo2): string
+    {
+        if ($spo2 < 90 || $temp >= 39 || $fc > 120 || $fr > 30) {
+            return 'critico';
+        }
+        
+        if ($temp >= 37.5 || $fc > 100 || $fr > 20 || $spo2 < 94) {
+            return 'grave';
+        }
+        
+        if ($temp >= 37.2) {
+            return 'mejorando';
+        }
+
+        return 'estable';
     }
 
     private function esEnfermeria($user): bool
