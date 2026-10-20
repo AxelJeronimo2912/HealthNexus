@@ -1,22 +1,12 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center gap-3">
-            <div class="min-w-0">
-                <h2 class="font-extrabold text-2xl text-slate-800 leading-tight truncate">
-                    Nueva Nota de Enfermería
-                </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Registra observaciones y signos vitales del paciente</p>
-            </div>
-            <a href="{{ route('enfermeria.notas.index') }}"
-                class="bg-white hover:bg-pink-50 text-slate-700 hover:text-pink-600 border border-slate-200 hover:border-pink-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
-                <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                </svg>
-                Volver
-            </a>
+<div class="p-2">
+    <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+        <div class="min-w-0">
+            <h3 class="text-lg font-bold text-slate-800">Nueva Nota de Enfermería</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Registra observaciones y signos vitales</p>
         </div>
-    </x-slot>
+        <button type="button" onclick="Alpine.$data(document.getElementById('modal-nota-create')).open = false"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors text-xl leading-none border border-slate-200 shrink-0">&times;</button>
+    </div>
 
     @php
         $inputCls =
@@ -25,121 +15,159 @@
         $errorCls = 'text-rose-600 text-xs mt-1 font-medium';
     @endphp
 
-    <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <form action="{{ route('enfermeria.notas.store') }}" method="POST"
-            class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <div x-data="{
+        temp: '{{ old('temperatura') }}',
+        fc: '{{ old('frecuencia_cardiaca') }}',
+        fr: '{{ old('frecuencia_respiratoria') }}',
+        spo2: '{{ old('saturacion_oxigeno') }}',
+        estadoCalculado: '{{ old('estado_paciente') }}',
+    
+        calcularEstado() {
+            let t = parseFloat(this.temp) || 0;
+            let f = parseInt(this.fc) || 0;
+            let r = parseInt(this.fr) || 0;
+            let s = parseInt(this.spo2) || 0;
+    
+            if (t === 0 && f === 0 && r === 0 && s === 0) {
+                this.estadoCalculado = '';
+                return;
+            }
+    
+            if (s > 0 && s < 90) {
+                this.estadoCalculado = 'critico';
+            } else if (t >= 39 || f > 120 || r > 30) {
+                this.estadoCalculado = 'critico';
+            } else if (t >= 37.5 || f > 100 || r > 20 || (s > 0 && s < 94)) {
+                this.estadoCalculado = 'grave';
+            } else if (t >= 37.2) {
+                this.estadoCalculado = 'mejorando';
+            } else {
+                this.estadoCalculado = 'estable';
+            }
+        }
+    }">
+        <form action="{{ route('enfermeria.notas.store') }}" method="POST" class="space-y-6">
             @csrf
 
-            {{-- ============ HEADER DEL FORM ============ --}}
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-600 shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            @if (session('error'))
+                <div
+                    class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                    <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
+                    <span>{{ session('error') }}</span>
                 </div>
-                <div>
-                    <h3 class="font-extrabold text-slate-800 text-base">Datos de la nota</h3>
-                    <p class="text-[11px] text-slate-400">Los campos marcados con * son obligatorios</p>
-                </div>
+            @endif
+
+            {{-- Paciente --}}
+            <div>
+                <label class="{{ $labelCls }}">Paciente *</label>
+                <select name="paciente_id" required class="{{ $inputCls }}">
+                    <option value="">— Selecciona —</option>
+                    @foreach ($pacientes as $p)
+                        <option value="{{ $p->id }}" @selected(old('paciente_id', $paciente?->id) == $p->id)>
+                            {{ $p->nombre_completo }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('paciente_id')
+                    <p class="{{ $errorCls }}">{{ $message }}</p>
+                @enderror
             </div>
 
-            {{-- ============ CUERPO DEL FORM ============ --}}
-            <div class="p-6 space-y-6">
+            {{-- Estado --}}
+            <div>
+                <label class="{{ $labelCls }}">Estado del paciente (Calculado) *</label>
+                <select name="estado_paciente" x-model="estadoCalculado" class="{{ $inputCls }}" required>
+                    <option value="">— Calculando... —</option>
+                    <option value="estable">Estable</option>
+                    <option value="mejorando">Mejorando</option>
+                    <option value="grave">Grave</option>
+                    <option value="critico">Crítico</option>
+                </select>
+                @error('estado_paciente')
+                    <p class="{{ $errorCls }}">{{ $message }}</p>
+                @enderror
+            </div>
 
-                {{-- Paciente --}}
-                <div>
-                    <label class="{{ $labelCls }}">Paciente *</label>
-                    <select name="paciente_id" required class="{{ $inputCls }}">
-                        <option value="">— Selecciona —</option>
-                        @foreach ($pacientes as $p)
-                            <option value="{{ $p->id }}" @selected(old('paciente_id', $paciente?->id) == $p->id)>
-                                {{ $p->nombre_completo }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('paciente_id')
-                        <p class="{{ $errorCls }}">{{ $message }}</p>
-                    @enderror
-                </div>
+            {{-- Contenido --}}
+            <div>
+                <label class="{{ $labelCls }}">Contenido de la nota *</label>
+                <textarea name="contenido" rows="4" required placeholder="Describe los cuidados u observaciones..."
+                    class="{{ $inputCls }} resize-none">{{ old('contenido') }}</textarea>
+                @error('contenido')
+                    <p class="{{ $errorCls }}">{{ $message }}</p>
+                @enderror
+            </div>
 
-                {{-- Estado del paciente --}}
-                <div>
-                    <label class="{{ $labelCls }}">Estado del paciente</label>
-                    <select name="estado_paciente" class="{{ $inputCls }}">
-                        <option value="">— Sin especificar —</option>
-                        <option value="estable" @selected(old('estado_paciente') == 'estable')>Estable</option>
-                        <option value="mejorando" @selected(old('estado_paciente') == 'mejorando')>Mejorando</option>
-                        <option value="grave" @selected(old('estado_paciente') == 'grave')>Grave</option>
-                        <option value="critico" @selected(old('estado_paciente') == 'critico')>Crítico</option>
-                    </select>
-                </div>
-
-                {{-- Contenido --}}
-                <div>
-                    <label class="{{ $labelCls }}">Contenido de la nota *</label>
-                    <textarea name="contenido" rows="5" required
-                        placeholder="Describe los cuidados, observaciones, cambios en el estado del paciente..."
-                        class="{{ $inputCls }} resize-none">{{ old('contenido') }}</textarea>
-                    @error('contenido')
-                        <p class="{{ $errorCls }}">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Signos vitales --}}
-                <div class="pt-5 border-t border-slate-100">
-                    <div class="flex items-center gap-2 mb-4">
-                        <div
-                            class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-extrabold text-slate-800 text-sm">Signos vitales del momento</h3>
-                            <p class="text-[11px] text-slate-400">Opcional — completa solo los que tengas</p>
-                        </div>
+            {{-- Signos Vitales --}}
+            <div class="pt-5 border-t border-slate-100">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
                     </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="{{ $labelCls }}">Temperatura (°C)</label>
-                            <input type="number" step="0.1" name="temperatura" value="{{ old('temperatura') }}"
-                                class="{{ $inputCls }}">
-                        </div>
-                        <div>
-                            <label class="{{ $labelCls }}">Frec. cardíaca</label>
-                            <input type="number" name="frecuencia_cardiaca" value="{{ old('frecuencia_cardiaca') }}"
-                                class="{{ $inputCls }}">
-                        </div>
-                        <div>
-                            <label class="{{ $labelCls }}">Frec. respiratoria</label>
-                            <input type="number" name="frecuencia_respiratoria"
-                                value="{{ old('frecuencia_respiratoria') }}" class="{{ $inputCls }}">
-                        </div>
-                        <div>
-                            <label class="{{ $labelCls }}">Presión arterial</label>
-                            <input type="text" name="presion_arterial" value="{{ old('presion_arterial') }}"
-                                placeholder="120/80" class="{{ $inputCls }}">
-                        </div>
-                        <div>
-                            <label class="{{ $labelCls }}">Saturación O₂ (%)</label>
-                            <input type="number" name="saturacion_oxigeno" value="{{ old('saturacion_oxigeno') }}"
-                                class="{{ $inputCls }}">
-                        </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-sm">Signos vitales del momento *</h3>
+                        <p class="text-[11px] text-slate-400">El estado se calculará automáticamente</p>
                     </div>
                 </div>
 
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="{{ $labelCls }}">Temperatura (°C) *</label>
+                        <input type="number" step="0.1" min="34" max="42" name="temperatura"
+                            x-model="temp" @input="calcularEstado()" required class="{{ $inputCls }}">
+                        @error('temperatura')
+                            <p class="{{ $errorCls }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="{{ $labelCls }}">Frec. cardíaca *</label>
+                        <input type="number" min="30" max="200" name="frecuencia_cardiaca" x-model="fc"
+                            @input="calcularEstado()" required class="{{ $inputCls }}">
+                        @error('frecuencia_cardiaca')
+                            <p class="{{ $errorCls }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="{{ $labelCls }}">Frec. respiratoria *</label>
+                        <input type="number" min="8" max="60" name="frecuencia_respiratoria"
+                            x-model="fr" @input="calcularEstado()" required class="{{ $inputCls }}">
+                        @error('frecuencia_respiratoria')
+                            <p class="{{ $errorCls }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="{{ $labelCls }}">Presión arterial *</label>
+                        <input type="text" name="presion_arterial" value="{{ old('presion_arterial') }}"
+                            placeholder="120/80" pattern="\d{2,3}/\d{2,3}" required class="{{ $inputCls }}">
+                        @error('presion_arterial')
+                            <p class="{{ $errorCls }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="{{ $labelCls }}">Saturación O₂ (%) *</label>
+                        <input type="number" min="50" max="100" name="saturacion_oxigeno" x-model="spo2"
+                            @input="calcularEstado()" required class="{{ $inputCls }}">
+                        @error('saturacion_oxigeno')
+                            <p class="{{ $errorCls }}">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
-            {{-- ============ ACCIONES ============ --}}
-            <div
-                class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex flex-wrap justify-between items-center gap-3">
-                <a href="{{ route('enfermeria.notas.index') }}"
+            {{-- Botones --}}
+            <div class="pt-5 border-t border-slate-100 flex flex-wrap justify-end items-center gap-3">
+                <button type="button"
+                    onclick="Alpine.$data(document.getElementById('modal-nota-create')).open = false"
                     class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 rounded-xl text-xs font-bold transition-all">
                     Cancelar
-                </a>
+                </button>
                 <button type="submit"
                     class="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,4 +178,4 @@
             </div>
         </form>
     </div>
-</x-app-layout>
+</div>
