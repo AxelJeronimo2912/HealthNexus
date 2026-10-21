@@ -1,3 +1,4 @@
+
 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
@@ -85,10 +86,11 @@
                         </td>
                         <td class="px-5 py-3.5">
                             <div class="flex justify-end">
-                                <a href="{{ route('dispensaciones.show', $item) }}"
+                                <button type="button"
+                                    onclick="abrirModalReceta('{{ route('dispensaciones.show', $item) }}')"
                                     class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
                                     Ver
-                                </a>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -122,3 +124,5 @@
             });
     }
 </script>
+
+
