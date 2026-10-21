@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admision;
 use App\Models\Alerta;
 use App\Models\Cama;
+use App\Models\CamaPaciente; // <-- Asegúrate de importar este modelo
 use App\Models\Paciente;
 use App\Models\SignoVital;
 use Illuminate\View\View;
@@ -14,14 +15,32 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        // 1. Pacientes en seguimiento (con signos vitales en las últimas 24h)
+        // 1. Pacientes en seguimiento (Cama activa O signos vitales en las últimas 48h)
+        
+        // Primero obtenemos los IDs de pacientes que tienen cama activa
+        $idsConCama = CamaPaciente::where('activa', true)->pluck('paciente_id')->unique();
+
         $pacientesEnSeguimiento = Paciente::where('activo', true)
-            ->whereHas('signosVitales', function ($q) {
-                $q->where('created_at', '>=', now()->subHours(24));
+            ->where(function ($query) use ($idsConCama) {
+                // Condición A: Que su ID esté en la lista de los que tienen cama
+                $query->whereIn('id', $idsConCama)
+                // Condición B: O que tenga signos vitales recientes
+                ->orWhereHas('signosVitales', function ($q) {
+                    $q->where('created_at', '>=', now()->subHours(48));
+                });
             })
-            ->with('ultimoSignoVital')
+            ->with('ultimoSignoVital') // Solo cargamos el último signo vital
             ->limit(10)
             ->get();
+
+        // Ahora, adjuntamos manualmente la cama a cada paciente para usarla en la vista
+        $pacientesEnSeguimiento->map(function ($paciente) {
+            $paciente->cama_actual = CamaPaciente::with('cama')
+                ->where('paciente_id', $paciente->id)
+                ->where('activa', true)
+                ->first();
+            return $paciente;
+        });
 
         // 2. Camas
         $camasOcupadas    = Cama::where('estado', 'ocupada')->count();

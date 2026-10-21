@@ -27,10 +27,13 @@ class DashboardController extends Controller
         // Contador precalculado
         $medicamentosBajosTotal = $medicamentosBajos->count();
 
-        // 3. Recetas pendientes de dispensar
+        // 3. Recetas pendientes de dispensar (CORREGIDO)
+        // Buscamos consultas finalizadas, no dispensadas, que tengan medicamentos o receta libre
         $recetasPendientes = Consulta::where('dispensada', false)
-            ->whereNotNull('diagnostico_principal')
-            ->whereHas('medicamentos')
+            ->where(function ($query) {
+                $query->whereHas('medicamentos')
+                      ->orWhereNotNull('receta_libre');
+            })
             ->with(['paciente', 'medico'])
             ->orderByDesc('created_at')
             ->limit(10)
