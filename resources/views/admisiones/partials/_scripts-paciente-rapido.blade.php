@@ -16,7 +16,9 @@
             const btnCancelar = document.getElementById('btn-cancelar-paciente');
             const btnCerrar = document.getElementById('btn-cerrar-paciente');
             const btnGuardar = document.getElementById('btn-guardar-paciente');
-            const selectPaciente = document.getElementById('paciente_id');
+
+            // Único cambio necesario: el ID correcto que existe en tu modal de admisión
+            const selectPaciente = document.getElementById('modal_paciente_id');
 
             if (!modal || !form || !btnNuevo || !selectPaciente) return;
 
