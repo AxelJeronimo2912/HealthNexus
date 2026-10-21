@@ -141,35 +141,73 @@ class SeguimientoController extends Controller
     /**
      * Guarda un nuevo seguimiento.
      */
-   public function store(Request $request, Paciente $paciente): RedirectResponse
-{
-    $this->autorizarAcceso($paciente);
+          public function store(Request $request, Paciente $paciente): RedirectResponse
+    {
+        $this->autorizarAcceso($paciente);
 
-    $data = $request->validate([
-        'tipo' => ['required', 'in:evolucion,nota_enfermeria,interconsulta,traslado,alta'],
-        'estado_paciente' => ['nullable', 'in:estable,mejorando,grave,critico,fallecido'],
-        'contenido' => ['required', 'string'],
-        'temperatura' => ['nullable', 'numeric', 'min:30', 'max:45'],
-        'frecuencia_cardiaca' => ['nullable', 'integer', 'min:20', 'max:250'],
-        'frecuencia_respiratoria' => ['nullable', 'integer', 'min:5', 'max:80'],
-        'presion_arterial' => ['nullable', 'string', 'max:20'],
-        'saturacion_oxigeno' => ['nullable', 'integer', 'min:0', 'max:100'],
-    ]);
+        if ($request->tipo === 'alta') {
+            $tieneCama = CamaPaciente::where('paciente_id', $paciente->id)
+                ->where('activa', true)
+                ->exists();
 
-    $cama = CamaPaciente::where('paciente_id', $paciente->id)
-        ->where('activa', true)
-        ->first();
+            if (!$tieneCama) {
+                return back()->withErrors(['tipo' => 'No puedes dar de alta a un paciente que no tiene una cama activa asignada.'])->withInput();
+            }
+        }
 
-    $data['paciente_id'] = $paciente->id;
-    $data['user_id'] = auth()->id();
-    $data['cama_id'] = $cama?->cama_id;
+        $data = $request->validate([
+            'tipo' => ['required', 'in:evolucion,nota_enfermeria,interconsulta,traslado,alta'],
+            'estado_paciente' => ['nullable', 'in:estable,mejorando,grave,critico,fallecido'],
+            'contenido' => ['required', 'string', 'min:10', 'max:5000'],
 
-    Seguimiento::create($data);
+            'temperatura' => ['required', 'numeric', 'min:34', 'max:42'],
+            'frecuencia_cardiaca' => ['required', 'integer', 'min:30', 'max:200'],
+            'frecuencia_respiratoria' => ['required', 'integer', 'min:8', 'max:60'],
+            'presion_arterial' => ['required', 'string', 'regex:/^\d{2,3}\/\d{2,3}$/'],
+            'saturacion_oxigeno' => ['required', 'integer', 'min:50', 'max:100'],
+        ], [
+            'tipo.required' => 'Debes seleccionar el tipo de seguimiento.',
+            'contenido.required' => 'El contenido de la nota es obligatorio.',
+            'contenido.min' => 'La nota médica debe ser más detallada (mínimo 10 caracteres).',
 
-    return redirect()->route('seguimientos.show', $paciente)
-        ->with('success', 'Seguimiento registrado correctamente.');
-}
+            'temperatura.required' => 'La temperatura es obligatoria.',
+            'temperatura.min' => 'La temperatura no puede ser menor a 34°C.',
+            'temperatura.max' => 'La temperatura no puede ser mayor a 42°C.',
 
+            'frecuencia_cardiaca.required' => 'La frecuencia cardíaca es obligatoria.',
+            'frecuencia_cardiaca.min' => 'La frecuencia cardíaca parece demasiado baja.',
+            'frecuencia_cardiaca.max' => 'La frecuencia cardíaca parece demasiado alta.',
+
+            'frecuencia_respiratoria.required' => 'La frecuencia respiratoria es obligatoria.',
+            'frecuencia_respiratoria.min' => 'La frecuencia respiratoria parece demasiado baja.',
+            'frecuencia_respiratoria.max' => 'La frecuencia respiratoria parece demasiado alta.',
+
+            'presion_arterial.required' => 'La presión arterial es obligatoria.',
+            'presion_arterial.regex' => 'El formato de la presión arterial debe ser similar a 120/80.',
+
+            'saturacion_oxigeno.required' => 'La saturación de oxígeno es obligatoria.',
+            'saturacion_oxigeno.max' => 'La saturación no puede superar el 100%.',
+            'saturacion_oxigeno.min' => 'La saturación de oxígeno es peligrosamente baja (mínimo 50%).',
+        ]);
+
+        $cama = CamaPaciente::where('paciente_id', $paciente->id)
+            ->where('activa', true)
+            ->first();
+
+        $data['paciente_id'] = $paciente->id;
+        $data['user_id'] = auth()->id();
+        $data['cama_id'] = $cama?->cama_id;
+
+        Seguimiento::create($data);
+
+        // Liberar cama si es alta
+        if ($data['tipo'] === 'alta' && $cama) {
+            $cama->update(['activa' => false, 'fecha_salida' => now()]);
+        }
+
+        return redirect()->route('seguimientos.show', $paciente)
+            ->with('success', 'Seguimiento registrado correctamente.');
+    }
     /**
      * Elimina un seguimiento.
      */
