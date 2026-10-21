@@ -1,3 +1,4 @@
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center gap-3">
@@ -75,7 +76,8 @@
         </div>
 
         {{-- ============ TABLA ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+            id="tabla-recetas-container">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Recetas</h3>
                 <p class="text-[11px] text-slate-400">{{ $recetas->total() }} recetas en total</p>
@@ -119,34 +121,28 @@
                                         </span>
                                         @if ($receta->receta_libre)
                                             <span
-                                                class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
-                                                Libre
-                                            </span>
+                                                class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold uppercase tracking-wide">Libre</span>
                                         @endif
                                     </div>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     @if ($receta->dispensada)
                                         <span
-                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
-                                            Dispensada
-                                        </span>
+                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">Dispensada</span>
                                         <p class="text-[10px] font-medium text-slate-400 mt-1">
-                                            {{ $receta->dispensada_en?->format('d/m/Y H:i') }}
-                                        </p>
+                                            {{ $receta->dispensada_en?->format('d/m/Y H:i') }}</p>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
-                                            Pendiente
-                                        </span>
+                                            class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase tracking-wide">Pendiente</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end">
-                                        <a href="{{ route('dispensaciones.show', $receta) }}"
+                                        <button type="button"
+                                            onclick="abrirModalReceta('{{ route('dispensaciones.show', $receta) }}')"
                                             class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
                                             Ver receta
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -166,7 +162,7 @@
         <div class="mt-4">{{ $recetas->links() }}</div>
     </div>
 
-    {{-- Contenedor del modal de historial --}}
+    {{-- MODAL DE HISTORIAL --}}
     <div id="modal-historial"
         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden">
@@ -186,12 +182,25 @@
         </div>
     </div>
 
+    {{-- NUEVO MODAL DE RECETA --}}
+    <template x-teleport="body">
+        <div id="modal-receta" x-data="{ open: false }" x-show="open" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div @click.away="open = false"
+                class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                <div id="modal-receta-content">
+                    <div class="p-10 text-center text-slate-400">Cargando receta...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <script>
+        // 1. Funciones del Historial
         function abrirModalHistorial() {
             const modal = document.getElementById('modal-historial');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-
             fetch('{{ route('dispensaciones.historial') }}', {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
@@ -212,13 +221,99 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
-
         document.getElementById('modal-historial').addEventListener('click', function(e) {
             if (e.target === this) cerrarModalHistorial();
         });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') cerrarModalHistorial();
-        });
+        // 2. Función para abrir el Detalle y manejar el Submit por AJAX
+        function abrirModalReceta(url) {
+            const modalElement = document.getElementById('modal-receta');
+            Alpine.$data(modalElement).open = true;
+            const contenedor = document.getElementById('modal-receta-content');
+            contenedor.innerHTML =
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                    interceptarFormulariosModal();
+                });
+        }
+
+        // 3. Interceptar los formularios que se cargan dentro del modal (Dispensar / Revertir)
+        function interceptarFormulariosModal() {
+            const formularios = document.querySelectorAll('#modal-receta-content form');
+
+            formularios.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Evitamos que recargue la página
+
+                    if (!confirm('¿Estás seguro de realizar esta acción?')) return;
+
+                    const formData = new FormData(this);
+                    const url = this.action;
+
+                    // Mostramos un indicador de carga en el botón
+                    const btn = this.querySelector('button[type="submit"]');
+                    const txtOriginal = btn.innerHTML;
+                    btn.innerHTML = 'Procesando...';
+                    btn.disabled = true;
+
+                    fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Cerramos el modal
+                                Alpine.$data(document.getElementById('modal-receta')).open = false;
+
+                                // Recargamos la tabla principal sin salir de la página
+                                fetch(window.location.href, {
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        }
+                                    })
+                                    .then(res => res.text())
+                                    .then(html => {
+                                        // Magia: Extraemos solo la tabla y la reemplazamos para no perder el estado
+                                        const parser = new DOMParser();
+                                        const doc = parser.parseFromString(html, 'text/html');
+                                        const nuevaTabla = doc.getElementById(
+                                            'tabla-recetas-container');
+                                        if (nuevaTabla) {
+                                            document.getElementById('tabla-recetas-container')
+                                                .innerHTML = nuevaTabla.innerHTML;
+                                        }
+                                    });
+
+                                // Opcional: Mostrar una alerta flotante de éxito
+                                alert(data.message);
+                            } else {
+                                alert(data.message || 'Ocurrió un error');
+                                btn.innerHTML = txtOriginal;
+                                btn.disabled = false;
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert('Error de red al procesar la solicitud.');
+                            btn.innerHTML = txtOriginal;
+                            btn.disabled = false;
+                        });
+                });
+            });
+        }
     </script>
 </x-app-layout>
+

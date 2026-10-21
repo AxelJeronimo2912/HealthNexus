@@ -8,7 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-
+use App\Models\MovimientoInventario; 
+use App\Models\Lote;  
 class DispensacionController extends Controller
 {
     /**
@@ -17,10 +18,10 @@ class DispensacionController extends Controller
     public function index(Request $request): View
     {
         $busqueda = $request->input('buscar');
-        $filtro = $request->input('filtro', 'pendientes'); // pendientes, dispensadas, todas
+        $filtro = $request->input('filtro', 'pendientes');
 
         $query = Consulta::with(['paciente', 'medico', 'medicamentos', 'dispensadaPor'])
-            ->where('estado', 'finalizada')   // solo consultas finalizadas
+            ->where('estado', 'finalizada')  
             ->where(function ($q) {
                 $q->whereHas('medicamentos')
                   ->orWhereNotNull('receta_libre');
@@ -69,23 +70,28 @@ class DispensacionController extends Controller
     /**
      * Ver detalle de una receta para dispensar.
      */
-    public function show(Consulta $consulta): View
-    {
-        $consulta->load(['paciente', 'medico', 'medicamentos', 'dispensadaPor', 'cita']);
+    public function show(Request $request, Consulta $consulta) 
+{
+    $consulta->load(['paciente', 'medico', 'medicamentos', 'dispensadaPor', 'cita']);
 
-        return view('dispensaciones.show', compact('consulta'));
+    if ($request->ajax()) {
+        return view('dispensaciones.show', compact('consulta'))->render();
     }
 
+    return view('dispensaciones.show', compact('consulta'));
+}
     /**
      * Dispensar la receta: descuenta stock de cada medicamento.
      */
-    public function dispensar(Request $request, Consulta $consulta): RedirectResponse
+       public function dispensar(Request $request, Consulta $consulta) 
     {
         if ($consulta->dispensada) {
+            if ($request->ajax()) return response()->json(['success' => false, 'message' => 'Esta receta ya fue dispensada.'], 400);
             return back()->with('error', 'Esta receta ya fue dispensada.');
         }
 
         if ($consulta->medicamentos()->count() === 0 && empty($consulta->receta_libre)) {
+            if ($request->ajax()) return response()->json(['success' => false, 'message' => 'Esta consulta no tiene receta.'], 400);
             return back()->with('error', 'Esta consulta no tiene receta.');
         }
 
@@ -96,9 +102,8 @@ class DispensacionController extends Controller
         DB::beginTransaction();
 
         try {
-            // Descontar stock de cada medicamento recetado
             foreach ($consulta->medicamentos as $med) {
-                $cantidad = 1; // o el campo cantidad si lo agregas después
+                $cantidad = 1; 
 
                 if (!InventarioService::tieneStock($med, $cantidad)) {
                     throw new \RuntimeException("Sin stock suficiente de {$med->nombre}. Disponible: {$med->stock_total_calculado}");
@@ -112,7 +117,6 @@ class DispensacionController extends Controller
                 );
             }
 
-            // Marcar la consulta como dispensada
             $consulta->update([
                 'dispensada' => true,
                 'dispensada_en' => now(),
@@ -122,10 +126,26 @@ class DispensacionController extends Controller
 
             DB::commit();
 
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Receta dispensada correctamente.'
+                ]);
+            }
+
             return redirect()->route('dispensaciones.show', $consulta)
                 ->with('success', 'Receta dispensada correctamente.');
+                
         } catch (\Throwable $e) {
             DB::rollBack();
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Error al dispensar: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Error al dispensar: ' . $e->getMessage());
         }
     }
@@ -133,29 +153,63 @@ class DispensacionController extends Controller
     /**
      * Revertir una dispensación (solo admin).
      */
-    public function revertir(Consulta $consulta): RedirectResponse
+    public function revertir(Request $request, Consulta $consulta) 
     {
         if (!auth()->user()->hasRole('administrador')) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo el administrador puede revertir dispensaciones.'], 403);
+            }
             abort(403, 'Solo el administrador puede revertir dispensaciones.');
         }
 
         if (!$consulta->dispensada) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Esta receta no ha sido dispensada.'], 400);
+            }
             return back()->with('error', 'Esta receta no ha sido dispensada.');
         }
 
         DB::beginTransaction();
 
         try {
-            // Devolver stock
-            foreach ($consulta->medicamentos as $med) {
-                InventarioService::entrada(
-                    $med,
-                    1,
-                    'Reversión de dispensación',
-                    ['tipo' => 'consulta', 'id' => $consulta->id]
-                );
+            $movimientosSalida = MovimientoInventario::where('referencia_tipo', 'consulta')
+                ->where('referencia_id', $consulta->id)
+                ->where('tipo', 'salida')
+                ->get();
+
+            if ($movimientosSalida->count() > 0) {
+                foreach ($movimientosSalida as $mov) {
+                    MovimientoInventario::create([
+                        'medicamento_id' => $mov->medicamento_id,
+                        'lote_id'        => $mov->lote_id, 
+                        'user_id'        => auth()->id(),
+                        'tipo'           => 'entrada',
+                        'cantidad'       => abs($mov->cantidad), 
+                        'stock_anterior' => $mov->medicamento->stock_total_calculado,
+                        'stock_nuevo'    => $mov->medicamento->stock_total_calculado + abs($mov->cantidad),
+                        'motivo'         => 'Reversión de dispensación (Receta #' . $consulta->id . ')',
+                        'referencia_tipo'=> 'consulta',
+                        'referencia_id'  => $consulta->id,
+                    ]);
+
+                    if ($mov->lote_id) {
+                        Lote::where('id', $mov->lote_id)->increment('cantidad_disponible', abs($mov->cantidad));
+                    }
+                }
+            } else {
+                foreach ($consulta->medicamentos as $med) {
+                    $cantidadARevertir = $med->pivot->cantidad ?? 1; 
+                    
+                    InventarioService::entrada(
+                        $med,
+                        $cantidadARevertir,
+                        'Reversión de dispensación (Ajuste manual)',
+                        ['tipo' => 'consulta', 'id' => $consulta->id]
+                    );
+                }
             }
 
+            // 4. Actualizar la receta a "no dispensada"
             $consulta->update([
                 'dispensada' => false,
                 'dispensada_en' => null,
@@ -164,9 +218,26 @@ class DispensacionController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Dispensación revertida. El stock fue devuelto.');
+        
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Dispensación revertida. El stock fue devuelto a sus lotes correspondientes.'
+                ]);
+            }
+
+            return back()->with('success', 'Dispensación revertida. El stock fue devuelto a sus lotes correspondientes.');
+            
         } catch (\Throwable $e) {
             DB::rollBack();
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Error al revertir: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Error al revertir: ' . $e->getMessage());
         }
     }
