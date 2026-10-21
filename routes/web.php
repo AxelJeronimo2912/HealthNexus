@@ -332,12 +332,13 @@ Route::middleware(['auth', 'permission:seguimiento.ver'])
     ->name('seguimientos.')
     ->group(function () {
         Route::get('/', [SeguimientoController::class, 'index'])->name('index');
-        Route::get('/{paciente}', [SeguimientoController::class, 'show'])->name('show');
+        Route::get('/{paciente}/timeline', [SeguimientoController::class, 'timeline'])->name('timeline');
         Route::get('/{paciente}/crear', [SeguimientoController::class, 'create'])->name('create');
         Route::post('/{paciente}', [SeguimientoController::class, 'store'])->name('store');
+        Route::post('/{paciente}/alta', [SeguimientoController::class, 'darDeAlta'])->name('alta');
+        Route::get('/{paciente}', [SeguimientoController::class, 'show'])->name('show');
         Route::delete('/{seguimiento}', [SeguimientoController::class, 'destroy'])->name('destroy');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Movimientos
