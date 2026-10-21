@@ -1,0 +1,427 @@
+@php
+    use App\Models\SignoVital;
+@endphp
+
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-bold text-2xl text-slate-800 tracking-tight">Detalle de la Cita</h2>
+            <a href="{{ route('citas.index') }}"
+                class="text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors flex items-center gap-1">
+                ← Volver a la agenda
+            </a>
+        </div>
+    </x-slot>
+
+    @php
+        $signoReciente = SignoVital::ultimoDe($cita->paciente_id);
+        $diasMaximos = 7;
+        $signoValido = $signoReciente && $signoReciente->created_at->diffInDays(now()) <= $diasMaximos;
+        $puedeIniciar = in_array($cita->estado, ['confirmada', 'en_curso']);
+
+        // Estados finales: ya no se puede cambiar el estado
+        $estadosFinales = ['atendida', 'cancelada', 'no_asistio'];
+        $esFinal = in_array($cita->estado, $estadosFinales);
+
+        // Solo el administrador puede reabrir una cita cerrada
+        $esAdmin = auth()->user()->hasRole('administrador');
+        $puedeCambiarEstado = !$esFinal || $esAdmin;
+
+        // ── Flujo de estados para el stepper ──
+        $flujo = [
+            'programada' => ['label' => 'Programada', 'siguiente' => 'confirmada', 'accion' => 'Confirmar cita'],
+            'confirmada' => ['label' => 'Confirmada', 'siguiente' => 'en_curso', 'accion' => 'Poner en curso'],
+            'en_curso' => ['label' => 'En curso', 'siguiente' => 'atendida', 'accion' => 'Marcar como atendida'],
+            'atendida' => ['label' => 'Atendida', 'siguiente' => null, 'accion' => null],
+            'cancelada' => ['label' => 'Cancelada', 'siguiente' => null, 'accion' => null],
+            'no_asistio' => ['label' => 'No asistió', 'siguiente' => null, 'accion' => null],
+        ];
+
+        $pasoActual = $flujo[$cita->estado] ?? null;
+        $siguiente = $pasoActual['siguiente'] ?? null;
+        $accionPrincipal = $pasoActual['accion'] ?? null;
+
+        // Acciones secundarias: todas menos la actual y la siguiente
+        $todasLasAcciones = [
+            'programada' => 'Programar',
+            'confirmada' => 'Confirmar',
+            'en_curso' => 'En curso',
+            'atendida' => 'Marcar atendida',
+            'no_asistio' => 'No asistió',
+            'cancelada' => 'Cancelar',
+        ];
+
+        $accionesSecundarias = collect($todasLasAcciones)->reject(
+            fn($label, $estado) => $estado === $cita->estado || $estado === $siguiente,
+        );
+    @endphp
+
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+            {{-- Columna izquierda: información --}}
+            <div class="space-y-6">
+
+                @if (session('success'))
+                    <div
+                        class="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div
+                        class="p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-lg shadow-sm font-medium text-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                {{-- Estado --}}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estado actual</p>
+                            <span
+                                class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm {{ $cita->estado_color }}">
+                                {{ $cita->estado_label }}
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Fecha y hora</p>
+                            <p class="text-2xl font-black text-slate-900 mt-1">
+                                {{ $cita->fecha_hora->format('d/m/Y H:i') }}</p>
+                            <p class="text-xs text-purple-600 font-medium">{{ $cita->duracion_minutos }} minutos
+                                programados</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Paciente --}}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-3">Paciente</h3>
+                    <p class="text-xl font-bold text-slate-900">{{ $cita->paciente->nombre_completo }}</p>
+                    <dl class="grid grid-cols-2 gap-4 text-sm mt-4 pt-4 border-t border-slate-100">
+                        <div>
+                            <dt class="text-xs text-slate-400">CURP:</dt>
+                            <dd class="font-medium text-slate-700 mt-0.5">{{ $cita->paciente->curp ?? '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400">Teléfono:</dt>
+                            <dd class="font-medium text-slate-700 mt-0.5">
+                                {{ $cita->paciente->telefono_principal ?? '—' }}</dd>
+                        </div>
+                        <div class="col-span-2">
+                            <dt class="text-xs text-slate-400">Triage al agendar:</dt>
+                            <dd class="font-semibold text-slate-800 mt-0.5">
+                                {{ $cita->triage_al_momento ? ucfirst($cita->triage_al_momento) : '—' }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {{-- Médico --}}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-3">Médico asignado</h3>
+                    <p class="text-lg font-bold text-slate-900">{{ $cita->medico->nombre_completo }}</p>
+                    @if ($cita->turno)
+                        <p class="text-xs text-slate-500 mt-1">
+                            Turno: <span class="font-medium text-slate-700">{{ $cita->turno->nombre }}</span>
+                            ({{ $cita->turno->rango }})
+                        </p>
+                    @endif
+                    @if ($cita->especialidad)
+                        <p class="text-sm text-gray-500 mt-1">
+                            Especialidad: <strong>{{ $cita->especialidad->nombre }}</strong>
+                        </p>
+                    @endif
+                </div>
+
+                {{-- Motivo y notas --}}
+                @if ($cita->motivo || $cita->notas)
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                        @if ($cita->motivo)
+                            <div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1">Motivo</h4>
+                                <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
+                                    {{ $cita->motivo }}</p>
+                            </div>
+                        @endif
+                        @if ($cita->notas)
+                            <div class="pt-3 border-t border-slate-100">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1">Notas
+                                    adicionales
+                                </h4>
+                                <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
+                                    {{ $cita->notas }}</p>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+            </div>
+
+            {{-- Columna derecha: consulta + acciones + admin --}}
+            <div class="space-y-6">
+
+                {{-- CONSULTA: iniciar o ver --}}
+                @if ($cita->consulta)
+                    <div
+                        class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-md border-l-4 border-purple-500 text-white">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-purple-300">Consulta
+                                    registrada
+                                </p>
+                                <p class="font-bold text-lg mt-1 text-white">
+                                    {{ $cita->consulta->created_at->format('d/m/Y H:i') }}
+                                </p>
+                                <p class="text-xs text-slate-300 mt-1">
+                                    Estado:
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $cita->consulta->estado === 'finalizada' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300' }}">
+                                        {{ ucfirst($cita->consulta->estado) }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{{ route('consultas.show', $cita->consulta) }}"
+                                    class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                                    Ver consulta
+                                </a>
+                                @if ($cita->consulta->estado === 'borrador')
+                                    <a href="{{ route('consultas.edit', $cita->consulta) }}"
+                                        class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-sm font-semibold transition-all shadow-sm">
+                                        Continuar consulta
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($puedeIniciar && $signoValido)
+                    <div
+                        class="bg-gradient-to-r from-emerald-900/90 to-slate-900 p-6 rounded-2xl shadow-md border-l-4 border-emerald-400 text-white">
+                        <p class="text-sm text-emerald-100 mb-4">
+                            Signos vitales registrados el <strong
+                                class="text-white">{{ $signoReciente->created_at->format('d/m/Y H:i') }}</strong>.
+                            El paciente está listo para iniciar la atención médica.
+                        </p>
+                        <a href="{{ route('consultas.iniciar', $cita) }}"
+                            class="inline-flex items-center px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-sm font-bold transition-all shadow-md">
+                            Iniciar consulta (SOAP)
+                        </a>
+                    </div>
+                @elseif ($puedeIniciar && !$signoValido)
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500 border-y border-r border-slate-100">
+                        <p class="text-sm font-bold text-amber-800 mb-1 flex items-center gap-2">
+                            ⚠️ Signos vitales requeridos
+                        </p>
+                        <p class="text-sm text-slate-600 mb-4">
+                            @if (!$signoReciente)
+                                El paciente no cuenta con registro previo de signos vitales.
+                            @else
+                                Los signos vitales exceden el límite permitido de {{ $diasMaximos }} días.
+                            @endif
+                            Es obligatorio registrarlos antes de iniciar la consulta SOAP.
+                        </p>
+                        <a href="{{ route('signos-vitales.create', ['paciente_id' => $cita->paciente_id, 'cita_id' => $cita->id]) }}"
+                            class="inline-block px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                            Registrar signos vitales
+                        </a>
+                    </div>
+                @endif
+
+                {{-- ACCIONES: cambiar estado --}}
+                @if ($puedeCambiarEstado)
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+
+                        {{-- Stepper de flujo --}}
+                        <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                            <div
+                                class="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider">
+                                @php
+                                    $pasos = ['programada', 'confirmada', 'en_curso', 'atendida'];
+                                    $indiceActual = array_search($cita->estado, $pasos);
+                                    $esFinal = in_array($cita->estado, ['cancelada', 'no_asistio'], true);
+                                @endphp
+
+                                @foreach ($pasos as $i => $paso)
+                                    @php
+                                        $completado = !$esFinal && $indiceActual !== false && $i < $indiceActual;
+                                        $activo = !$esFinal && $i === $indiceActual;
+                                    @endphp
+                                    <div class="flex-1 flex items-center">
+                                        <div class="flex flex-col items-center gap-1.5">
+                                            <div
+                                                class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold
+                                                {{ $completado ? 'bg-emerald-500 text-white' : ($activo ? 'bg-purple-600 text-white ring-4 ring-purple-100' : 'bg-slate-100 text-slate-400') }}">
+                                                @if ($completado)
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                                                        fill="none" viewBox="0 0 24 24" stroke-width="3"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M4.5 12.75l6 6 9-13.5" />
+                                                    </svg>
+                                                @else
+                                                    {{ $i + 1 }}
+                                                @endif
+                                            </div>
+                                            <span
+                                                class="{{ $activo ? 'text-purple-700' : ($completado ? 'text-emerald-600' : 'text-slate-400') }}">
+                                                {{ $flujo[$paso]['label'] }}
+                                            </span>
+                                        </div>
+                                        @if (!$loop->last)
+                                            <div
+                                                class="flex-1 h-0.5 mx-2 mb-5
+                                                    {{ $completado ? 'bg-emerald-400' : 'bg-slate-100' }}">
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @if ($esFinal)
+                                <div class="mt-3 flex items-center gap-2 text-xs">
+                                    <span
+                                        class="px-2 py-0.5 rounded-full font-semibold
+                                            {{ $cita->estado === 'cancelada' ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-600' }}">
+                                        {{ $cita->estado_label }}
+                                    </span>
+                                    <span class="text-slate-500">— flujo finalizado</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Acción principal --}}
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Siguiente acción
+                                </h3>
+                                @if ($esFinal && $esAdmin)
+                                    <span
+                                        class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                                        Modo admin · cita cerrada
+                                    </span>
+                                @endif
+                            </div>
+
+                            @if ($siguiente && $accionPrincipal)
+                                @php
+                                    $estilosPrincipal = match ($siguiente) {
+                                        'confirmada' => 'bg-blue-600 hover:bg-blue-500 text-white',
+                                        'en_curso' => 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+                                        'atendida' => 'bg-emerald-600 hover:bg-emerald-500 text-white',
+                                        default => 'bg-purple-600 hover:bg-purple-500 text-white',
+                                    };
+                                @endphp
+                                <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="estado" value="{{ $siguiente }}">
+                                    <button
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3
+                                               rounded-xl text-sm font-bold shadow-sm transition-all {{ $estilosPrincipal }}">
+                                        {{ $accionPrincipal }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            @else
+                                <p class="text-sm text-slate-500">
+                                    No hay una siguiente acción natural para esta cita.
+                                </p>
+                            @endif
+
+                            {{-- Aviso informativo de permisos por rol --}}
+                            <div
+                                class="mt-5 flex items-start gap-3 p-4 bg-blue-50/70 border border-blue-100 rounded-xl">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600"
+                                        fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                                    </svg>
+                                </div>
+                                <div class="text-xs text-blue-800 leading-relaxed">
+                                    <p class="font-bold uppercase tracking-wider text-[10px] text-blue-700 mb-1">
+                                        Permisos según tu rol
+                                    </p>
+                                    <ul class="space-y-0.5">
+                                        <li>· <strong>Médico:</strong> poner en curso o marcar atendida.</li>
+                                        <li>· <strong>Administrador:</strong> cualquier cambio, incluida la reapertura.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {{-- Acciones secundarias --}}
+                            @if ($accionesSecundarias->isNotEmpty())
+                                <div class="mt-6 pt-5 border-t border-slate-100">
+                                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                                        Otras acciones
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach ($accionesSecundarias as $estado => $label)
+                                            @php
+                                                $esNegativo = in_array($estado, ['cancelada', 'no_asistio'], true);
+                                                $clase = $esNegativo
+                                                    ? 'border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300'
+                                                    : 'border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700';
+                                            @endphp
+                                            <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST"
+                                                @if ($esNegativo) onsubmit="return confirm('¿Confirmas cambiar el estado a «{{ $label }}»?')" @endif
+                                                class="inline">
+                                                @csrf
+                                                <input type="hidden" name="estado" value="{{ $estado }}">
+                                                <button
+                                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg border bg-white transition-all {{ $clase }}">
+                                                    {{ $label }}
+                                                </button>
+                                            </form>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    {{-- Cita cerrada --}}
+                    <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-700">Cita cerrada ({{ $cita->estado_label }})</p>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Esta cita ya no puede cambiar de estado.
+                                @if (!$esAdmin)
+                                    Solo un administrador puede reabrirla.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Zona de administración --}}
+                @if (auth()->user()->hasRole('administrador'))
+                    <div
+                        class="bg-rose-50/50 p-6 rounded-2xl border border-rose-100 flex items-center justify-between">
+                        <span class="text-xs text-rose-700 font-medium">Zona de administración</span>
+                        <form action="{{ route('citas.destroy', $cita) }}" method="POST"
+                            onsubmit="return confirm('¿Confirma que desea eliminar esta cita de forma permanente?')">
+                            @csrf @method('DELETE')
+                            <button class="text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">
+                                Eliminar cita
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</x-app-layout>
