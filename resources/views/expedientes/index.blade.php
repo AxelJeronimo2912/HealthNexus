@@ -17,12 +17,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    {{-- Contenedor principal con Alpine para el modal --}}
+    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" x-data="pacientesIndex()" x-init="init()">
 
         {{-- Barra de búsqueda + contador --}}
         <div
             class="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-
             <div class="flex items-center gap-3 md:pr-4 md:border-r border-slate-100 shrink-0">
                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,12 +97,8 @@
                                     <p class="text-xs font-bold text-slate-800">{{ $paciente->nombre_completo }}</p>
                                 </div>
                             </td>
-                            <td class="px-5 py-3.5 text-xs font-medium text-slate-500">
-                                {{ $paciente->curp ?? '—' }}
-                            </td>
-                            <td class="px-5 py-3.5 text-xs font-semibold text-slate-700">
-                                {{ $paciente->edad }} años
-                            </td>
+                            <td class="px-5 py-3.5 text-xs font-medium text-slate-500">{{ $paciente->curp ?? '—' }}</td>
+                            <td class="px-5 py-3.5 text-xs font-semibold text-slate-700">{{ $paciente->edad }} años</td>
                             <td class="px-5 py-3.5">
                                 @if ($paciente->ultimoSignoVital)
                                     <span
@@ -125,10 +121,11 @@
                                         class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all active:scale-95">
                                         Ver expediente
                                     </a>
-                                    <a href="{{ route('pacientes.show', $paciente) }}"
+                                    <button type="button"
+                                        onclick="window.abrirModalPaciente && window.abrirModalPaciente('show', '{{ route('pacientes.show', $paciente) }}?partial=1')"
                                         class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold transition-all active:scale-95">
                                         Ficha
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -188,10 +185,11 @@
                             class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold text-center shadow-sm">
                             Ver expediente
                         </a>
-                        <a href="{{ route('pacientes.show', $paciente) }}"
+                        <button type="button"
+                            onclick="window.abrirModalPaciente && window.abrirModalPaciente('show', '{{ route('pacientes.show', $paciente) }}?partial=1')"
                             class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold text-center">
                             Ficha
-                        </a>
+                        </button>
                     </div>
                 </div>
             @empty
@@ -202,5 +200,114 @@
         </div>
 
         <div>{{ $pacientes->links() }}</div>
+
+        {{-- ================= MODAL GLOBAL (RECICLADO) ================= --}}
+        <div x-show="modalAbierto" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            @keydown.escape.window="cerrarModal()">
+
+            <div x-show="modalAbierto" x-transition.opacity @click="cerrarModal()"
+                class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+            <div x-show="modalAbierto" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="font-bold text-lg text-slate-800"
+                        x-text="{
+                            create: 'Nuevo Paciente',
+                            edit: 'Editar Paciente',
+                            show: 'Detalle del Paciente',
+                            delete: 'Confirmar eliminación'
+                        }[modalTipo] || ''">
+                    </h3>
+
+                    <button type="button" @click="cerrarModal()"
+                        class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-2xl transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto p-6">
+                    <div x-show="modalCargando" class="flex items-center justify-center py-16">
+                        <svg class="animate-spin w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                    </div>
+
+                    <div x-show="modalError" x-cloak
+                        class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm"
+                        x-text="modalError"></div>
+
+                    <!-- Contenido inyectado por fetch (show) -->
+                    <div x-show="!modalCargando && !modalError && modalTipo !== 'delete'" x-ref="modalBody"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    {{-- ================= SCRIPT RECICLADO ================= --}}
+    <script>
+        function pacientesIndex() {
+            return {
+                modalAbierto: false,
+                modalTipo: null,
+                modalCargando: false,
+                modalError: null,
+
+                init() {
+                    // Exponer la función globalmente para que el botón "Ficha" la encuentre
+                    window.abrirModalPaciente = (tipo, url) => this.abrirModal(tipo, url);
+                    window.cerrarModalPaciente = () => this.cerrarModal();
+                },
+
+                async abrirModal(tipo, url) {
+                    this.modalTipo = tipo;
+                    this.modalAbierto = true;
+                    this.modalCargando = true;
+                    this.modalError = null;
+
+                    try {
+                        const res = await fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        if (!res.ok) throw new Error();
+                        const html = await res.text();
+
+                        this.modalCargando = false;
+
+                        this.$nextTick(() => {
+                            const body = this.$refs.modalBody;
+                            body.innerHTML = html;
+
+                            if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                                window.Alpine.initTree(body);
+                            }
+                        });
+                    } catch (e) {
+                        this.modalError = 'No se pudo cargar el contenido.';
+                        this.modalCargando = false;
+                    }
+                },
+
+                cerrarModal() {
+                    this.modalAbierto = false;
+                    this.modalTipo = null;
+                    this.modalError = null;
+
+                    if (this.$refs.modalBody) {
+                        this.$refs.modalBody.innerHTML = '';
+                    }
+                }
+            };
+        }
+    </script>
 </x-app-layout>

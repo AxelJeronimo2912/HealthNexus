@@ -21,7 +21,9 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "apexcharts": "^8.4.1",
         "caniuse-lite": "^1.0.30001810",
-        "chart.js": "^4.5.1"
+        "chart.js": "^4.5.1",
+        "flowbite": "^4.0.2"
     }
 }
