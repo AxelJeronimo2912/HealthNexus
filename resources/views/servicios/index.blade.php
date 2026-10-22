@@ -29,12 +29,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-100 min-h-screen">
+    <div class="py-8 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- ============ MÉTRICAS ============ --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
                         class="w-12 h-12 rounded-2xl bg-nexus-primary/10 text-nexus-primary flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,7 +48,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
                         class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,9 +62,9 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
-                        class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -72,39 +72,15 @@
                     </div>
                     <div>
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tipos de Servicio</p>
-                        <h4 class="text-xl font-bold text-indigo-600">{{ $stats['tipos'] }}</h4>
+                        <h4 class="text-xl font-bold text-brand-600">{{ $stats['tipos'] }}</h4>
                     </div>
                 </div>
             </div>
 
-            @if (session('success'))
-                <div
-                    class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <span class="font-medium">{{ session('success') }}</span>
-                </div>
-            @endif
-            @if (session('error'))
-                <div
-                    class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
-                    <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                    <span class="font-medium">{{ session('error') }}</span>
-                </div>
-            @endif
 
             {{-- ============ BUSCADOR / FILTROS ============ --}}
             <form method="GET"
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 flex flex-wrap items-center gap-3">
+                class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-4 flex flex-wrap items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +94,7 @@
                     class="flex-1 min-w-[200px] border-0 bg-transparent text-sm focus:ring-0 placeholder:text-slate-400">
 
                 <select name="tipo"
-                    class="min-w-[180px] bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none">
+                    class="min-w-[180px] bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none">
                     <option value="">Todos los tipos</option>
                     <option value="consulta_externa" @selected($tipo === 'consulta_externa')>Consulta Externa</option>
                     <option value="urgencias" @selected($tipo === 'urgencias')>Urgencias</option>
@@ -145,34 +121,34 @@
             </form>
 
             {{-- ============ TABLA ============ --}}
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead class="bg-slate-50/70 border-b border-slate-100">
                             <tr>
                                 <th
-                                    class="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Servicio</th>
                                 <th
-                                    class="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Tipo</th>
                                 <th
-                                    class="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Ubicación</th>
                                 <th
-                                    class="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Horario</th>
                                 <th
-                                    class="px-6 py-4 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Personal</th>
                                 <th
-                                    class="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Precio</th>
                                 <th
-                                    class="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Estado</th>
                                 <th
-                                    class="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     Acciones</th>
                             </tr>
                         </thead>
@@ -182,19 +158,19 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-200 group-hover:bg-nexus-primary group-hover:text-violet-400">
+                                                class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-200 group-hover:bg-nexus-primary group-hover:text-accent-400">
                                                 {{ mb_strtoupper(mb_substr($servicio->nombre, 0, 2)) }}
                                             </div>
                                             <div>
                                                 <p class="text-sm font-bold text-slate-800">{{ $servicio->nombre }}</p>
-                                                <p class="text-[11px] text-slate-400 font-mono mt-0.5">
+                                                <p class="text-xs text-slate-400 font-mono mt-0.5">
                                                     {{ $servicio->codigo }}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $servicio->tipo_color }}">
+                                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $servicio->tipo_color }}">
                                             {{ $servicio->tipo_label }}
                                         </span>
                                     </td>
@@ -211,7 +187,7 @@
                                             <span>{{ $servicio->ubicacion ?? '—' }}</span>
                                         </div>
                                         @if ($servicio->piso)
-                                            <p class="text-[11px] text-slate-400 mt-1 ml-6">{{ $servicio->piso }}</p>
+                                            <p class="text-xs text-slate-400 mt-1 ml-6">{{ $servicio->piso }}</p>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
@@ -227,7 +203,7 @@
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <span
-                                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold">
+                                            class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold">
                                             {{ $servicio->users_count }}
                                         </span>
                                     </td>
@@ -236,12 +212,12 @@
                                             <p class="text-sm font-extrabold text-slate-800">
                                                 {{ $servicio->precio_formateado }}</p>
                                             @if ($servicio->precio_descripcion)
-                                                <p class="text-[10px] text-slate-400 mt-0.5">
+                                                <p class="text-xs text-slate-400 mt-0.5">
                                                     {{ $servicio->precio_descripcion }}</p>
                                             @endif
                                         @else
                                             <span
-                                                class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                                class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wide">
                                                 Sin costo
                                             </span>
                                         @endif
@@ -249,12 +225,12 @@
                                     <td class="px-6 py-4">
                                         @if ($servicio->activo)
                                             <span
-                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                                 Activo
                                             </span>
                                         @else
                                             <span
-                                                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                                 Inactivo
                                             </span>
                                         @endif
@@ -276,7 +252,7 @@
                                             </button>
                                             <button type="button"
                                                 onclick="abrirModalEditar('{{ route('servicios.edit', $servicio) }}')"
-                                                class="p-2 text-purple-500 hover:bg-purple-50 rounded-xl transition"
+                                                class="p-2 text-accent-500 hover:bg-accent-50 rounded-xl transition"
                                                 title="Editar servicio">
                                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -287,7 +263,7 @@
                                             </button>
                                             <button type="button"
                                                 onclick="abrirModalPersonal('{{ route('servicios.personal', $servicio) }}')"
-                                                class="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition"
+                                                class="p-2 text-brand-500 hover:bg-brand-50 rounded-xl transition"
                                                 title="Personal asignado">
                                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">

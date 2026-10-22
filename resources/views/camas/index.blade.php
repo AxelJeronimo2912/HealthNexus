@@ -15,7 +15,7 @@
                 </div>
             </div>
             <button @click="$dispatch('open-modal', 'modal-crear-cama')"
-                class="bg-indigo-950 hover:bg-indigo-900 text-white font-semibold px-5 py-2.5 rounded-full text-sm shadow-md transition-all flex items-center gap-2">
+                class="bg-brand-950 hover:bg-brand-900 text-white font-semibold px-5 py-2.5 rounded-full text-sm shadow-md transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -31,23 +31,11 @@
         busquedaLive: ''
     }">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-xl shadow-sm text-sm font-medium">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-xl shadow-sm text-sm font-medium">
-                {{ session('error') }}
-            </div>
-        @endif
 
         {{-- Tarjetas de Métricas --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Camas</p>
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex flex-col justify-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Camas</p>
                 <p class="text-2xl font-black text-slate-800">{{ $stats['total'] }}</p>
             </div>
             <div
@@ -58,17 +46,17 @@
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
                 </div>
-                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Disponibles</p>
+                <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Disponibles</p>
                 <p class="text-2xl font-black text-emerald-700">{{ $stats['disponibles'] }}</p>
             </div>
             <div
                 class="bg-amber-50/50 p-4 rounded-2xl border border-amber-100 shadow-sm flex flex-col justify-center relative overflow-hidden">
-                <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Ocupadas</p>
+                <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Ocupadas</p>
                 <p class="text-2xl font-black text-amber-700">{{ $stats['ocupadas'] }}</p>
             </div>
             <div
                 class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 shadow-sm flex flex-col justify-center relative overflow-hidden">
-                <p class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">En Mantenimiento</p>
+                <p class="text-xs font-bold text-rose-600 uppercase tracking-wider">En Mantenimiento</p>
                 <p class="text-2xl font-black text-rose-700">{{ $stats['mantenimiento'] }}</p>
             </div>
         </div>
@@ -128,7 +116,7 @@
                           {{ $filtroEstado === $val || ($val === '' && !$filtroEstado) ? $config['color'] . ' shadow-sm' : $config['inactive'] }}">
                     {{ $config['label'] }}
                     <span
-                        class="px-1.5 py-0.5 rounded-md text-[10px] {{ $filtroEstado === $val || ($val === '' && !$filtroEstado) ? 'bg-white/20' : 'bg-slate-100' }}">
+                        class="px-1.5 py-0.5 rounded-md text-xs {{ $filtroEstado === $val || ($val === '' && !$filtroEstado) ? 'bg-white/20' : 'bg-slate-100' }}">
                         {{ $config['count'] }}
                     </span>
                 </a>
@@ -136,7 +124,7 @@
         </div>
 
         {{-- 🔽 BÚSQUEDA EN TIEMPO REAL (Frontend) --}}
-        <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-3 items-center">
+        <div class="bg-white p-3 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex flex-wrap gap-3 items-center">
             <div class="flex-1 min-w-[240px] relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +134,7 @@
                 </span>
                 <input type="text" x-model="busquedaLive"
                     placeholder="Buscar en tiempo real por código, área, piso o paciente..."
-                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-950 transition-all">
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-brand-950 transition-all">
             </div>
 
             <button x-show="busquedaLive !== ''" @click="busquedaLive = ''" x-cloak
@@ -159,13 +147,13 @@
 
             {{-- Indicador visual de coincidencias --}}
             <div x-show="busquedaLive !== ''" x-cloak
-                class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                class="text-xs font-semibold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100">
                 Filtrando en vivo...
             </div>
         </div>
 
         {{-- GRID VISUAL DE CAMAS (BED BOARD) --}}
-        <div class="bg-white shadow-sm rounded-3xl border border-slate-100 p-6">
+        <div class="bg-white shadow-sm rounded-2xl border border-slate-100 p-6">
 
             {{-- Leyenda --}}
             <div class="flex flex-wrap items-center gap-4 mb-6 pb-4 border-b border-slate-100">
@@ -194,7 +182,7 @@
             @forelse ($camasPorArea as $area => $camasArea)
                 <div class="mb-8 last:mb-0">
                     <div class="flex items-center gap-2 mb-4">
-                        <svg class="w-4 h-4 text-indigo-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-brand-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
@@ -287,7 +275,7 @@
                                             modalDetalle.signo_vital_id = {{ $signoId ?? 'null' }}; @endif
                                         $dispatch('open-modal', 'modal-ver-cama')
                                     "
-                                    class="w-full border-2 {{ $colorClasses[0] }} rounded-2xl p-3 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 text-left">
+                                    class="w-full border-2 {{ $colorClasses[0] }} rounded-2xl p-3 transition-all duration-200 hover:shadow-lg text-left">
 
                                     <div class="flex items-center justify-center mb-2">
                                         <div class="relative">
@@ -316,7 +304,7 @@
 
                                         @if ($paciente)
                                             <p
-                                                class="text-[11px] font-bold text-slate-800 truncate mt-1 leading-tight">
+                                                class="text-xs font-bold text-slate-800 truncate mt-1 leading-tight">
                                                 {{ $paciente->nombre_completo }}
                                             </p>
                                             <p class="text-[9px] text-slate-500 truncate">ID: {{ $paciente->id }}</p>
@@ -328,14 +316,14 @@
                                                 </span>
                                             @endif
                                         @else
-                                            <p class="text-[10px] font-medium text-slate-500 truncate mt-0.5">
+                                            <p class="text-xs font-medium text-slate-500 truncate mt-0.5">
                                                 {{ $cama->habitacion ? 'Hab. ' . $cama->habitacion : 'Sin hab.' }}
                                                 @if ($cama->piso)
                                                     · {{ $cama->piso }}
                                                 @endif
                                             </p>
                                             <p
-                                                class="text-[10px] font-semibold uppercase tracking-wider mt-1 {{ $colorClasses[1] }} opacity-80">
+                                                class="text-xs font-semibold uppercase tracking-wider mt-1 {{ $colorClasses[1] }} opacity-80">
                                                 {{ $cama->estado_label }}
                                             </p>
                                         @endif
@@ -347,7 +335,7 @@
                                     class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button type="button"
                                         @click.stop="modalEditar = {{ $cama->toJson() }}; $dispatch('open-modal', 'modal-editar-cama')"
-                                        class="w-7 h-7 flex items-center justify-center bg-white/95 backdrop-blur rounded-lg shadow-sm text-purple-600 hover:bg-purple-50 transition-colors"
+                                        class="w-7 h-7 flex items-center justify-center bg-white/95 backdrop-blur rounded-lg shadow-sm text-accent-600 hover:bg-accent-50 transition-colors"
                                         title="Editar cama">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -392,7 +380,7 @@
                                                 <input type="hidden" name="estado" value="{{ $val }}">
                                                 <button type="submit"
                                                     class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-50 flex items-center gap-2
-                                                        {{ $cama->estado === $val ? 'text-indigo-950 font-bold' : 'text-slate-600' }}">
+                                                        {{ $cama->estado === $val ? 'text-brand-950 font-bold' : 'text-slate-600' }}">
                                                     <span
                                                         class="w-2 h-2 rounded-full
                                                         @switch($val)
@@ -458,7 +446,7 @@
                     <button type="button" @click="$dispatch('close-modal', 'modal-crear-cama')"
                         class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium">Cancelar</button>
                     <button type="submit"
-                        class="px-5 py-2 bg-indigo-950 text-white rounded-xl text-sm font-medium">Guardar Cama</button>
+                        class="px-5 py-2 bg-brand-950 text-white rounded-xl text-sm font-medium">Guardar Cama</button>
                 </div>
             </form>
         </x-modal>
@@ -469,7 +457,7 @@
                     @csrf
                     @method('PUT')
                     <div class="flex justify-between items-center pb-4 border-b border-slate-100">
-                        <h3 class="text-lg font-bold text-slate-800">Editar Cama: <span class="text-indigo-950"
+                        <h3 class="text-lg font-bold text-slate-800">Editar Cama: <span class="text-brand-950"
                                 x-text="modalEditar.codigo"></span></h3>
                         <button type="button" @click="$dispatch('close-modal', 'modal-editar-cama')"
                             class="text-slate-400 hover:text-slate-600">✕</button>
@@ -481,7 +469,7 @@
                         <button type="button" @click="$dispatch('close-modal', 'modal-editar-cama')"
                             class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium">Cancelar</button>
                         <button type="submit"
-                            class="px-5 py-2 bg-indigo-950 text-white rounded-xl text-sm font-medium">Actualizar
+                            class="px-5 py-2 bg-brand-950 text-white rounded-xl text-sm font-medium">Actualizar
                             Cama</button>
                     </div>
                 </form>
@@ -544,17 +532,17 @@
                             <div>
                                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Paciente
                                     asignado</h4>
-                                <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl space-y-2">
+                                <div class="bg-brand-50/50 border border-brand-100 p-4 rounded-2xl space-y-2">
                                     <div class="flex items-center justify-between gap-3">
                                         <div class="min-w-0">
                                             <p class="text-sm font-bold text-slate-800 truncate"
                                                 x-text="modalDetalle.paciente.nombre_completo"></p>
-                                            <p class="text-[11px] text-slate-500">ID: <span
+                                            <p class="text-xs text-slate-500">ID: <span
                                                     x-text="modalDetalle.paciente.id"></span></p>
                                         </div>
                                         <template x-if="modalDetalle.triage">
                                             <span
-                                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border shrink-0"
+                                                class="px-2.5 py-1 rounded-full text-xs font-bold uppercase border shrink-0"
                                                 :class="{
                                                     'bg-rose-100 text-rose-700 border-rose-200': modalDetalle
                                                         .triage === 'rojo',
@@ -573,7 +561,7 @@
                                     </div>
 
                                     <template x-if="modalDetalle.fecha_ingreso">
-                                        <p class="text-[11px] text-slate-500">
+                                        <p class="text-xs text-slate-500">
                                             Ingreso:
                                             <span class="font-semibold text-slate-700"
                                                 x-text="new Date(modalDetalle.fecha_ingreso).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })"></span>
@@ -583,12 +571,12 @@
                                     <div class="flex flex-wrap gap-3 pt-2">
                                         <template x-if="modalDetalle.paciente.id">
                                             <a :href="`/pacientes/${modalDetalle.paciente.id}`"
-                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">Ver
+                                                class="text-xs font-bold text-brand-700 hover:text-brand-900 hover:underline">Ver
                                                 expediente →</a>
                                         </template>
                                         <template x-if="modalDetalle.signo_vital_id">
                                             <a :href="`/signos-vitales/${modalDetalle.signo_vital_id}`"
-                                                class="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:underline">Ver
+                                                class="text-xs font-bold text-brand-700 hover:text-brand-900 hover:underline">Ver
                                                 signos vitales →</a>
                                         </template>
                                     </div>

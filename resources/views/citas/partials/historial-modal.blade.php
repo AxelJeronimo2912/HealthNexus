@@ -1,4 +1,4 @@
-<div class="p-6 bg-white rounded-3xl">
+<div class="p-6 bg-white rounded-2xl">
     {{-- Encabezado y Botón Cerrar --}}
     <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
         <div>
@@ -12,10 +12,10 @@
     {{-- Filtros en Tiempo Real --}}
     <div class="flex flex-wrap items-end gap-3 mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-100">
         <div class="flex-1 min-w-[220px] relative">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Buscar Paciente</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Buscar Paciente</label>
             <input type="text" id="filtro-buscar" name="buscar" value="{{ request('buscar') }}"
                 placeholder="Nombre del paciente..."
-                class="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 py-2.5 pl-10 pr-3 shadow-sm">
+                class="w-full border-slate-200 rounded-xl text-sm focus:ring-brand-500 focus:border-brand-500 py-2.5 pl-10 pr-3 shadow-sm">
             <svg class="w-4 h-4 text-slate-400 absolute left-3 bottom-3.5" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -23,9 +23,9 @@
             </svg>
         </div>
         <div class="w-full sm:w-[200px]">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Estado</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estado</label>
             <select id="filtro-estado" name="estado"
-                class="w-full border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 py-2.5 pl-3 pr-8 shadow-sm">
+                class="w-full border-slate-200 rounded-xl text-sm focus:ring-brand-500 focus:border-brand-500 py-2.5 pl-3 pr-8 shadow-sm">
                 <option value="">Todos los estados</option>
                 <option value="confirmada" @selected(request('estado') == 'confirmada')>Confirmada</option>
                 <option value="atendida" @selected(request('estado') == 'atendida')>Atendida</option>

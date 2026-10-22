@@ -3,11 +3,11 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white flex items-center justify-center font-extrabold text-lg shadow">
+                    class="h-12 w-12 rounded-2xl bg-gradient-to-br from-brand-600 to-blue-600 text-white flex items-center justify-center font-extrabold text-lg shadow">
                     {{ strtoupper(mb_substr($cita->paciente->nombre_completo, 0, 1)) }}
                 </div>
                 <div>
-                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Nueva consulta</p>
+                    <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Nueva consulta</p>
                     <h2 class="font-extrabold text-2xl text-slate-800 leading-tight">
                         {{ $cita->paciente->nombre_completo }}
                     </h2>
@@ -46,7 +46,7 @@
                             Guardar borrador
                         </button>
                         <button type="submit" name="finalizar" value="1"
-                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition">
+                            class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-sm transition">
                             Finalizar consulta
                         </button>
                     </div>

@@ -7,7 +7,7 @@
             <div class="flex items-center gap-3">
                 @can('agenda.crear')
                     <a href="{{ route('agenda.create', ['fecha' => $fecha->format('Y-m-d')]) }}"
-                        class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-md shadow-purple-500/10 transition-all">
+                        class="bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-700 hover:to-brand-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center shadow-md shadow-accent-500/10 transition-all">
                         <x-heroicon-o-plus class="w-4 h-4 mr-1.5 stroke-2" />
                         Nueva Cita
                     </a>
@@ -23,17 +23,11 @@
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        @if (session('success'))
-            <div
-                class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm font-medium text-sm">
-                {{ session('success') }}
-            </div>
-        @endif
 
         {{-- Navegación de fecha --}}
-        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
             <a href="{{ route('citas.index', ['fecha' => $fecha->copy()->subDay()->format('Y-m-d')]) }}"
-                class="px-3.5 py-2 bg-slate-50 hover:bg-purple-50 hover:text-purple-700 rounded-xl text-xs font-semibold text-slate-600 transition-all">
+                class="px-3.5 py-2 bg-slate-50 hover:bg-accent-50 hover:text-accent-700 rounded-xl text-xs font-semibold text-slate-600 transition-all">
                 ← Día anterior
             </a>
 
@@ -43,16 +37,16 @@
                 </p>
                 <div class="flex gap-3 justify-center mt-1">
                     <a href="{{ route('citas.index', ['fecha' => today()->format('Y-m-d')]) }}"
-                        class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">Hoy</a>
+                        class="text-xs font-semibold text-accent-600 hover:text-accent-800 transition-colors">Hoy</a>
                     <span class="text-slate-300 text-xs">•</span>
                     <a href="{{ route('agenda.index', ['fecha' => $fecha->format('Y-m-d')]) }}"
-                        class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">Ver
+                        class="text-xs font-semibold text-accent-600 hover:text-accent-800 transition-colors">Ver
                         semana</a>
                 </div>
             </div>
 
             <a href="{{ route('citas.index', ['fecha' => $fecha->copy()->addDay()->format('Y-m-d')]) }}"
-                class="px-3.5 py-2 bg-slate-50 hover:bg-purple-50 hover:text-purple-700 rounded-xl text-xs font-semibold text-slate-600 transition-all">
+                class="px-3.5 py-2 bg-slate-50 hover:bg-accent-50 hover:text-accent-700 rounded-xl text-xs font-semibold text-slate-600 transition-all">
                 Día siguiente →
             </a>
         </div>
@@ -60,49 +54,49 @@
         {{-- Estadísticas --}}
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm border border-slate-800">
-                <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Total</p>
+                <p class="text-xs font-bold tracking-widest text-slate-400 uppercase">Total</p>
                 <p class="text-2xl font-black text-white mt-1">{{ $stats['total'] }}</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Programadas</p>
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold tracking-widest text-slate-400 uppercase">Programadas</p>
                 <p class="text-2xl font-black text-blue-600 mt-1">{{ $stats['programadas'] }}</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Confirmadas</p>
-                <p class="text-2xl font-black text-purple-600 mt-1">{{ $stats['confirmadas'] }}</p>
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold tracking-widest text-slate-400 uppercase">Confirmadas</p>
+                <p class="text-2xl font-black text-accent-600 mt-1">{{ $stats['confirmadas'] }}</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Atendidas</p>
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold tracking-widest text-slate-400 uppercase">Atendidas</p>
                 <p class="text-2xl font-black text-emerald-600 mt-1">{{ $stats['atendidas'] }}</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Canceladas</p>
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold tracking-widest text-slate-400 uppercase">Canceladas</p>
                 <p class="text-2xl font-black text-rose-600 mt-1">{{ $stats['canceladas'] }}</p>
             </div>
         </div>
 
         {{-- Listado de citas --}}
-        <div class="bg-white shadow-sm border border-slate-100 rounded-2xl overflow-hidden">
+        <div class="bg-white ring-1 ring-slate-200/70 shadow-card rounded-2xl overflow-hidden">
             <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-slate-50/70">
                     <tr>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Hora</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Paciente</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Triage</th>
                         @if (auth()->user()->hasRole('administrador'))
                             <th
-                                class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                                 Médico</th>
                         @endif
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Duración</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Estado</th>
                         <th
-                            class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            class="px-5 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Acciones</th>
                     </tr>
                 </thead>
@@ -148,7 +142,7 @@
                             </td>
                             <td class="px-5 py-4 text-right text-sm">
                                 <a href="{{ route('citas.show', $cita) }}"
-                                    class="inline-flex items-center px-3 py-1.5 bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white rounded-lg font-bold text-xs transition-all">
+                                    class="inline-flex items-center px-3 py-1.5 bg-accent-50 hover:bg-accent-600 text-accent-700 hover:text-white rounded-lg font-bold text-xs transition-all">
                                     Ver detalle
                                 </a>
                             </td>
@@ -171,7 +165,7 @@
     <div id="modal-historial"
         class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm overflow-y-auto overflow-x-hidden">
         <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
-            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden relative">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden relative">
                 <div id="modal-historial-content">
                     <div class="p-10 text-center text-slate-400">Cargando historial...</div>
                 </div>
@@ -187,7 +181,7 @@
 
             // Efecto de carga inicial
             document.getElementById('modal-historial-content').innerHTML =
-                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
             // 🔴 AQUÍ ESTÁ EL CAMBIO: Quitamos el header X-Requested-With para que el controlador
             // nos devuelva el modal completo (con filtros) la primera vez.

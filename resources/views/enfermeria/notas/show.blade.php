@@ -9,7 +9,7 @@
     </div>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="space-y-6">
@@ -21,7 +21,7 @@
             </div>
             @if ($nota->estado_paciente)
                 <span
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $nota->estado_color }} self-start">
+                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $nota->estado_color }} self-start">
                     {{ ucfirst($nota->estado_paciente) }}
                 </span>
             @endif
@@ -33,7 +33,7 @@
             <p class="text-xs font-bold text-slate-800 mt-1">{{ $nota->paciente?->nombre_completo ?? '—' }}</p>
             @if ($nota->cama)
                 <span
-                    class="inline-block mt-1.5 px-2.5 py-1 bg-pink-50 text-pink-700 border border-pink-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                    class="inline-block mt-1.5 px-2.5 py-1 bg-pink-50 text-pink-700 border border-pink-100 rounded-full text-xs font-bold uppercase tracking-wide">
                     Cama: {{ $nota->cama->codigo }}
                 </span>
             @endif
@@ -66,7 +66,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-pink-700 uppercase tracking-wider">Medicamento Administrado
+                        <p class="text-xs font-bold text-pink-700 uppercase tracking-wider">Medicamento Administrado
                         </p>
                         <p class="text-sm font-extrabold text-slate-800">
                             {{ $nota->administracion->medicamento->nombre ?? 'Medicamento' }}
@@ -76,11 +76,11 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-white rounded-xl p-2.5 border border-pink-100/50">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold">Dosis</p>
+                        <p class="text-xs text-slate-400 uppercase font-bold">Dosis</p>
                         <p class="text-xs font-extrabold text-slate-700">{{ $nota->administracion->dosis }}</p>
                     </div>
                     <div class="bg-white rounded-xl p-2.5 border border-pink-100/50">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold">Vía</p>
+                        <p class="text-xs text-slate-400 uppercase font-bold">Vía</p>
                         <p class="text-xs font-extrabold text-slate-700">{{ $nota->administracion->via }}</p>
                     </div>
                 </div>
@@ -94,33 +94,33 @@
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     @if ($nota->temperatura)
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">Temp</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">Temp</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $nota->temperatura }}°C</p>
                         </div>
                     @endif
                     @if ($nota->frecuencia_cardiaca)
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">FC</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">FC</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $nota->frecuencia_cardiaca }}
                                 lpm</p>
                         </div>
                     @endif
                     @if ($nota->frecuencia_respiratoria)
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">FR</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">FR</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">
                                 {{ $nota->frecuencia_respiratoria }} rpm</p>
                         </div>
                     @endif
                     @if ($nota->presion_arterial)
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">TA</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">TA</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $nota->presion_arterial }}</p>
                         </div>
                     @endif
                     @if ($nota->saturacion_oxigeno)
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">SpO₂</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">SpO₂</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $nota->saturacion_oxigeno }}%
                             </p>
                         </div>

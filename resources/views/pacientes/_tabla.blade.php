@@ -20,7 +20,7 @@
                         </div>
                         <div>
                             <p class="font-bold text-slate-800">{{ $paciente->nombre_completo }}</p>
-                            <span class="text-[11px] text-slate-400">ID: #{{ $paciente->id }}</span>
+                            <span class="text-xs text-slate-400">ID: #{{ $paciente->id }}</span>
                         </div>
                     </div>
                 </td>

@@ -5,8 +5,8 @@
 
 @php
     $inputCls =
-        'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-    $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+    $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
     $errorCls = 'text-rose-600 text-xs mt-1 font-medium';
 @endphp
 
@@ -71,14 +71,14 @@
         <input type="color" id="{{ $prefix }}_color" name="color"
             value="{{ old('color', $e?->color ? '#' . ltrim($e->color, '#') : '#3B82F6') }}"
             class="mt-0.5 h-10 w-20 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
-        <p class="text-[11px] text-slate-400 mt-1.5">Se usará en el calendario de citas</p>
+        <p class="text-xs text-slate-400 mt-1.5">Se usará en el calendario de citas</p>
     </div>
 
     <div class="md:col-span-2">
         <label class="inline-flex items-center gap-2.5 mt-1 cursor-pointer">
             <input type="checkbox" id="{{ $prefix }}_activo" name="activo" value="1"
                 @checked(old('activo', $e->activo ?? true))
-                class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-0 cursor-pointer">
+                class="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 focus:ring-0 cursor-pointer">
             <span class="text-xs font-bold text-slate-700">Especialidad activa</span>
         </label>
     </div>

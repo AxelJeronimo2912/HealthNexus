@@ -10,7 +10,7 @@
             @can('seguimientos.crear')
                 <button type="button"
                     onclick="abrirModalSeguimiento('{{ route('seguimientos.create', $paciente ?? 'nuevo') }}')"
-                    class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
+                    class="bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
@@ -22,29 +22,20 @@
 
     @php
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
 
         {{-- STATS --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <a href="{{ route('seguimientos.index', ['filtro' => 'todos']) }}"
-                class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-300 transition-all active:scale-95 group">
+                class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:border-slate-300 transition-all active:scale-95 group">
                 <div class="flex items-center justify-between">
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total</p>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total</p>
                     <svg class="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -53,20 +44,20 @@
                 <p class="text-3xl font-black text-slate-800 tracking-tight mt-1">{{ $stats['total'] }}</p>
             </a>
             <a href="{{ route('seguimientos.index', ['filtro' => 'cama']) }}"
-                class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all active:scale-95 group">
+                class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:border-brand-200 transition-all active:scale-95 group">
                 <div class="flex items-center justify-between">
-                    <p class="text-[11px] font-bold text-indigo-600/70 uppercase tracking-wider">Con cama</p>
-                    <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" fill="none"
+                    <p class="text-xs font-bold text-brand-600/70 uppercase tracking-wider">Con cama</p>
+                    <svg class="w-4 h-4 text-slate-300 group-hover:text-brand-500 transition-colors" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
-                <p class="text-3xl font-black text-indigo-600 tracking-tight mt-1">{{ $stats['con_cama'] }}</p>
+                <p class="text-3xl font-black text-brand-600 tracking-tight mt-1">{{ $stats['con_cama'] }}</p>
             </a>
             <a href="{{ route('seguimientos.index', ['filtro' => 'triage']) }}"
-                class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-rose-200 transition-all active:scale-95 group">
+                class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:border-rose-200 transition-all active:scale-95 group">
                 <div class="flex items-center justify-between">
-                    <p class="text-[11px] font-bold text-rose-600/70 uppercase tracking-wider">Triage grave (24h)</p>
+                    <p class="text-xs font-bold text-rose-600/70 uppercase tracking-wider">Triage grave (24h)</p>
                     <svg class="w-4 h-4 text-slate-300 group-hover:text-rose-500 transition-colors" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -76,9 +67,9 @@
             </a>
             {{-- TARJETA DE ALTAS RECIENTES --}}
             <a href="{{ route('seguimientos.index', ['filtro' => 'alta']) }}"
-                class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all active:scale-95 group">
+                class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:border-emerald-200 transition-all active:scale-95 group">
                 <div class="flex items-center justify-between">
-                    <p class="text-[11px] font-bold text-emerald-600/70 uppercase tracking-wider">Altas (24h)</p>
+                    <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider">Altas (24h)</p>
                     <svg class="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -89,7 +80,7 @@
         </div>
 
         {{-- BUSCADOR --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5">
             <form method="GET" class="flex gap-2 flex-wrap items-end">
                 <div class="flex-1 min-w-[200px]">
                     <label class="{{ $labelCls }}">Buscar</label>
@@ -119,10 +110,10 @@
         </div>
 
         {{-- TABLA --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Pacientes en seguimiento</h3>
-                <p class="text-[11px] text-slate-400">{{ $pacientes->total() }} pacientes activos</p>
+                <p class="text-xs text-slate-400">{{ $pacientes->total() }} pacientes activos</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -138,25 +129,25 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($pacientes as $paciente)
-                            <tr class="hover:bg-indigo-50/30 transition-colors">
+                            <tr class="hover:bg-brand-50/30 transition-colors">
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-bold text-slate-800">{{ $paciente->nombre_completo }}</p>
-                                    <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                                    <p class="text-xs font-medium text-slate-400 mt-0.5">
                                         {{ $paciente->edad }} años — {{ ucfirst($paciente->sexo) }}
                                     </p>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     @if ($paciente->cama_actual)
                                         <span
-                                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                             {{ $paciente->cama_actual->cama->codigo }}
                                         </span>
-                                        <p class="text-[10px] font-medium text-slate-400 mt-1">
+                                        <p class="text-xs font-medium text-slate-400 mt-1">
                                             {{ $paciente->cama_actual->cama->area }}</p>
                                     @elseif ($paciente->alta_reciente)
                                         {{-- ETIQUETA DE ALTA --}}
                                         <span
-                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 w-max">
+                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 w-max">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
@@ -166,40 +157,40 @@
                                         </span>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">Sin
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wide">Sin
                                             cama</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     @if ($paciente->ultimoSignoVital)
                                         <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
+                                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
                                             {{ $paciente->ultimoSignoVital->triage_label }}
                                         </span>
-                                        <p class="text-[10px] font-medium text-slate-400 mt-1">
+                                        <p class="text-xs font-medium text-slate-400 mt-1">
                                             {{ $paciente->ultimoSignoVital->created_at->diffForHumans() }}</p>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">Sin
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wide">Sin
                                             signos</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     @if ($paciente->seguimientoActual)
-                                        <p class="text-[11px] font-medium text-slate-400">
+                                        <p class="text-xs font-medium text-slate-400">
                                             {{ $paciente->seguimientoActual->created_at->diffForHumans() }}</p>
                                         <p class="text-xs font-bold text-slate-700 mt-0.5">
                                             {{ $paciente->seguimientoActual->user?->nombre_completo ?? '—' }}</p>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">Sin
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wide">Sin
                                             seguimiento</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end gap-2 whitespace-nowrap">
                                         <a href="{{ route('seguimientos.show', $paciente) }}"
-                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
+                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all">
                                             Ver seguimiento
                                         </a>
 
@@ -207,7 +198,7 @@
                                         @if (!$paciente->alta_reciente || $paciente->cama_actual)
                                             <button type="button"
                                                 onclick="abrirModalSeguimiento('{{ route('seguimientos.create', $paciente) }}')"
-                                                class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                                                class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all">
                                                 + Nuevo
                                             </button>
                                         @endif
@@ -234,7 +225,7 @@
         <div id="modal-seguimiento" x-data="{ open: false }" x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="open = false"
-                class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
                 <div id="modal-seguimiento-content">
                     <div class="p-10 text-center text-slate-400">Cargando formulario...</div>
                 </div>
@@ -249,7 +240,7 @@
 
             const contenedor = document.getElementById('modal-seguimiento-content');
             contenedor.innerHTML =
-                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
             fetch(url, {
                     headers: {

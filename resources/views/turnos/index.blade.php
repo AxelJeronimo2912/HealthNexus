@@ -9,7 +9,7 @@
             </div>
             
             <button x-data @click="$dispatch('open-modal', 'modal-crear-turno')" 
-                    class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all gap-2">
+                    class="inline-flex items-center justify-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Nuevo Turno
             </button>
@@ -22,7 +22,7 @@
             <!-- Stat Cards Estilo Dashboard -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div>
@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <div class="w-12 h-12 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     </div>
                     <div>
@@ -54,11 +54,6 @@
                 </div>
             </div>
 
-            @if(session('success'))
-                <div class="p-4 rounded-xl bg-emerald-50 text-emerald-700 text-sm border border-emerald-200">
-                    {{ session('success') }}
-                </div>
-            @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($turnos as $turno)
@@ -83,12 +78,12 @@
                         <div class="p-5 space-y-4 flex-1">
                             <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 border border-gray-100 text-sm">
                                 <div>
-                                    <span class="block text-[10px] uppercase font-bold text-gray-400">Entrada</span>
+                                    <span class="block text-xs uppercase font-bold text-gray-400">Entrada</span>
                                     <span class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($turno->hora_inicio)->format('H:i A') }}</span>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                 <div>
-                                    <span class="block text-[10px] uppercase font-bold text-gray-400">Salida</span>
+                                    <span class="block text-xs uppercase font-bold text-gray-400">Salida</span>
                                     <span class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($turno->hora_fin)->format('H:i A') }}</span>
                                 </div>
                             </div>
@@ -100,10 +95,10 @@
 
                         <!-- Acciones con Iconos SVG Limpios -->
                         <div class="px-5 py-3 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-3">
-                            <button x-data @click="$dispatch('open-modal', 'modal-ver-turno-{{ $turno->id }}')" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Ver Detalle">
+                            <button x-data @click="$dispatch('open-modal', 'modal-ver-turno-{{ $turno->id }}')" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg transition" title="Ver Detalle">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>
-                            <button x-data @click="$dispatch('open-modal', 'modal-editar-turno-{{ $turno->id }}')" class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition" title="Editar">
+                            <button x-data @click="$dispatch('open-modal', 'modal-editar-turno-{{ $turno->id }}')" class="p-1.5 text-accent-600 hover:bg-accent-50 rounded-lg transition" title="Editar">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </button>
                             <button x-data @click="$dispatch('open-modal', 'modal-eliminar-turno-{{ $turno->id }}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Eliminar">
@@ -155,12 +150,12 @@
                                     @forelse ($turno->users ?? [] as $u)
                                         <div class="text-xs py-2 px-3 bg-gray-50 rounded-lg border border-gray-100 flex justify-between items-center">
                                             <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[10px]">
+                                                <div class="w-6 h-6 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-xs">
                                                     {{ strtoupper(substr($u->name ?? 'U', 0, 2)) }}
                                                 </div>
                                                 <span class="font-medium text-gray-800">{{ $u->nombre_completo ?: $u->name }}</span>
                                             </div>
-                                            <span class="text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full font-medium text-[11px]">
+                                            <span class="text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full font-medium text-xs">
                                                 {{ method_exists($u, 'getRoleNames') ? ($u->getRoleNames()->first() ?? 'Sin Rol') : 'Sin Rol' }}
                                             </span>
                                         </div>
@@ -171,7 +166,7 @@
                             </div>
 
                             <div class="mt-6 flex justify-end gap-2 pt-2 border-t">
-                                <button x-data @click="$dispatch('close'); $dispatch('open-modal', 'modal-editar-turno-{{ $turno->id }}')" class="px-4 py-2 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition">
+                                <button x-data @click="$dispatch('close'); $dispatch('open-modal', 'modal-editar-turno-{{ $turno->id }}')" class="px-4 py-2 bg-brand-600 text-white text-xs font-medium rounded-lg hover:bg-brand-700 transition">
                                     Editar
                                 </button>
                                 <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>

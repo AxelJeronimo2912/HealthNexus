@@ -5,7 +5,7 @@
         ['letra' => 'S', 'titulo' => 'Subjetivo', 'valor' => $consulta->subjetivo, 'color' => 'bg-blue-600'],
         ['letra' => 'O', 'titulo' => 'Objetivo', 'valor' => $consulta->objetivo, 'color' => 'bg-emerald-600'],
         ['letra' => 'A', 'titulo' => 'Análisis', 'valor' => $consulta->analisis, 'color' => 'bg-amber-500'],
-        ['letra' => 'P', 'titulo' => 'Plan', 'valor' => $consulta->plan, 'color' => 'bg-violet-600'],
+        ['letra' => 'P', 'titulo' => 'Plan', 'valor' => $consulta->plan, 'color' => 'bg-accent-600'],
     ];
 
     $vitales = [
@@ -48,7 +48,7 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow">
+                    class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-brand-600 text-white flex items-center justify-center font-bold text-lg shadow">
                     {{ strtoupper(mb_substr($consulta->paciente->nombre_completo, 0, 1)) }}
                 </div>
                 <div>
@@ -103,16 +103,6 @@
 
     <div class="w-full px-4 sm:px-6 lg:px-10 py-6 bg-gray-50 min-h-screen">
 
-        @if (session('success'))
-            <div class="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600" fill="none"
-                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ session('success') }}
-            </div>
-        @endif
 
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
@@ -221,7 +211,7 @@
 
                 {{-- Resumen --}}
                 <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+                    <div class="h-1.5 bg-gradient-to-r from-blue-600 to-brand-600"></div>
                     <div class="p-6 space-y-4">
                         <h3 class="font-bold text-gray-900 text-lg">Resumen</h3>
 
@@ -263,7 +253,7 @@
                             <div
                                 class="rounded-lg border border-gray-200 p-3 hover:border-blue-300 hover:shadow-sm transition">
                                 <div class="flex items-center justify-between">
-                                    <p class="text-[11px] uppercase tracking-wide text-gray-500 leading-tight">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 leading-tight">
                                         {{ $v['label'] }}</p>
                                     <span class="text-gray-400">
                                         @switch($v['icono'])

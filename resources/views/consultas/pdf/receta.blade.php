@@ -42,7 +42,7 @@
         .clinic {
             font-size: 17px;
             font-weight: bold;
-            color: #312e81;
+            color: #262A6B;
         }
 
         .clinic-sub {
@@ -62,7 +62,7 @@
         }
 
         .rule {
-            border-top: 2px solid #4338ca;
+            border-top: 2px solid #3A40A6;
             margin-bottom: 4px;
         }
 
@@ -70,7 +70,7 @@
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #312e81;
+            color: #262A6B;
             margin: 16px 0 5px;
         }
 
@@ -103,7 +103,7 @@
         .rx-mark {
             font-size: 22px;
             font-weight: bold;
-            color: #312e81;
+            color: #262A6B;
             margin: 14px 0 0;
         }
 

@@ -2,12 +2,12 @@
     <div class="flex items-center justify-center min-h-screen px-4 py-8">
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-create')"></div>
 
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div
                 class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M12 4v16m8-8H4" />
@@ -15,7 +15,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-lg">Nueva Especialidad</h3>
-                        <p class="text-[11px] text-slate-400">Registra una nueva especialidad médica</p>
+                        <p class="text-xs text-slate-400">Registra una nueva especialidad médica</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeModal('modal-create')"
@@ -40,7 +40,7 @@
                         Cancelar
                     </button>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                         Guardar Especialidad
                     </button>
                 </div>

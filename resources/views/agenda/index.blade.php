@@ -19,7 +19,7 @@
 
             @if ($puedeCrear)
                 <button type="button" @click="$dispatch('abrir-modal-crear')"
-                    class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm hover:shadow-indigo-200 hover:shadow-lg transition-all duration-200 cursor-pointer">
+                    class="bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm hover:shadow-brand-200 hover:shadow-lg transition-all duration-200 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
@@ -33,13 +33,13 @@
     <style>
         .fc {
             --fc-border-color: #e2e8f0;
-            --fc-button-bg-color: #4f46e5;
-            --fc-button-border-color: #4f46e5;
-            --fc-button-hover-bg-color: #4338ca;
-            --fc-button-hover-border-color: #4338ca;
-            --fc-button-active-bg-color: #3730a3;
-            --fc-button-active-border-color: #3730a3;
-            --fc-today-bg-color: rgba(99, 102, 241, .07);
+            --fc-button-bg-color: #3A40A6;
+            --fc-button-border-color: #3A40A6;
+            --fc-button-hover-bg-color: #3A40A6;
+            --fc-button-hover-border-color: #3A40A6;
+            --fc-button-active-bg-color: #2F3488;
+            --fc-button-active-border-color: #2F3488;
+            --fc-today-bg-color: rgba(58, 64, 166, .07);
             --fc-event-border-color: transparent;
             font-size: 12px;
         }
@@ -104,8 +104,8 @@
             left: 0;
             right: 0;
             pointer-events: none;
-            background: rgba(99, 102, 241, .10);
-            border-top: 1px dashed #6366f1;
+            background: rgba(58, 64, 166, .10);
+            border-top: 1px dashed #4C55C0;
             z-index: 5;
         }
 
@@ -427,15 +427,6 @@
     <div x-data="agendaCompleta(@js($medicos->map(fn($m) => ['id' => $m->id, 'nombre' => trim($m->name . ' ' . $m->apellido_paterno)])->values()), @js($puedeCrear))" x-init="initCalendar()" @abrir-modal-crear.window="abrirModal($event.detail || {})"
         class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
 
         @if ($errors->any())
             <div class="p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-2xl text-xs font-semibold">
@@ -449,22 +440,22 @@
         @php
             $metricas = [
                 ['TOTAL SEMANA', $stats['total_semana'] ?? 0, 'text-slate-800'],
-                ['PROGRAMADAS', $stats['programadas'] ?? 0, 'text-indigo-600'],
+                ['PROGRAMADAS', $stats['programadas'] ?? 0, 'text-brand-600'],
                 ['ATENDIDAS', $stats['atendidas'] ?? 0, 'text-emerald-600'],
                 ['CANCELADAS', $stats['canceladas'] ?? 0, 'text-rose-600'],
             ];
         @endphp
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             @foreach ($metricas as [$label, $valor, $textColor])
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ $label }}</p>
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ $label }}</p>
                     <p class="text-2xl font-extrabold {{ $textColor }} mt-0.5">{{ $valor }}</p>
                 </div>
             @endforeach
         </div>
 
         {{-- Leyenda de triage --}}
-        <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-500">
+        <div class="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-500">
             <span class="text-slate-400 uppercase tracking-wider font-bold">Triage:</span>
             <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-rose-500"></i> Rojo</span>
             <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-amber-500"></i> Naranja</span>
@@ -476,7 +467,7 @@
         </div>
 
         {{-- ==================== FILTROS ==================== --}}
-        <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-4">
 
             {{-- Header de filtros --}}
             <div class="flex items-center justify-between flex-wrap gap-3">
@@ -489,18 +480,18 @@
 
                     {{-- Badge de filtros activos --}}
                     <span x-show="filtrosActivos > 0" x-cloak x-text="filtrosActivos"
-                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
+                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-brand-600 text-white text-xs font-bold">
                     </span>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <span class="text-[11px] font-semibold transition-all duration-200"
-                        :class="filtrando ? 'text-indigo-600 scale-110' : 'text-slate-400'">
+                    <span class="text-xs font-semibold transition-all duration-200"
+                        :class="filtrando ? 'text-brand-600 scale-110' : 'text-slate-400'">
                         <span x-text="citasFiltradas"></span> de <span x-text="citasTotales"></span> citas
                     </span>
 
                     <button type="button" @click="limpiarFiltros()" x-show="filtrosActivos > 0" x-cloak
-                        class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                        class="text-xs font-bold text-brand-600 hover:text-brand-800 hover:underline">
                         Limpiar filtros
                     </button>
                 </div>
@@ -508,14 +499,14 @@
 
             {{-- Fila 1: Estados --}}
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Estado</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Estado</p>
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="est in estadosDisponibles" :key="est.value">
                         <button type="button" @click="toggleEstado(est.value)"
                             :class="filtros.estados.includes(est.value) ?
-                                'bg-indigo-600 text-white border-indigo-600' :
+                                'bg-brand-600 text-white border-brand-600' :
                                 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'"
-                            class="px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all">
+                            class="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all">
                             <span x-text="est.label"></span>
                         </button>
                     </template>
@@ -526,14 +517,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {{-- Triage --}}
                 <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Triage</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Triage</p>
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="tr in triagesDisponibles" :key="tr.value">
                             <button type="button" @click="toggleTriage(tr.value)"
                                 :class="filtros.triages.includes(tr.value) ?
                                     'ring-2 ring-offset-1 ring-slate-400 border-slate-400' :
                                     'border-slate-200 hover:border-slate-300'"
-                                class="flex items-center gap-1 px-2 py-1 rounded-lg border bg-white text-[10px] font-bold text-slate-600 transition-all">
+                                class="flex items-center gap-1 px-2 py-1 rounded-lg border bg-white text-xs font-bold text-slate-600 transition-all">
                                 <span class="w-2 h-2 rounded-full" :style="`background-color: ${tr.color}`"></span>
                                 <span x-text="tr.label"></span>
                             </button>
@@ -544,9 +535,9 @@
                 {{-- Médico (admin y enfermería) --}}
                 @if ($medicos->isNotEmpty())
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Médico</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Médico</p>
                         <select x-model="filtros.medico_id" @change="aplicarFiltros()"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-[11px] text-slate-700 focus:bg-white focus:border-indigo-500 outline-none">
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 focus:bg-white focus:border-brand-500 outline-none">
                             <option value="">— Todos los médicos —</option>
                             @foreach ($medicos as $m)
                                 <option value="{{ $m->id }}">{{ $m->name }} {{ $m->apellido_paterno }}
@@ -558,9 +549,9 @@
 
                 {{-- Especialidad --}}
                 <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Especialidad</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Especialidad</p>
                     <select x-model="filtros.especialidad_id" @change="aplicarFiltros()"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-[11px] text-slate-700 focus:bg-white focus:border-indigo-500 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 focus:bg-white focus:border-brand-500 outline-none">
                         <option value="">— Todas las especialidades —</option>
                         @foreach ($especialidades as $esp)
                             <option value="{{ $esp->id }}">{{ $esp->nombre }}</option>
@@ -572,71 +563,71 @@
 
         {{-- ==================== SELECTOR DE VISTA + AYUDA ==================== --}}
         <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="inline-flex bg-slate-100 p-1 rounded-xl text-[11px] font-bold" role="tablist">
+            <div class="inline-flex bg-slate-100 p-1 rounded-xl text-xs font-bold" role="tablist">
                 <button type="button" role="tab" :aria-selected="vista === 'calendario'"
                     @click="vista = 'calendario'"
-                    :class="vista === 'calendario' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                    :class="vista === 'calendario' ? 'bg-white shadow text-brand-600' : 'text-slate-500 hover:text-slate-700'"
                     class="px-4 py-1.5 rounded-lg transition">Calendario</button>
                 <button type="button" role="tab" :aria-selected="vista === 'diaria'"
                     @click="vista = 'diaria'"
-                    :class="vista === 'diaria' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'"
+                    :class="vista === 'diaria' ? 'bg-white shadow text-brand-600' : 'text-slate-500 hover:text-slate-700'"
                     class="px-4 py-1.5 rounded-lg transition">Agenda diaria por médico</button>
             </div>
 
             {{-- Botón de ayuda (?) con tooltip explicativo --}}
             <div x-data="{ ayudaAbierta: false }" class="relative">
                 <button type="button" @click="ayudaAbierta = !ayudaAbierta" @click.outside="ayudaAbierta = false"
-                    class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 font-bold text-sm flex items-center justify-center shadow-sm transition-all"
+                    class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:border-brand-300 hover:bg-brand-50 text-slate-500 hover:text-brand-600 font-bold text-sm flex items-center justify-center shadow-sm transition-all"
                     aria-label="Ayuda sobre la agenda" :aria-expanded="ayudaAbierta">
                     ?
                 </button>
 
                 <div x-show="ayudaAbierta" x-cloak x-transition.opacity.duration.150ms
                     class="ayuda-tooltip bg-white border border-slate-200 rounded-2xl shadow-xl p-4 text-left">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-2">
+                    <p class="text-xs font-bold uppercase tracking-wider text-brand-600 mb-2">
                         Guía rápida de la agenda
                     </p>
 
-                    <ul class="space-y-2.5 text-[11px] text-slate-600 leading-relaxed">
+                    <ul class="space-y-2.5 text-xs text-slate-600 leading-relaxed">
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">1</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">1</span>
                             <span><strong class="text-slate-800">Calendario:</strong> vista mensual/semanal con todas
                                 las citas. Haz clic en un evento para ver el detalle.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">2</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">2</span>
                             <span><strong class="text-slate-800">Agenda diaria:</strong> una columna por médico con las
                                 citas posicionadas por hora. Útil para ver traslapes.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">3</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">3</span>
                             <span><strong class="text-slate-800">Filtros:</strong> filtra por estado, triage, médico o
                                 especialidad. El contador muestra cuántas citas coinciden.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">4</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">4</span>
                             <span><strong class="text-slate-800">Colores de triage:</strong> el color del evento indica
                                 la prioridad (rojo = crítico, azul = sin urgencia).</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">5</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">5</span>
                             <span><strong class="text-slate-800">Traslapes:</strong> las citas que se encimen se marcan
                                 con un anillo rojo y la etiqueta <em>⚠ Traslape</em>.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">6</span>
+                                class="w-5 h-5 rounded-md bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">6</span>
                             <span><strong class="text-slate-800">Crear cita:</strong> haz clic en un espacio libre de
                                 la agenda diaria para agendar en ese horario.</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span
-                                class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">★</span>
+                                class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center flex-shrink-0">★</span>
                             <span><strong class="text-slate-800">Línea roja:</strong> indica la hora actual del día en
                                 curso.</span>
                         </li>
@@ -647,13 +638,13 @@
 
         {{-- ==================== CALENDARIO ==================== --}}
         <div x-show="vista === 'calendario'"
-            class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-sm">
+            class="bg-white p-4 sm:p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
             <div id="calendar"></div>
         </div>
 
         {{-- ==================== AGENDA DIARIA POR MÉDICO ==================== --}}
         <div x-show="vista === 'diaria'" x-cloak
-            class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
 
             {{-- Navegación de fecha --}}
             <div class="flex items-center justify-between flex-wrap gap-3 p-4 border-b border-slate-100">
@@ -661,19 +652,19 @@
                     <button type="button" @click="cambiarDia(-1)" aria-label="Día anterior"
                         class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 font-bold text-slate-600">‹</button>
                     <input type="date" x-model="fechaDia"
-                        class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                        class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-brand-500">
                     <button type="button" @click="cambiarDia(1)" aria-label="Día siguiente"
                         class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 font-bold text-slate-600">›</button>
                     <button type="button" @click="fechaDia = hoy()"
-                        class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition">Hoy</button>
+                        class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition">Hoy</button>
                 </div>
 
                 <div class="text-center">
                     <p class="text-sm font-extrabold text-slate-700 capitalize" x-text="fechaLegible()"></p>
-                    <p class="text-[11px] text-slate-400"><span x-text="totalDia"></span> citas en el día</p>
+                    <p class="text-xs text-slate-400"><span x-text="totalDia"></span> citas en el día</p>
                 </div>
 
-                <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                <div class="flex items-center gap-3 text-xs text-slate-400">
                     <span class="flex items-center gap-1">
                         <i class="w-3 h-3 rounded ring-2 ring-red-600 bg-white inline-block"></i> Traslape
                     </span>
@@ -688,7 +679,7 @@
                     <div class="w-14 shrink-0 border-r border-slate-100 bg-slate-50/50 sticky left-0 z-30">
                         <div class="h-12 border-b border-slate-100 bg-slate-50 dia-col-cabecera"></div>
                         <template x-for="h in horas" :key="h">
-                            <div class="text-[10px] font-bold text-slate-400 text-right pr-2"
+                            <div class="text-xs font-bold text-slate-400 text-right pr-2"
                                 :style="`height:${pxHora}px`">
                                 <span class="relative -top-1.5" x-text="etiquetaHora(h)"></span>
                             </div>
@@ -700,9 +691,9 @@
                         <div class="w-56 shrink-0 border-r border-slate-100">
                             <div
                                 class="h-12 flex flex-col items-center justify-center border-b border-slate-100 bg-slate-50 dia-col-cabecera">
-                                <p class="text-[11px] font-extrabold text-slate-700 truncate max-w-full px-2"
+                                <p class="text-xs font-extrabold text-slate-700 truncate max-w-full px-2"
                                     x-text="m.nombre"></p>
-                                <p class="text-[10px] text-slate-400" x-text="citasDeMedico(m.id).length + ' citas'">
+                                <p class="text-xs text-slate-400" x-text="citasDeMedico(m.id).length + ' citas'">
                                 </p>
                             </div>
 
@@ -723,7 +714,7 @@
                                 <template x-for="c in citasDeMedico(m.id)" :key="c.id">
                                     <div @click.stop="verDetalle(c)" role="button" tabindex="0"
                                         @keydown.enter="verDetalle(c)"
-                                        class="dia-cita absolute left-1 right-1 rounded-lg px-2 py-1 text-white text-[10px] font-semibold overflow-hidden shadow-sm z-10"
+                                        class="dia-cita absolute left-1 right-1 rounded-lg px-2 py-1 text-white text-xs font-semibold overflow-hidden shadow-sm z-10"
                                         :class="idsConflicto.has(c.id) ? 'ring-2 ring-red-600 ring-offset-1' : ''"
                                         :style="estiloCita(c)">
                                         <p class="truncate" x-text="c.title"></p>

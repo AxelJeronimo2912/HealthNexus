@@ -105,7 +105,7 @@
 
         const estado = document.getElementById('show-estado');
         estado.textContent = esp.activo == 1 ? 'Activa' : 'Inactiva';
-        estado.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ' +
+        estado.className = 'px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ' +
             (esp.activo == 1 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                 'bg-rose-50 text-rose-700 border border-rose-100');
 
@@ -123,10 +123,10 @@
                 const rol = (m.roles && m.roles.length) ? m.roles[0].name : (m.rol || 'sin rol');
                 const pivot = m.pivot || {};
                 const principal = pivot.es_principal ?
-                    '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase">Principal</span>' :
+                    '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold uppercase">Principal</span>' :
                     '';
                 const cedula = pivot.numero_cedula_especialidad ?
-                    `<p class="text-[11px] text-slate-400 mt-0.5">Cédula: ${pivot.numero_cedula_especialidad}</p>` :
+                    `<p class="text-xs text-slate-400 mt-0.5">Cédula: ${pivot.numero_cedula_especialidad}</p>` :
                     '';
                 medicosList.innerHTML += `
                     <li class="px-5 py-3.5 flex flex-wrap justify-between items-center gap-3">
@@ -137,7 +137,7 @@
                             </div>
                             ${cedula}
                         </div>
-                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">${rol}</span>
+                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase">${rol}</span>
                     </li>`;
             });
         }
@@ -152,7 +152,7 @@
         } else {
             servicios.forEach(s => {
                 serviciosList.innerHTML += `
-                    <span class="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[11px] font-bold">
+                    <span class="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold">
                         ${s.nombre}
                     </span>`;
             });
@@ -208,20 +208,20 @@
             const rol = (m.roles && m.roles.length) ? m.roles[0].name : (m.rol || 'sin rol');
             const pivot = m.pivot || {};
             const cedula = pivot.numero_cedula_especialidad ?
-                `<span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">${pivot.numero_cedula_especialidad}</span>` :
+                `<span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">${pivot.numero_cedula_especialidad}</span>` :
                 '<span class="text-slate-300 text-xs">—</span>';
             const principal = pivot.es_principal ?
-                '<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase">★ Principal</span>' :
+                '<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold uppercase">★ Principal</span>' :
                 '<span class="text-slate-300 text-xs">—</span>';
 
             tbody.innerHTML += `
-                <tr class="hover:bg-indigo-50/30 transition-colors">
+                <tr class="hover:bg-brand-50/30 transition-colors">
                     <td class="px-5 py-3.5">
                         <p class="text-xs font-bold text-slate-800">${nombre}</p>
-                        <p class="text-[10px] font-medium text-slate-400 mt-0.5">${email}</p>
+                        <p class="text-xs font-medium text-slate-400 mt-0.5">${email}</p>
                     </td>
                     <td class="px-5 py-3.5">
-                        <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase">${rol}</span>
+                        <span class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase">${rol}</span>
                     </td>
                     <td class="px-5 py-3.5">${cedula}</td>
                     <td class="px-5 py-3.5 text-center">${principal}</td>
@@ -230,7 +230,7 @@
                             <form action="{{ url('especialidades') }}/${espId}/medicos/${pivot.id}" method="POST"
                                 onsubmit="return confirm('¿Quitar este médico de la especialidad?')">
                                 @csrf @method('DELETE')
-                                <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">Quitar</button>
+                                <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">Quitar</button>
                             </form>
                         </div>
                     </td>
@@ -268,10 +268,10 @@
             const ubicacion = s.ubicacion || '<span class="text-slate-300 text-xs">—</span>';
 
             tbody.innerHTML += `
-                <tr class="hover:bg-indigo-50/30 transition-colors">
+                <tr class="hover:bg-brand-50/30 transition-colors">
                     <td class="px-5 py-3.5"><p class="text-xs font-bold text-slate-800">${s.nombre}</p></td>
                     <td class="px-5 py-3.5">
-                        <span class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold uppercase">${tipoLabel}</span>
+                        <span class="px-2.5 py-1 bg-accent-50 text-accent-700 border border-accent-100 rounded-full text-xs font-bold uppercase">${tipoLabel}</span>
                     </td>
                     <td class="px-5 py-3.5"><p class="text-xs font-medium text-slate-600">${ubicacion}</p></td>
                     <td class="px-5 py-3.5">
@@ -279,7 +279,7 @@
                             <form action="{{ url('especialidades') }}/${espId}/servicios/${pivot.id}" method="POST"
                                 onsubmit="return confirm('¿Quitar este servicio de la especialidad?')">
                                 @csrf @method('DELETE')
-                                <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">Quitar</button>
+                                <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">Quitar</button>
                             </form>
                         </div>
                     </td>

@@ -3,11 +3,11 @@
     $isError = $isError ?? false;
 
     $inputCls =
-        'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
+        'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
     $inputErrCls =
         'w-full bg-rose-50 border border-rose-400 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-rose-500 focus:ring-0 outline-none';
-    $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-    $errCls = 'text-[11px] text-rose-600 mt-1 font-semibold';
+    $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+    $errCls = 'text-xs text-rose-600 mt-1 font-semibold';
 
     $cls = fn($field) => $isError && $errors->has($field) ? $inputErrCls : $inputCls;
 @endphp
@@ -93,7 +93,7 @@
         <label class="inline-flex items-center gap-2 cursor-pointer pb-2.5">
             <input type="checkbox" name="activo" id="{{ $prefix }}_activo" value="1"
                 @checked($isError ? (bool) old('activo') : true)
-                class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+                class="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-0 cursor-pointer">
             <span class="text-xs font-bold text-slate-700">Especialidad activa</span>
         </label>
     </div>

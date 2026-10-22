@@ -21,13 +21,13 @@
     @php
         $inputCls =
             'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
         $errorCls = 'text-rose-600 text-xs mt-1 font-medium';
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <form action="{{ route('enfermeria.administraciones.store') }}" method="POST"
-            class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             @csrf
 
             {{-- ============ HEADER DEL FORM ============ --}}
@@ -40,24 +40,13 @@
                 </div>
                 <div>
                     <h3 class="font-extrabold text-slate-800 text-base">Datos de la administración</h3>
-                    <p class="text-[11px] text-slate-400">Los campos marcados con * son obligatorios</p>
+                    <p class="text-xs text-slate-400">Los campos marcados con * son obligatorios</p>
                 </div>
             </div>
 
             {{-- ============ CUERPO DEL FORM ============ --}}
             <div class="p-6 space-y-6">
 
-                @if (session('error'))
-                    <div
-                        class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                        <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        <span>{{ session('error') }}</span>
-                    </div>
-                @endif
 
                 {{-- Paciente --}}
                 <div>
@@ -112,7 +101,7 @@
                         <label class="{{ $labelCls }}">Cantidad *</label>
                         <input type="number" name="cantidad" value="{{ old('cantidad', 1) }}" required min="1"
                             max="100" class="{{ $inputCls }}">
-                        <p class="text-[11px] text-slate-400 mt-1.5">Se descuenta del stock</p>
+                        <p class="text-xs text-slate-400 mt-1.5">Se descuenta del stock</p>
                     </div>
                 </div>
 

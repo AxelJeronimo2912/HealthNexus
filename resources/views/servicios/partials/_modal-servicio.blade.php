@@ -2,12 +2,12 @@
     <div id="modal-servicio" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
         role="dialog" aria-modal="true" aria-labelledby="modal-servicio-titulo">
         <div
-            class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
+            class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
 
             <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -17,7 +17,7 @@
                         <h3 id="modal-servicio-titulo" class="font-extrabold text-slate-800 text-lg">
                             Nuevo Servicio
                         </h3>
-                        <p class="text-[11px] text-slate-400">Configuración y detalles del área de atención</p>
+                        <p class="text-xs text-slate-400">Configuración y detalles del área de atención</p>
                     </div>
                 </div>
                 <button type="button" id="btn-cerrar-servicio"
@@ -27,14 +27,14 @@
 
             @php
                 $inputCls =
-                    'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-                $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+                    'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+                $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
             @endphp
 
             {{-- Errores de validación --}}
             @if ($errors->any())
                 <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl">
-                    <p class="text-[11px] font-bold text-red-700 uppercase tracking-wider mb-1">Corrige los siguientes
+                    <p class="text-xs font-bold text-red-700 uppercase tracking-wider mb-1">Corrige los siguientes
                         errores:</p>
                     <ul class="list-disc list-inside space-y-0.5">
                         @foreach ($errors->all() as $error)
@@ -126,7 +126,7 @@
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" name="abierto_24h" value="1" id="chk-abierto-24h"
                                 @checked(old('abierto_24h'))
-                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4">
                             <span class="ml-2 text-xs font-semibold text-slate-700">Abierto 24 horas</span>
                         </label>
                     </div>
@@ -160,7 +160,7 @@
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" name="tiene_costo" value="1" id="chk-tiene-costo"
                                 @checked(old('tiene_costo'))
-                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4">
                             <span class="ml-2 text-xs font-semibold text-slate-700">Este servicio genera costo</span>
                         </label>
                     </div>
@@ -186,7 +186,7 @@
                     <div class="flex items-center gap-4 pt-2">
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" name="activo" value="1" @checked(old('activo', true))
-                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                                class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4">
                             <span class="ml-2 text-xs font-semibold text-slate-700">Servicio activo</span>
                         </label>
                     </div>
@@ -198,7 +198,7 @@
                         Cancelar
                     </button>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M5 13l4 4L19 7" />

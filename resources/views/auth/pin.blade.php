@@ -1,25 +1,9 @@
-
-En la carpeta resources/views/auth/pin.blade.php remplazar el código existente por este
 <x-guest-layout>
-    <div class="w-full max-w-sm mx-auto">
-        {{-- Encabezado --}}
-        <div class="mb-8 text-center">
-            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 11h14v10H5V11z" />
-                </svg>
-            </div>
-            <h1 class="text-2xl font-semibold text-gray-900">Verificación de PIN</h1>
-            <p class="mt-2 text-sm text-gray-500">
-                Ingresa tu PIN de 4 dígitos para completar el acceso.
-            </p>
-        </div>
-
+    <x-auth-shell title="Verificación de PIN" subtitle="Ingresa tu PIN de 4 dígitos para completar el acceso.">
         {{-- Errores --}}
         @if ($errors->any())
             <div
-                class="mb-5 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                class="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 flex-shrink-0" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -35,7 +19,7 @@ En la carpeta resources/views/auth/pin.blade.php remplazar el código existente 
             {{-- Input PIN (visualmente 4 cajas, un solo input real) --}}
             <div>
                 <label for="pin"
-                    class="mb-2 block text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                    class="mb-2 block text-center text-xs font-medium uppercase tracking-wider text-slate-500">
                     PIN
                 </label>
 
@@ -48,11 +32,11 @@ En la carpeta resources/views/auth/pin.blade.php remplazar el código existente 
                     {{-- Cajas visuales --}}
                     <div class="pointer-events-none flex justify-center gap-3">
                         <template x-for="i in 4" :key="i">
-                            <div class="flex h-14 w-12 items-center justify-center rounded-xl border-2 bg-white text-2xl font-semibold text-gray-900 shadow-sm transition-all"
+                            <div class="flex h-16 w-14 items-center justify-center rounded-xl border-2 bg-white text-2xl font-semibold text-slate-900 shadow-sm transition-all"
                                 :class="{
-                                    'border-blue-500 ring-2 ring-blue-100': value.length === i - 1,
-                                    'border-gray-300': value.length !== i - 1 && value.length < i,
-                                    'border-blue-500 bg-blue-50': value.length >= i
+                                    'border-brand-500 ring-4 ring-brand-100': value.length === i - 1,
+                                    'border-slate-200': value.length !== i - 1 && value.length < i,
+                                    'border-brand-500 bg-brand-50': value.length >= i
                                 }">
                                 <template x-if="value.length >= i">
                                     <span>•</span>
@@ -64,15 +48,14 @@ En la carpeta resources/views/auth/pin.blade.php remplazar el código existente 
             </div>
 
             <button type="submit"
-                class="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50">
+                class="w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm shadow-brand-600/30 transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50">
                 Verificar PIN
             </button>
 
             <a href="{{ route('login') }}"
-                class="block text-center text-sm font-medium text-gray-500 transition hover:text-gray-700 hover:underline">
+                class="block text-center text-sm font-medium text-slate-500 transition hover:text-gray-700 hover:underline">
                 Volver al inicio de sesión
             </a>
         </form>
-    </div>
+    </x-auth-shell>
 </x-guest-layout>
-

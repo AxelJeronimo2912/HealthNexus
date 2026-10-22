@@ -22,7 +22,7 @@
             x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-4" @click.stop
-            class="relative w-full max-w-2xl bg-white rounded-3xl border border-slate-100 shadow-2xl overflow-hidden">
+            class="relative w-full max-w-2xl bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden">
 
             <form action="{{ route('admin.users.turnos.store', $user) }}" method="POST">
                 @csrf
@@ -30,7 +30,7 @@
                 {{-- Header --}}
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
                     <div
-                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -38,7 +38,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="font-extrabold text-slate-800 text-base">Asignar turno</h3>
-                        <p class="text-[11px] text-slate-400">
+                        <p class="text-xs text-slate-400">
                             <span x-text="diaLegible || 'Sin día'"></span>
                             <template x-if="form.turno_id">
                                 <span> · <strong x-text="turnoSel?.rango || ''"></strong></span>
@@ -59,11 +59,11 @@
 
                     {{-- Turno --}}
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                             Turno *
                         </label>
                         <select name="turno_id" x-model="form.turno_id" required
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                             <option value="">— Selecciona un turno —</option>
                             <template x-for="t in data.turnos" :key="t.id">
                                 <option :value="t.id" x-text="t.nombre + ' (' + t.rango + ')'"></option>
@@ -72,9 +72,9 @@
 
                         <template x-if="turnoSel">
                             <div
-                                class="mt-3 bg-indigo-50/60 border border-indigo-100 rounded-2xl p-3 flex items-center gap-3">
+                                class="mt-3 bg-brand-50/60 border border-brand-100 rounded-2xl p-3 flex items-center gap-3">
                                 <div
-                                    class="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                                    class="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600 shrink-0">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -85,7 +85,7 @@
                                     <p class="text-slate-500 font-mono"
                                         x-text="turnoSel.hora_inicio + ' — ' + turnoSel.hora_fin"></p>
                                     <template x-if="turnoSel.cruza">
-                                        <p class="text-[10px] font-bold text-amber-600 mt-0.5">⚠ Cruza medianoche</p>
+                                        <p class="text-xs font-bold text-amber-600 mt-0.5">⚠ Cruza medianoche</p>
                                     </template>
                                 </div>
                             </div>
@@ -94,11 +94,11 @@
 
                     {{-- Día --}}
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                             Día de la semana
                         </label>
                         <select name="dia_semana" x-model="form.dia_semana"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                             <option value="">— Todos los días —</option>
                             <template x-for="(nombre, idx) in dias" :key="idx">
                                 <option :value="idx" x-text="nombre"></option>
@@ -109,19 +109,19 @@
                     {{-- Vigencia --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                                 Fecha de inicio *
                             </label>
                             <input type="date" name="fecha_inicio" x-model="form.fecha_inicio" required
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                                 Fecha de fin
                             </label>
                             <input type="date" name="fecha_fin" x-model="form.fecha_fin"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
-                            <p class="text-[11px] text-slate-400 mt-1.5">
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
+                            <p class="text-xs text-slate-400 mt-1.5">
                                 <template x-if="esTodosLosDias && form.fecha_fin">
                                     <span>Auto: fin de mes (puedes cambiarlo).</span>
                                 </template>
@@ -162,21 +162,21 @@
 
                     {{-- Área --}}
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                             Área / Servicio
                         </label>
                         <input type="text" name="area" x-model="form.area"
                             placeholder="Ej. Urgencias, Hospitalización"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                     </div>
 
                     {{-- Notas --}}
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                             Notas
                         </label>
                         <textarea name="notas" x-model="form.notas" rows="2"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none resize-none"></textarea>
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none resize-none"></textarea>
                     </div>
                 </div>
 
@@ -188,7 +188,7 @@
                         Cancelar
                     </button>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M5 13l4 4L19 7" />

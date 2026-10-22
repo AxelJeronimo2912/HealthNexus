@@ -35,7 +35,7 @@
                 <h4 class="font-semibold text-sm text-gray-700 mb-2">Clasificación</h4>
                 <div class="flex flex-wrap gap-2">
                     @if ($medicamento->psicotropico)
-                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Psicotrópico</span>
+                        <span class="px-2 py-1 bg-accent-100 text-accent-800 rounded text-xs">Psicotrópico</span>
                     @endif
                     @if ($medicamento->antibiotico)
                         <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Antibiótico</span>

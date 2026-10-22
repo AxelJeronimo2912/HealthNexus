@@ -12,7 +12,7 @@
     {{-- Filtros (Ahora usan la clase btn-filtro-lote y data-url) --}}
     <div class="flex flex-wrap gap-2 mb-5">
         <button type="button" data-url="{{ route('existencias.lotes') }}"
-            class="btn-filtro-lote px-3.5 py-2 rounded-xl text-xs font-bold transition-all {{ !$filtro ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100' }}">
+            class="btn-filtro-lote px-3.5 py-2 rounded-xl text-xs font-bold transition-all {{ !$filtro ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100' }}">
             Todos
         </button>
         <button type="button" data-url="{{ route('existencias.lotes', ['filtro' => 'vigentes']) }}"
@@ -35,38 +35,38 @@
         <table class="min-w-full">
             <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
                 <tr>
-                    <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lote
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Lote
                     </th>
-                    <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                         Medicamento</th>
-                    <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                         Caducidad</th>
-                    <th class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                         Disponible</th>
-                    <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                         Estado</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
                 @forelse ($lotes as $lote)
-                    <tr class="hover:bg-indigo-50/30 transition-colors">
+                    <tr class="hover:bg-brand-50/30 transition-colors">
                         <td class="px-5 py-3.5">
                             <span
-                                class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                                 {{ $lote->codigo_lote ?? 'LOTE-' . $lote->id }}
                             </span>
                         </td>
                         <td class="px-5 py-3.5">
                             <p class="text-xs font-bold text-slate-800">{{ $lote->medicamento?->nombre ?? '—' }}</p>
                             @if ($lote->medicamento?->concentracion)
-                                <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                                <p class="text-xs font-medium text-slate-400 mt-0.5">
                                     {{ $lote->medicamento->concentracion }}</p>
                             @endif
                         </td>
                         <td class="px-5 py-3.5">
                             <p class="text-xs font-semibold text-slate-700">
                                 {{ $lote->fecha_caducidad->format('d/m/Y') }}</p>
-                            <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                            <p class="text-xs font-medium text-slate-400 mt-0.5">
                                 @if ($lote->esta_caducado)
                                     Caducó hace {{ abs($lote->dias_para_caducar) }} días
                                 @else
@@ -76,13 +76,13 @@
                         </td>
                         <td class="px-5 py-3.5 text-right">
                             <span
-                                class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-[11px] font-mono font-bold">
+                                class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-mono font-bold">
                                 {{ $lote->cantidad_disponible }}
                             </span>
                         </td>
                         <td class="px-5 py-3.5">
                             <span
-                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $lote->estado_color }}">
+                                class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $lote->estado_color }}">
                                 {{ $lote->estado_label }}
                             </span>
                         </td>

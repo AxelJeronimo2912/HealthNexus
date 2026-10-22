@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">Catálogo de especialidades, médicos y servicios asociados</p>
             </div>
             <button type="button" onclick="openModal('modal-create')"
-                class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
+                class="bg-brand-600 hover:bg-brand-700 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
@@ -19,9 +19,9 @@
 
     @php
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider';
 
         // ==== Datos pre-serializados para el JS ====
         $jsonFlags = JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP;
@@ -71,43 +71,25 @@
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         {{-- ============ ALERTAS ============ --}}
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
 
         {{-- ============ STATS ============ --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total</p>
                 <p class="text-3xl font-black text-slate-800 tracking-tight mt-1">{{ $stats['total'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-emerald-600/70 uppercase tracking-wider">Activas</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider">Activas</p>
                 <p class="text-3xl font-black text-emerald-600 tracking-tight mt-1">{{ $stats['activas'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-indigo-600/70 uppercase tracking-wider">Grupos</p>
-                <p class="text-3xl font-black text-indigo-600 tracking-tight mt-1">{{ $stats['grupos'] }}</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-brand-600/70 uppercase tracking-wider">Grupos</p>
+                <p class="text-3xl font-black text-brand-600 tracking-tight mt-1">{{ $stats['grupos'] }}</p>
             </div>
         </div>
 
         {{-- ============ FILTROS ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5">
             <form method="GET" class="flex gap-2 flex-wrap items-end">
                 <div class="flex-1 min-w-[200px]">
                     <label class="{{ $labelCls }}">Buscar</label>
@@ -139,10 +121,10 @@
         </div>
 
         {{-- ============ TABLA ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Catálogo de especialidades</h3>
-                <p class="text-[11px] text-slate-400">{{ $especialidades->total() }} especialidades registradas</p>
+                <p class="text-xs text-slate-400">{{ $especialidades->total() }} especialidades registradas</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -182,7 +164,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-4">
                                         <div
-                                            class="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-indigo-950 flex items-center justify-center text-xs font-extrabold text-slate-500 group-hover:text-indigo-400 transition-colors duration-200 shrink-0">
+                                            class="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-brand-950 flex items-center justify-center text-xs font-extrabold text-slate-500 group-hover:text-brand-400 transition-colors duration-200 shrink-0">
                                             {{ mb_strtoupper(mb_substr($esp->nombre, 0, 2)) }}
                                         </div>
                                         <div class="min-w-0">
@@ -192,11 +174,11 @@
                                                         style="background-color: {{ $esp->color_hex }}"></span>
                                                 @endif
                                                 <p
-                                                    class="text-sm font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                                                    class="text-sm font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors truncate">
                                                     {{ $esp->nombre }}
                                                 </p>
                                             </div>
-                                            <p class="text-[11px] text-slate-400 mt-0.5 font-mono">{{ $esp->codigo }}</p>
+                                            <p class="text-xs text-slate-400 mt-0.5 font-mono">{{ $esp->codigo }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -225,7 +207,7 @@
                                 {{-- MÉDICOS --}}
                                 <td class="px-6 py-4 text-center">
                                     <span
-                                        class="inline-flex px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold">
+                                        class="inline-flex px-3 py-1 bg-brand-50 text-brand-700 rounded-full text-xs font-bold">
                                         {{ $esp->medicos_count }}
                                     </span>
                                 </td>
@@ -233,7 +215,7 @@
                                 {{-- SERVICIOS --}}
                                 <td class="px-6 py-4 text-center">
                                     <span
-                                        class="inline-flex px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold">
+                                        class="inline-flex px-3 py-1 bg-accent-50 text-accent-700 rounded-full text-xs font-bold">
                                         {{ $esp->servicios_count }}
                                     </span>
                                 </td>
@@ -277,7 +259,7 @@
                                         {{-- Editar --}}
                                         <button type="button" onclick="openEditModal(this.closest('tr'))"
                                             title="Editar"
-                                            class="p-2 rounded-xl text-purple-500 hover:bg-purple-50 active:scale-90 transition-all">
+                                            class="p-2 rounded-xl text-accent-500 hover:bg-accent-50 active:scale-90 transition-all">
                                             <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
                                                 stroke-width="1.8" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -288,7 +270,7 @@
                                         {{-- Médicos --}}
                                         <button type="button" onclick="openMedicosModal(this.closest('tr'))"
                                             title="Gestionar médicos"
-                                            class="p-2 rounded-xl text-indigo-500 hover:bg-indigo-50 active:scale-90 transition-all">
+                                            class="p-2 rounded-xl text-brand-500 hover:bg-brand-50 active:scale-90 transition-all">
                                             <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
                                                 stroke-width="1.8" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -346,12 +328,12 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-create')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div
                     class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                            class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                     d="M12 4v16m8-8H4" />
@@ -359,7 +341,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-lg">Nueva Especialidad</h3>
-                            <p class="text-[11px] text-slate-400">Registra una nueva especialidad médica</p>
+                            <p class="text-xs text-slate-400">Registra una nueva especialidad médica</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeModal('modal-create')"
@@ -380,7 +362,7 @@
                             Cancelar
                         </button>
                         <button type="submit"
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                            class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             Guardar Especialidad
                         </button>
                     </div>
@@ -396,12 +378,12 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-edit')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div
                     class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+                            class="w-10 h-10 rounded-2xl bg-accent-50 flex items-center justify-center text-accent-600 shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -410,7 +392,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-lg">Editar Especialidad</h3>
-                            <p class="text-[11px] text-slate-400" id="edit-subtitle">Modifica los datos</p>
+                            <p class="text-xs text-slate-400" id="edit-subtitle">Modifica los datos</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeModal('modal-edit')"
@@ -434,7 +416,7 @@
                             Cancelar
                         </button>
                         <button type="submit"
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                            class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             Actualizar Especialidad
                         </button>
                     </div>
@@ -450,7 +432,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-delete')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5 text-center">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 text-center">
                 <div class="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 mx-auto">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -490,7 +472,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-show')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div
                     class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                     <div class="flex items-center gap-3">
@@ -507,7 +489,7 @@
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-lg" id="show-title">Detalle de la
                                 Especialidad</h3>
-                            <p class="text-[11px] text-slate-400" id="show-subtitle">Información completa</p>
+                            <p class="text-xs text-slate-400" id="show-subtitle">Información completa</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeModal('modal-show')"
@@ -523,11 +505,11 @@
                     <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
                         <div class="flex flex-wrap items-center gap-2">
                             <span id="show-codigo"
-                                class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[11px] font-mono font-bold"></span>
+                                class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-mono font-bold"></span>
                             <span id="show-grupo"
-                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"></span>
+                                class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"></span>
                             <span id="show-estado"
-                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"></span>
+                                class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"></span>
                         </div>
                         <div class="flex items-center gap-2 mt-3">
                             <span id="show-color" class="w-4 h-4 rounded-full shrink-0 hidden"></span>
@@ -538,14 +520,14 @@
 
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <div class="bg-white border border-slate-100 rounded-xl p-3">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duración por
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Duración por
                                     defecto</p>
                                 <p id="show-duracion" class="text-sm font-extrabold text-slate-800 mt-0.5"></p>
                             </div>
                             <div class="bg-white border border-slate-100 rounded-xl p-3">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total médicos
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total médicos
                                 </p>
-                                <p id="show-total-medicos" class="text-sm font-extrabold text-indigo-600 mt-0.5"></p>
+                                <p id="show-total-medicos" class="text-sm font-extrabold text-brand-600 mt-0.5"></p>
                             </div>
                         </div>
                     </div>
@@ -553,7 +535,7 @@
                     <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100">
                             <h5 class="font-extrabold text-slate-800 text-sm">Médicos asignados</h5>
-                            <p class="text-[11px] text-slate-400" id="show-medicos-count">0 médicos</p>
+                            <p class="text-xs text-slate-400" id="show-medicos-count">0 médicos</p>
                         </div>
                         <ul id="show-medicos-list" class="divide-y divide-slate-100"></ul>
                     </div>
@@ -561,18 +543,18 @@
                     <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100">
                             <h5 class="font-extrabold text-slate-800 text-sm">Servicios asociados</h5>
-                            <p class="text-[11px] text-slate-400" id="show-servicios-count">0 servicios</p>
+                            <p class="text-xs text-slate-400" id="show-servicios-count">0 servicios</p>
                         </div>
                         <div id="show-servicios-list" class="p-5 flex flex-wrap gap-2"></div>
                     </div>
 
                     <div class="flex flex-wrap gap-2 pt-4 border-t border-slate-100">
                         <button type="button" id="show-btn-editar"
-                            class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                            class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             Editar
                         </button>
                         <button type="button" id="show-btn-medicos"
-                            class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                            class="px-4 py-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             Gestionar médicos
                         </button>
                         <button type="button" id="show-btn-servicios"
@@ -592,12 +574,12 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-medicos')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div
                     class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                            class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -606,7 +588,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-lg">Médicos de la Especialidad</h3>
-                            <p class="text-[11px] text-slate-400" id="medicos-subtitle">Asignación y gestión</p>
+                            <p class="text-xs text-slate-400" id="medicos-subtitle">Asignación y gestión</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeModal('modal-medicos')"
@@ -622,7 +604,7 @@
                     <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-3">
                             <div
-                                class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                                class="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M12 4v16m8-8H4" />
@@ -630,7 +612,7 @@
                             </div>
                             <div>
                                 <h4 class="font-extrabold text-slate-800 text-sm">Asignar médico</h4>
-                                <p class="text-[11px] text-slate-400">Agrega un médico a esta especialidad</p>
+                                <p class="text-xs text-slate-400">Agrega un médico a esta especialidad</p>
                             </div>
                         </div>
 
@@ -656,14 +638,14 @@
                             <div class="flex items-end">
                                 <label class="inline-flex items-center gap-2 cursor-pointer pb-2.5">
                                     <input type="checkbox" name="es_principal" value="1"
-                                        class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-0 cursor-pointer">
+                                        class="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 focus:ring-0 cursor-pointer">
                                     <span class="text-xs font-bold text-slate-700">Principal</span>
                                 </label>
                             </div>
 
                             <div class="md:col-span-4 flex justify-end pt-3 border-t border-slate-100">
                                 <button type="submit"
-                                    class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                                    class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                                     Asignar médico
                                 </button>
                             </div>
@@ -673,7 +655,7 @@
                     <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100">
                             <h4 class="font-extrabold text-slate-800 text-sm">Médicos asignados</h4>
-                            <p class="text-[11px] text-slate-400" id="medicos-count">0 médicos</p>
+                            <p class="text-xs text-slate-400" id="medicos-count">0 médicos</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
@@ -702,7 +684,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 py-8">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-servicios')"></div>
 
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div
                     class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                     <div class="flex items-center gap-3">
@@ -716,7 +698,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-lg">Servicios de la Especialidad</h3>
-                            <p class="text-[11px] text-slate-400" id="servicios-subtitle">Asociación y gestión</p>
+                            <p class="text-xs text-slate-400" id="servicios-subtitle">Asociación y gestión</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeModal('modal-servicios')"
@@ -740,7 +722,7 @@
                             </div>
                             <div>
                                 <h4 class="font-extrabold text-slate-800 text-sm">Asociar servicio</h4>
-                                <p class="text-[11px] text-slate-400">Agrega un servicio a esta especialidad</p>
+                                <p class="text-xs text-slate-400">Agrega un servicio a esta especialidad</p>
                             </div>
                         </div>
 
@@ -759,7 +741,7 @@
                                 </select>
                             </div>
                             <button type="submit"
-                                class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                                class="w-full sm:w-auto px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                                 Asociar servicio
                             </button>
                         </form>
@@ -768,7 +750,7 @@
                     <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100">
                             <h4 class="font-extrabold text-slate-800 text-sm">Servicios asociados</h4>
-                            <p class="text-[11px] text-slate-400" id="servicios-count">0 servicios</p>
+                            <p class="text-xs text-slate-400" id="servicios-count">0 servicios</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
@@ -898,11 +880,11 @@
             };
             const grupoEl = document.getElementById('show-grupo');
             grupoEl.textContent = grupoLabels[esp.grupo] || esp.grupo;
-            grupoEl.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-700';
+            grupoEl.className = 'px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-700';
 
             const estado = document.getElementById('show-estado');
             estado.textContent = esp.activo == 1 ? 'Activa' : 'Inactiva';
-            estado.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ' +
+            estado.className = 'px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ' +
                 (esp.activo == 1 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                     'bg-rose-50 text-rose-700 border border-rose-100');
 
@@ -920,10 +902,10 @@
                     const rol = (m.roles && m.roles.length) ? m.roles[0].name : (m.rol || 'sin rol');
                     const pivot = m.pivot || {};
                     const principal = pivot.es_principal ?
-                        '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase">Principal</span>' :
+                        '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold uppercase">Principal</span>' :
                         '';
                     const cedula = pivot.numero_cedula_especialidad ?
-                        `<p class="text-[11px] text-slate-400 mt-0.5">Cédula: ${pivot.numero_cedula_especialidad}</p>` :
+                        `<p class="text-xs text-slate-400 mt-0.5">Cédula: ${pivot.numero_cedula_especialidad}</p>` :
                         '';
                     medicosList.innerHTML += `
                         <li class="px-5 py-3.5 flex flex-wrap justify-between items-center gap-3">
@@ -934,7 +916,7 @@
                                 </div>
                                 ${cedula}
                             </div>
-                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">${rol}</span>
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase">${rol}</span>
                         </li>`;
                 });
             }
@@ -950,7 +932,7 @@
             } else {
                 servicios.forEach(s => {
                     serviciosList.innerHTML += `
-                        <span class="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-[11px] font-bold">
+                        <span class="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold">
                             ${s.nombre}
                         </span>`;
                 });
@@ -1002,20 +984,20 @@
                 const rol = (m.roles && m.roles.length) ? m.roles[0].name : (m.rol || 'sin rol');
                 const pivot = m.pivot || {};
                 const cedula = pivot.numero_cedula_especialidad ?
-                    `<span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">${pivot.numero_cedula_especialidad}</span>` :
+                    `<span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">${pivot.numero_cedula_especialidad}</span>` :
                     '<span class="text-slate-300 text-xs">—</span>';
                 const principal = pivot.es_principal ?
-                    '<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold uppercase">★ Principal</span>' :
+                    '<span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold uppercase">★ Principal</span>' :
                     '<span class="text-slate-300 text-xs">—</span>';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-indigo-50/30 transition-colors">
+                    <tr class="hover:bg-brand-50/30 transition-colors">
                         <td class="px-5 py-3.5">
                             <p class="text-xs font-bold text-slate-800">${nombre}</p>
-                            <p class="text-[10px] font-medium text-slate-400 mt-0.5">${email}</p>
+                            <p class="text-xs font-medium text-slate-400 mt-0.5">${email}</p>
                         </td>
                         <td class="px-5 py-3.5">
-                            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase">${rol}</span>
+                            <span class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase">${rol}</span>
                         </td>
                         <td class="px-5 py-3.5">${cedula}</td>
                         <td class="px-5 py-3.5 text-center">${principal}</td>
@@ -1024,7 +1006,7 @@
                                 <form action="{{ url('especialidades') }}/${espId}/medicos/${pivot.id}" method="POST"
                                     onsubmit="return confirm('¿Quitar este médico de la especialidad?')">
                                     @csrf @method('DELETE')
-                                    <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">Quitar</button>
+                                    <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">Quitar</button>
                                 </form>
                             </div>
                         </td>
@@ -1062,10 +1044,10 @@
                 const ubicacion = s.ubicacion || '<span class="text-slate-300 text-xs">—</span>';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-indigo-50/30 transition-colors">
+                    <tr class="hover:bg-brand-50/30 transition-colors">
                         <td class="px-5 py-3.5"><p class="text-xs font-bold text-slate-800">${s.nombre}</p></td>
                         <td class="px-5 py-3.5">
-                            <span class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold uppercase">${tipoLabel}</span>
+                            <span class="px-2.5 py-1 bg-accent-50 text-accent-700 border border-accent-100 rounded-full text-xs font-bold uppercase">${tipoLabel}</span>
                         </td>
                         <td class="px-5 py-3.5"><p class="text-xs font-medium text-slate-600">${ubicacion}</p></td>
                         <td class="px-5 py-3.5">
@@ -1073,7 +1055,7 @@
                                 <form action="{{ url('especialidades') }}/${espId}/servicios/${pivot.id}" method="POST"
                                     onsubmit="return confirm('¿Quitar este servicio de la especialidad?')">
                                     @csrf @method('DELETE')
-                                    <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">Quitar</button>
+                                    <button class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">Quitar</button>
                                 </form>
                             </div>
                         </td>

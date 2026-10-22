@@ -12,11 +12,11 @@
                 </div>
                 <div>
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">Asistente HealthNexus</h2>
-                    <p class="text-xs text-teal-600 font-medium">En línea</p>
+                    <p class="text-xs text-brand-600 font-medium">En línea</p>
                 </div>
             </div>
             <button id="btn-nueva-conv"
-                class="text-xs text-teal-600 hover:text-teal-800 transition-colors px-3 py-1.5 rounded-md hover:bg-teal-50 font-medium">
+                class="text-xs text-brand-600 hover:text-teal-800 transition-colors px-3 py-1.5 rounded-md hover:bg-brand-50 font-medium">
                 + Nueva conversación
             </button>
         </div>
@@ -45,7 +45,7 @@
                     style="background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);">
                     <div class="flex justify-start items-end gap-2">
                         <div
-                            class="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                            class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                             HN</div>
                         <div
                             class="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white border border-gray-100 text-gray-700 shadow-sm">
@@ -57,7 +57,7 @@
                 <div id="chat-typing" class="hidden px-4 pb-2 -mt-1">
                     <div class="flex items-center gap-2">
                         <div
-                            class="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                            class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                             HN</div>
                         <div
                             class="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex gap-1">
@@ -77,7 +77,7 @@
                             class="flex-1 border-gray-200 bg-gray-50 rounded-full px-4 py-2.5 text-sm focus:border-teal-500 focus:ring-teal-500 focus:bg-white transition-colors"
                             autocomplete="off">
                         <button type="submit" id="chat-enviar"
-                            class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 text-white rounded-full transition-colors shadow-sm">
+                            class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-brand-600 hover:bg-teal-700 disabled:bg-gray-300 text-white rounded-full transition-colors shadow-sm">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2.2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -85,7 +85,7 @@
                             </svg>
                         </button>
                     </form>
-                    <p class="text-[11px] text-gray-400 mt-2 text-center">Este asistente no sustituye el consejo médico
+                    <p class="text-xs text-gray-400 mt-2 text-center">Este asistente no sustituye el consejo médico
                         profesional.</p>
                 </div>
             </div>
@@ -240,14 +240,14 @@
                 }
 
                 const avatar = !esUsuario ?
-                    `<div class="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>` :
+                    `<div class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>` :
                     '';
 
                 const burbuja = `
                     <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-line shadow-sm
-                        ${esUsuario ? 'bg-teal-600 text-white rounded-br-sm' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm'}">
+                        ${esUsuario ? 'bg-brand-600 text-white rounded-br-sm' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm'}">
                         ${contenidoHTML}
-                        <div class="text-[10px] mt-1 ${esUsuario ? 'text-teal-100' : 'text-gray-400'}">${horaActual()}</div>
+                        <div class="text-xs mt-1 ${esUsuario ? 'text-brand-100' : 'text-gray-400'}">${horaActual()}</div>
                     </div>
                 `;
 
@@ -259,7 +259,7 @@
             function limpiarChatVisual(mensajeBienvenida = true) {
                 mensajes.innerHTML = mensajeBienvenida ?
                     `<div class="flex justify-start items-end gap-2">
-                        <div class="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>
+                        <div class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>
                         <div class="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white border border-gray-100 text-gray-700 shadow-sm">
                             ¡Hola! Soy el asistente de HealthNexus. ¿En qué puedo ayudarte?
                         </div>

@@ -7,7 +7,7 @@
             </div>
 
             <a href="{{ route('pacientes.index') }}"
-                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group">
+                class="bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group">
                 Ver todos los pacientes
                 <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -22,19 +22,19 @@
 
         {{-- Barra de búsqueda + contador --}}
         <div
-            class="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+            class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
             <div class="flex items-center gap-3 md:pr-4 md:border-r border-slate-100 shrink-0">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <div class="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </div>
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">
                         {{ $busqueda ? 'RESULTADOS' : 'EXPEDIENTES' }}
                     </p>
-                    <p class="text-2xl font-extrabold text-indigo-600 mt-0.5">{{ $pacientes->total() }}</p>
+                    <p class="text-2xl font-extrabold text-brand-600 mt-0.5">{{ $pacientes->total() }}</p>
                 </div>
             </div>
 
@@ -48,11 +48,11 @@
                     </svg>
                     <input type="text" name="buscar" value="{{ $busqueda }}"
                         placeholder="Buscar por nombre, apellidos o CURP"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none">
                 </div>
 
                 <button type="submit"
-                    class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                     Buscar
                 </button>
 
@@ -66,32 +66,32 @@
         </div>
 
         {{-- Tabla (escritorio) --}}
-        <div class="hidden md:block bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="hidden md:block bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <table class="min-w-full">
                 <thead class="bg-slate-50/70 border-b border-slate-100">
                     <tr>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Paciente</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             CURP</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Edad</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Último triage</th>
-                        <th class="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Consultas</th>
                         <th
-                            class="px-5 py-3.5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            class="px-5 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                             Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($pacientes as $paciente)
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-brand-50/30 transition-colors">
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-bold shrink-0">
+                                        class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
                                         {{ strtoupper(mb_substr($paciente->nombre_completo ?? 'P', 0, 2)) }}
                                     </div>
                                     <p class="text-xs font-bold text-slate-800">{{ $paciente->nombre_completo }}</p>
@@ -102,28 +102,28 @@
                             <td class="px-5 py-3.5">
                                 @if ($paciente->ultimoSignoVital)
                                     <span
-                                        class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
+                                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
                                         {{ $paciente->ultimoSignoVital->triage_label }}
                                     </span>
                                 @else
-                                    <span class="text-slate-400 text-[11px] font-semibold">Sin signos vitales</span>
+                                    <span class="text-slate-400 text-xs font-semibold">Sin signos vitales</span>
                                 @endif
                             </td>
                             <td class="px-5 py-3.5">
                                 <span
-                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[11px] font-bold">
+                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold">
                                     {{ $paciente->consultas_count }}
                                 </span>
                             </td>
                             <td class="px-5 py-3.5">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('expedientes.show', $paciente) }}"
-                                        class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all active:scale-95">
+                                        class="px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
                                         Ver expediente
                                     </a>
                                     <button type="button"
                                         onclick="window.abrirModalPaciente && window.abrirModalPaciente('show', '{{ route('pacientes.show', $paciente) }}?partial=1')"
-                                        class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold transition-all active:scale-95">
+                                        class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all active:scale-95">
                                         Ficha
                                     </button>
                                 </div>
@@ -143,16 +143,16 @@
         {{-- Tarjetas (móvil) --}}
         <div class="md:hidden space-y-3">
             @forelse ($pacientes as $paciente)
-                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-3">
+                <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-4 space-y-3">
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-11 h-11 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                            class="w-11 h-11 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold shrink-0">
                             {{ strtoupper(mb_substr($paciente->nombre_completo ?? 'P', 0, 2)) }}
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm font-extrabold text-slate-800 truncate">{{ $paciente->nombre_completo }}
                             </p>
-                            <p class="text-[11px] font-medium text-slate-400 truncate">
+                            <p class="text-xs font-medium text-slate-400 truncate">
                                 {{ $paciente->curp ?? '—' }} · {{ $paciente->edad }} años
                             </p>
                         </div>
@@ -161,20 +161,20 @@
                     <div
                         class="flex items-center justify-between bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
                         <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Triage</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Triage</p>
                             @if ($paciente->ultimoSignoVital)
                                 <span
-                                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
+                                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $paciente->ultimoSignoVital->triage_color }}">
                                     {{ $paciente->ultimoSignoVital->triage_label }}
                                 </span>
                             @else
-                                <span class="text-slate-400 text-[11px] font-semibold">Sin signos vitales</span>
+                                <span class="text-slate-400 text-xs font-semibold">Sin signos vitales</span>
                             @endif
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultas</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Consultas</p>
                             <span
-                                class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[11px] font-bold">
+                                class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold">
                                 {{ $paciente->consultas_count }}
                             </span>
                         </div>
@@ -182,7 +182,7 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <a href="{{ route('expedientes.show', $paciente) }}"
-                            class="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold text-center shadow-sm">
+                            class="py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold text-center shadow-sm">
                             Ver expediente
                         </a>
                         <button type="button"
@@ -193,7 +193,7 @@
                     </div>
                 </div>
             @empty
-                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-10 text-center">
+                <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-10 text-center">
                     <p class="text-xs font-semibold text-slate-400">Sin pacientes con expediente.</p>
                 </div>
             @endforelse
@@ -210,7 +210,7 @@
 
             <div x-show="modalAbierto" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <h3 class="font-bold text-lg text-slate-800"
@@ -233,7 +233,7 @@
 
                 <div class="overflow-y-auto p-6">
                     <div x-show="modalCargando" class="flex items-center justify-center py-16">
-                        <svg class="animate-spin w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                        <svg class="animate-spin w-8 h-8 text-brand-600" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                 stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>

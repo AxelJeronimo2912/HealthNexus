@@ -44,7 +44,7 @@
                         <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Oxígeno</span>
                     @endif
                     @if ($cama->monitor)
-                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Monitor</span>
+                        <span class="px-2 py-1 bg-accent-100 text-accent-800 rounded text-xs">Monitor</span>
                     @endif
                     @if ($cama->ventilador)
                         <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Ventilador</span>
