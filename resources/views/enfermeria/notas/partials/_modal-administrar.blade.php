@@ -32,7 +32,7 @@
         </div>
 
         <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Paciente *</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Paciente *</label>
             <select name="paciente_id" required
                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none">
                 <option value="">— Selecciona —</option>
@@ -43,7 +43,7 @@
         </div>
 
         <div>
-            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Medicamento
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Medicamento
                 *</label>
             <select id="select-medicamento" name="medicamento_id" required placeholder="Busca un medicamento...">
                 <option value="">— Selecciona un medicamento —</option>
@@ -57,14 +57,14 @@
 
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Dosis
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Dosis
                     *</label>
                 <input type="text" name="dosis" value="{{ old('dosis') }}" placeholder="Ej. 1 tableta, 5 ml"
                     required
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none">
             </div>
             <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Vía *</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Vía *</label>
                 <select name="via" required
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none">
                     <option value="">— Selecciona —</option>
@@ -77,7 +77,7 @@
 
         <div>
             <label
-                class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Observaciones</label>
+                class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Observaciones</label>
             <textarea name="observaciones" rows="2" placeholder="Ej. Paciente refiere mejoría tras la dosis..."
                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none resize-none">{{ old('observaciones') }}</textarea>
         </div>

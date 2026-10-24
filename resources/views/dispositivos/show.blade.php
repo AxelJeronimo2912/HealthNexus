@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">Información técnica, accesos y estado</p>
             </div>
             <a href="{{ route('dispositivos.index') }}"
-                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                class="bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
                 <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -19,18 +19,18 @@
     </x-slot>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-6">
 
             {{-- ============ ENCABEZADO ============ --}}
             <div
                 class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pb-5 border-b border-slate-100">
                 <div class="flex items-center gap-4">
                     <div
-                        class="w-14 h-14 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                        class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
                         <x-dynamic-component :component="'heroicon-o-' . $dispositivo->tipo_icono" class="w-6 h-6" />
                     </div>
                     <div class="min-w-0">
@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <span
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $dispositivo->estado_color }} self-start">
+                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $dispositivo->estado_color }} self-start">
                     {{ $dispositivo->estado_label }}
                 </span>
             </div>
@@ -82,7 +82,7 @@
                 <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
                     <dt class="{{ $labelCls }}">IP de registro</dt>
                     <dd class="mt-1">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                             {{ $dispositivo->ip_registro ?? '—' }}
                         </span>
                     </dd>
@@ -91,7 +91,7 @@
                 <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
                     <dt class="{{ $labelCls }}">Última IP</dt>
                     <dd class="mt-1">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                             {{ $dispositivo->ip_ultimo_acceso ?? '—' }}
                         </span>
                     </dd>
@@ -104,9 +104,9 @@
                     </dd>
                 </div>
 
-                <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-3">
+                <div class="bg-brand-50/60 border border-brand-100 rounded-2xl p-3">
                     <dt class="{{ $labelCls }}">Total de accesos</dt>
-                    <dd class="text-lg font-black text-indigo-700 tracking-tight mt-0.5">
+                    <dd class="text-lg font-black text-brand-700 tracking-tight mt-0.5">
                         {{ $dispositivo->total_accesos }}
                     </dd>
                 </div>
@@ -128,7 +128,7 @@
             <div class="pt-5 border-t border-slate-100">
                 <p class="{{ $labelCls }} mb-2">User Agent</p>
                 <p
-                    class="text-[11px] font-mono text-slate-600 bg-slate-50 border border-slate-100 rounded-2xl p-4 break-all leading-relaxed">
+                    class="text-xs font-mono text-slate-600 bg-slate-50 border border-slate-100 rounded-2xl p-4 break-all leading-relaxed">
                     {{ $dispositivo->user_agent ?? '—' }}
                 </p>
             </div>

@@ -7,14 +7,14 @@
 
     {{-- Contenedor del Modal con Animación --}}
     <div
-        class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl border border-slate-100/50 flex flex-col max-h-full transform transition-all animate-in zoom-in-95 duration-200">
+        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-100/50 flex flex-col max-h-full transform transition-all animate-in zoom-in-95 duration-200">
 
         {{-- Header Fijo --}}
         <div
             class="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-slate-100 bg-slate-50/50 rounded-t-3xl shrink-0">
             <div class="flex items-center gap-4">
                 <div
-                    class="w-12 h-12 rounded-2xl bg-indigo-100/50 text-indigo-600 flex items-center justify-center shadow-sm shrink-0 border border-indigo-200/50">
+                    class="w-12 h-12 rounded-2xl bg-brand-100/50 text-brand-600 flex items-center justify-center shadow-sm shrink-0 border border-brand-200/50">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

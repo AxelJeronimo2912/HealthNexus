@@ -20,49 +20,31 @@
     @php
         $inputCls =
             'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
 
         {{-- ============ STATS ============ --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total administraciones</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total administraciones</p>
                 <p class="text-3xl font-black text-slate-800 tracking-tight mt-1">{{ $stats['total'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-pink-600/70 uppercase tracking-wider">Hoy</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-pink-600/70 uppercase tracking-wider">Hoy</p>
                 <p class="text-3xl font-black text-pink-600 tracking-tight mt-1">{{ $stats['hoy'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-rose-600/70 uppercase tracking-wider">Con reacción adversa</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-rose-600/70 uppercase tracking-wider">Con reacción adversa</p>
                 <p class="text-3xl font-black text-rose-600 tracking-tight mt-1">{{ $stats['reacciones'] }}</p>
             </div>
         </div>
 
         {{-- ============ FILTROS ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5">
             <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                 <div class="md:col-span-2">
                     <label class="{{ $labelCls }}">Buscar paciente</label>
@@ -102,10 +84,10 @@
         </div>
 
         {{-- ============ TABLA ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Administraciones registradas</h3>
-                <p class="text-[11px] text-slate-400">{{ $administraciones->total() }} registros en total</p>
+                <p class="text-xs text-slate-400">{{ $administraciones->total() }} registros en total</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -125,7 +107,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($administraciones as $adm)
                             <tr class="hover:bg-pink-50/30 transition-colors">
-                                <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                                <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                                     {{ $adm->administrado_en->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="px-5 py-3.5">
@@ -138,20 +120,20 @@
                                         {{ $adm->medicamento?->nombre }}
                                     </p>
                                     @if ($adm->medicamento?->concentracion)
-                                        <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                                        <p class="text-xs font-medium text-slate-400 mt-0.5">
                                             {{ $adm->medicamento->concentracion }}
                                         </p>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                                         {{ $adm->dosis }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                        class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                         {{ $adm->via }}
                                     </span>
                                 </td>
@@ -163,12 +145,12 @@
                                 <td class="px-5 py-3.5 text-center">
                                     @if ($adm->reaccion_adversa)
                                         <span
-                                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                             Sí
                                         </span>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase tracking-wide">
                                             No
                                         </span>
                                     @endif
@@ -176,7 +158,7 @@
                                 <td class="px-5 py-3.5">
                                     <div class="flex justify-end gap-2">
                                         <a href="{{ route('enfermeria.administraciones.show', $adm) }}"
-                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
+                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all">
                                             Ver
                                         </a>
                                         @if (auth()->user()->hasRole('administrador'))
@@ -185,7 +167,7 @@
                                                 onsubmit="return confirm('¿Eliminar y devolver stock?')">
                                                 @csrf @method('DELETE')
                                                 <button
-                                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">
                                                     Eliminar
                                                 </button>
                                             </form>

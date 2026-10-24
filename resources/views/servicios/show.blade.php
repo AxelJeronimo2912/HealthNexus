@@ -123,7 +123,7 @@
             </button>
             
             <button type="button" @click="abrirModalPersonal('{{ route('servicios.personal', $servicio) }}')"
-                    class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm">
+                    class="px-4 py-2 bg-accent-600 text-white rounded-md text-sm">
                 Gestionar personal
             </button>
             

@@ -6,7 +6,7 @@
                 <p class="text-sm text-slate-400">Historial médico completo del paciente</p>
             </div>
             <a href="{{ route('expedientes.index') }}"
-                class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-indigo-600 transition">
+                class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-brand-600 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -19,7 +19,7 @@
 
         {{-- ═════════ BANNER DEL PACIENTE ═════════ --}}
         <div
-            class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 p-8 shadow-xl shadow-indigo-200 text-white">
+            class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-600 via-brand-700 to-brand-900 p-8 shadow-xl shadow-brand-200 text-white">
             <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5"></div>
             <div class="absolute right-24 -bottom-20 w-48 h-48 rounded-full bg-white/5"></div>
 
@@ -31,10 +31,10 @@
                     </div>
                     <div>
                         <h3 class="text-3xl font-extrabold tracking-tight">{{ $paciente->nombre_completo }}</h3>
-                        <p class="text-indigo-100 mt-1">
+                        <p class="text-brand-100 mt-1">
                             {{ $paciente->edad }} años · {{ ucfirst($paciente->sexo) }}
                         </p>
-                        <p class="text-indigo-200 text-sm mt-0.5">CURP: {{ $paciente->curp ?? '—' }}</p>
+                        <p class="text-brand-200 text-sm mt-0.5">CURP: {{ $paciente->curp ?? '—' }}</p>
                     </div>
                 </div>
 
@@ -54,7 +54,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {{-- Tipo sanguíneo --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div class="flex items-start justify-between">
                         <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
                             <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -70,7 +70,7 @@
                 </div>
 
                 {{-- Alergias --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div class="flex items-start justify-between">
                         <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                             <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -92,7 +92,7 @@
                 </div>
 
                 {{-- Enfermedades crónicas --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div class="flex items-start justify-between">
                         <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                             <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor"
@@ -110,16 +110,16 @@
                 </div>
 
                 {{-- Resumen de actividad --}}
-                <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div class="flex items-start justify-between">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8"
+                        <div class="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" stroke-width="1.8"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z" />
                             </svg>
                         </div>
-                        <span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold">
+                        <span class="px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-bold">
                             {{ $citas->count() }} citas
                         </span>
                     </div>
@@ -146,7 +146,7 @@
                 @endphp
                 @foreach ($tabs as $key => [$label, $count])
                     <button @click="tab = '{{ $key }}'"
-                        :class="tab === '{{ $key }}' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' :
+                        :class="tab === '{{ $key }}' ? 'bg-brand-600 text-white shadow-md shadow-brand-200' :
                             'text-slate-500 hover:bg-slate-50'"
                         class="px-5 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
                         {{ $label }}
@@ -161,7 +161,7 @@
             <div x-show="tab === 'consultas'" class="space-y-4">
                 @forelse ($consultas as $consulta)
                     @php $final = $consulta->estado === 'finalizada'; @endphp
-                    <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                         <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                             <div class="flex gap-4">
                                 <div
@@ -180,7 +180,7 @@
                                         Dr. {{ $consulta->medico?->nombre_completo ?? '—' }}
                                     </p>
                                     @if ($consulta->diagnosticoPrincipal)
-                                        <p class="text-sm text-indigo-600 mt-1">
+                                        <p class="text-sm text-brand-600 mt-1">
                                             <span class="font-bold">Dx:</span>
                                             {{ $consulta->diagnosticoPrincipal->etiqueta }}
                                         </p>
@@ -200,7 +200,7 @@
                                 </span>
                                 <div class="flex items-center gap-4 text-sm font-semibold">
                                     <a href="{{ route('consultas.show', $consulta) }}"
-                                        class="text-indigo-600 hover:text-indigo-800">Ver →</a>
+                                        class="text-brand-600 hover:text-brand-800">Ver →</a>
                                     <a href="{{ route('consultas.pdf', $consulta) }}" target="_blank"
                                         class="text-red-600 hover:text-red-800">PDF</a>
                                     @if ($consulta->tiene_receta)
@@ -214,7 +214,7 @@
                         {{-- Resumen SOAP --}}
                         @if ($consulta->subjetivo || $consulta->objetivo || $consulta->analisis || $consulta->plan)
                             <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                @foreach ([['S', 'Subjetivo', $consulta->subjetivo, 'bg-sky-50 text-sky-600'], ['O', 'Objetivo', $consulta->objetivo, 'bg-violet-50 text-violet-600'], ['A', 'Análisis', $consulta->analisis, 'bg-amber-50 text-amber-600'], ['P', 'Plan', $consulta->plan, 'bg-emerald-50 text-emerald-600']] as [$letra, $nombre, $texto, $color])
+                                @foreach ([['S', 'Subjetivo', $consulta->subjetivo, 'bg-sky-50 text-sky-600'], ['O', 'Objetivo', $consulta->objetivo, 'bg-accent-50 text-accent-600'], ['A', 'Análisis', $consulta->analisis, 'bg-amber-50 text-amber-600'], ['P', 'Plan', $consulta->plan, 'bg-emerald-50 text-emerald-600']] as [$letra, $nombre, $texto, $color])
                                     @if ($texto)
                                         <div class="rounded-2xl bg-slate-50 p-4">
                                             <div class="flex items-center gap-2 mb-2">
@@ -257,7 +257,7 @@
                         @endif
                     </div>
                 @empty
-                    <div class="bg-white rounded-3xl p-10 shadow-sm text-center text-slate-400">
+                    <div class="bg-white rounded-2xl p-10 shadow-sm text-center text-slate-400">
                         Sin consultas registradas.
                     </div>
                 @endforelse
@@ -265,7 +265,7 @@
 
             {{-- TAB: Signos vitales --}}
             <div x-show="tab === 'signos'" x-cloak>
-                <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
@@ -304,7 +304,7 @@
                                         </td>
                                         <td class="px-5 py-4 text-right">
                                             <a href="{{ route('signos-vitales.show', $sv) }}"
-                                                class="text-indigo-600 hover:text-indigo-800 font-semibold">Ver →</a>
+                                                class="text-brand-600 hover:text-brand-800 font-semibold">Ver →</a>
                                         </td>
                                     </tr>
                                 @empty
@@ -322,7 +322,7 @@
 
             {{-- TAB: Citas --}}
             <div x-show="tab === 'citas'" x-cloak>
-                <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
@@ -352,7 +352,7 @@
                                         </td>
                                         <td class="px-5 py-4 text-right">
                                             <a href="{{ route('citas.show', $cita) }}"
-                                                class="text-indigo-600 hover:text-indigo-800 font-semibold">Ver →</a>
+                                                class="text-brand-600 hover:text-brand-800 font-semibold">Ver →</a>
                                         </td>
                                     </tr>
                                 @empty

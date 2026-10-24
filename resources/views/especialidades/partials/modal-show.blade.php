@@ -2,7 +2,7 @@
     <div class="flex items-center justify-center min-h-screen px-4 py-8">
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeModal('modal-show')"></div>
 
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div
                 class="px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white rounded-t-3xl z-10">
                 <div class="flex items-center gap-3">
@@ -18,7 +18,7 @@
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-lg" id="show-title">Detalle de la Especialidad
                         </h3>
-                        <p class="text-[11px] text-slate-400" id="show-subtitle">Información completa</p>
+                        <p class="text-xs text-slate-400" id="show-subtitle">Información completa</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeModal('modal-show')"
@@ -34,11 +34,11 @@
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5">
                     <div class="flex flex-wrap items-center gap-2">
                         <span id="show-codigo"
-                            class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[11px] font-mono font-bold"></span>
+                            class="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-mono font-bold"></span>
                         <span id="show-grupo"
-                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"></span>
+                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"></span>
                         <span id="show-estado"
-                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"></span>
+                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"></span>
                     </div>
                     <div class="flex items-center gap-2 mt-3">
                         <span id="show-color" class="w-4 h-4 rounded-full shrink-0 hidden"></span>
@@ -49,13 +49,13 @@
 
                     <div class="grid grid-cols-2 gap-3 mt-4">
                         <div class="bg-white border border-slate-100 rounded-xl p-3">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duración por
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Duración por
                                 defecto</p>
                             <p id="show-duracion" class="text-sm font-extrabold text-slate-800 mt-0.5"></p>
                         </div>
                         <div class="bg-white border border-slate-100 rounded-xl p-3">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total médicos</p>
-                            <p id="show-total-medicos" class="text-sm font-extrabold text-indigo-600 mt-0.5"></p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total médicos</p>
+                            <p id="show-total-medicos" class="text-sm font-extrabold text-brand-600 mt-0.5"></p>
                         </div>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                 <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                     <div class="px-5 py-3.5 border-b border-slate-100">
                         <h5 class="font-extrabold text-slate-800 text-sm">Médicos asignados</h5>
-                        <p class="text-[11px] text-slate-400" id="show-medicos-count">0 médicos</p>
+                        <p class="text-xs text-slate-400" id="show-medicos-count">0 médicos</p>
                     </div>
                     <ul id="show-medicos-list" class="divide-y divide-slate-100"></ul>
                 </div>
@@ -71,18 +71,18 @@
                 <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden">
                     <div class="px-5 py-3.5 border-b border-slate-100">
                         <h5 class="font-extrabold text-slate-800 text-sm">Servicios asociados</h5>
-                        <p class="text-[11px] text-slate-400" id="show-servicios-count">0 servicios</p>
+                        <p class="text-xs text-slate-400" id="show-servicios-count">0 servicios</p>
                     </div>
                     <div id="show-servicios-list" class="p-5 flex flex-wrap gap-2"></div>
                 </div>
 
                 <div class="flex flex-wrap gap-2 pt-4 border-t border-slate-100">
                     <button type="button" id="show-btn-editar"
-                        class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                        class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                         Editar
                     </button>
                     <button type="button" id="show-btn-medicos"
-                        class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                        class="px-4 py-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                         Gestionar médicos
                     </button>
                     <button type="button" id="show-btn-servicios"

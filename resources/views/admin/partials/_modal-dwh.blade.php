@@ -5,12 +5,12 @@
     class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
     style="display: none;" @click.self="modalAbierto = null" @keydown.escape.window="modalAbierto = null">
 
-    <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100">
 
         {{-- ENCABEZADO --}}
-        <div class="bg-gradient-to-r from-violet-700 to-indigo-800 text-white p-6 rounded-t-3xl sticky top-0 z-10">
+        <div class="bg-gradient-to-r from-accent-700 to-brand-800 text-white p-6 rounded-t-3xl sticky top-0 z-10">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
@@ -18,7 +18,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold">Data Warehouse — Big Data</h3>
-                        <p class="text-xs text-indigo-100">
+                        <p class="text-xs text-brand-100">
                             Análisis clínico y flujo de pacientes en tiempo real
                         </p>
                     </div>
@@ -35,7 +35,7 @@
             {{-- LOADING --}}
             <div x-show="cargando" class="text-center py-12">
                 <div
-                    class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent">
+                    class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent">
                 </div>
                 <p class="text-sm text-slate-500 mt-3">Agregando métricas del DWH...</p>
             </div>
@@ -52,29 +52,29 @@
 
                 {{-- KPIs SUPERIORES --}}
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
-                        <p class="text-xs text-indigo-600 font-bold uppercase">Documentos</p>
-                        <p class="text-3xl font-extrabold text-indigo-800" x-text="datos?.kpis?.total_registros"></p>
-                        <p class="text-[10px] text-indigo-500">Registros procesados</p>
+                    <div class="bg-brand-50 rounded-2xl p-4 border border-brand-100">
+                        <p class="text-xs text-brand-600 font-bold uppercase">Documentos</p>
+                        <p class="text-3xl font-extrabold text-brand-800" x-text="datos?.kpis?.total_registros"></p>
+                        <p class="text-xs text-brand-500">Registros procesados</p>
                     </div>
-                    <div class="bg-violet-50 rounded-2xl p-4 border border-violet-100">
-                        <p class="text-xs text-violet-600 font-bold uppercase">Colecciones</p>
-                        <p class="text-3xl font-extrabold text-violet-800" x-text="datos?.kpis?.colecciones"></p>
-                        <p class="text-[10px] text-violet-500">Activas en el DWH</p>
+                    <div class="bg-accent-50 rounded-2xl p-4 border border-accent-100">
+                        <p class="text-xs text-accent-600 font-bold uppercase">Colecciones</p>
+                        <p class="text-3xl font-extrabold text-accent-800" x-text="datos?.kpis?.colecciones"></p>
+                        <p class="text-xs text-accent-500">Activas en el DWH</p>
                     </div>
                     <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
                         <p class="text-xs text-emerald-600 font-bold uppercase">Calidad</p>
                         <p class="text-3xl font-extrabold text-emerald-800">
                             <span x-text="datos?.kpis?.calidad"></span>%
                         </p>
-                        <p class="text-[10px] text-emerald-500">Con FC registrada</p>
+                        <p class="text-xs text-emerald-500">Con FC registrada</p>
                     </div>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <p class="text-xs text-slate-600 font-bold uppercase">Período</p>
                         <p class="text-sm font-extrabold text-slate-800 mt-1"
                             x-text="(datos?.kpis?.rango_fechas?.desde || '—') + ' → ' + (datos?.kpis?.rango_fechas?.hasta || '—')">
                         </p>
-                        <p class="text-[10px] text-slate-500">Rango de datos</p>
+                        <p class="text-xs text-slate-500">Rango de datos</p>
                     </div>
                 </div>
 
@@ -90,7 +90,7 @@
                 <div class="bg-white border border-slate-100 rounded-2xl p-4">
                     <h4 class="text-sm font-bold text-slate-700 mb-3">Actividad por hora (flujo de pacientes)</h4>
                     <p class="text-xs text-slate-500 mb-3">
-                        Pico: <span class="font-bold text-indigo-600" x-text="picoHora()"></span>
+                        Pico: <span class="font-bold text-brand-600" x-text="picoHora()"></span>
                     </p>
                     <div class="h-56">
                         <canvas id="chartDwhHora"></canvas>
@@ -244,7 +244,7 @@
                                 <div class="flex items-center gap-3">
                                     <p class="text-xs text-slate-600 w-40 truncate" x-text="e.especialidad"></p>
                                     <div class="flex-1 bg-slate-100 rounded-full h-3">
-                                        <div class="bg-indigo-500 h-3 rounded-full"
+                                        <div class="bg-brand-500 h-3 rounded-full"
                                             :style="`width:${(e.total / maxEspecialidad()) * 100}%`"></div>
                                     </div>
                                     <p class="text-xs font-bold text-slate-700 w-12 text-right" x-text="e.total"></p>
@@ -258,32 +258,32 @@
                 </div>
 
                 {{-- ESQUEMA ESTRELLA --}}
-                <div class="bg-indigo-900 text-white rounded-2xl p-6">
-                    <h4 class="text-sm font-bold mb-4 uppercase tracking-wider text-indigo-200">Esquema Estrella del
+                <div class="bg-brand-900 text-white rounded-2xl p-6">
+                    <h4 class="text-sm font-bold mb-4 uppercase tracking-wider text-brand-200">Esquema Estrella del
                         DWH</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-red-500/20 border border-red-400/40 rounded-xl p-4 md:col-span-1">
                             <p class="text-xs font-bold text-red-200 uppercase">Fact Table</p>
                             <p class="text-sm font-bold mt-1">fact_triage_consultations</p>
-                            <p class="text-[10px] text-red-200 mt-2">
+                            <p class="text-xs text-red-200 mt-2">
                                 tiempo_espera · fc_prom · temp_prom · spo2_prom
                             </p>
                         </div>
                         <div class="md:col-span-2 grid grid-cols-2 gap-3">
                             <div class="bg-white/10 rounded-xl p-3">
-                                <p class="text-[10px] text-indigo-200 uppercase">dim_fecha</p>
+                                <p class="text-xs text-brand-200 uppercase">dim_fecha</p>
                                 <p class="text-xs font-semibold">día, mes, año</p>
                             </div>
                             <div class="bg-white/10 rounded-xl p-3">
-                                <p class="text-[10px] text-indigo-200 uppercase">dim_hora</p>
+                                <p class="text-xs text-brand-200 uppercase">dim_hora</p>
                                 <p class="text-xs font-semibold">hora, franja_horaria</p>
                             </div>
                             <div class="bg-white/10 rounded-xl p-3">
-                                <p class="text-[10px] text-indigo-200 uppercase">dim_paciente</p>
+                                <p class="text-xs text-brand-200 uppercase">dim_paciente</p>
                                 <p class="text-xs font-semibold">grupo_edad, género</p>
                             </div>
                             <div class="bg-white/10 rounded-xl p-3">
-                                <p class="text-[10px] text-indigo-200 uppercase">dim_medico</p>
+                                <p class="text-xs text-brand-200 uppercase">dim_medico</p>
                                 <p class="text-xs font-semibold">especialidad, rango</p>
                             </div>
                         </div>
@@ -385,7 +385,7 @@
                             datasets: [{
                                 data: this.datos.por_hora.map(h => h.total),
                                 backgroundColor: this.datos.por_hora.map(h =>
-                                    h.total === max ? '#4f46e5' : '#c7d2fe'
+                                    h.total === max ? '#3A40A6' : '#BCC3EF'
                                 ),
                                 borderRadius: 4,
                             }]

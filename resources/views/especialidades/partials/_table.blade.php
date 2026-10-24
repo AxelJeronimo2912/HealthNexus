@@ -1,8 +1,8 @@
-<div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
         <div>
             <h3 class="font-extrabold text-slate-800 text-base">Catálogo de especialidades</h3>
-            <p class="text-[11px] text-slate-400">
+            <p class="text-xs text-slate-400">
                 Mostrando
                 <span id="table-from" class="font-bold text-slate-600">{{ $especialidades->firstItem() ?? 0 }}</span>
                 –
@@ -15,8 +15,8 @@
 
         {{-- Indicador de "actualizando" --}}
         <span id="table-loading"
-            class="hidden inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full text-[11px] font-bold">
-            <span class="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+            class="hidden inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-50 text-brand-600 border border-brand-100 rounded-full text-xs font-bold">
+            <span class="w-3 h-3 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></span>
             Actualizando…
         </span>
     </div>

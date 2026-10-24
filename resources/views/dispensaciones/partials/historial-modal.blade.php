@@ -1,7 +1,7 @@
 
 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
     <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+        <div class="w-10 h-10 rounded-2xl bg-accent-50 flex items-center justify-center text-accent-600 shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -9,7 +9,7 @@
         </div>
         <div>
             <h3 class="font-extrabold text-slate-800 text-base">Historial de dispensaciones</h3>
-            <p class="text-[11px] text-slate-400">Registro completo de recetas dispensadas</p>
+            <p class="text-xs text-slate-400">Registro completo de recetas dispensadas</p>
         </div>
     </div>
     <button type="button" onclick="cerrarModalHistorial()"
@@ -22,7 +22,7 @@
 
 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/70">
     <form method="GET" onsubmit="event.preventDefault(); buscarHistorial(this);">
-        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Buscar</label>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Buscar</label>
         <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
                 </svg>
             </span>
             <input type="text" name="buscar" value="{{ $busqueda }}" placeholder="Buscar por paciente o CURP..."
-                class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-purple-500 focus:ring-0 outline-none">
+                class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-accent-500 focus:ring-0 outline-none">
         </div>
     </form>
 </div>
@@ -45,30 +45,30 @@
         <table class="min-w-full">
             <thead class="bg-slate-50/70 border-b border-slate-100 sticky top-0 backdrop-blur-sm">
                 <tr>
-                    <th class="px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                    <th class="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-left">
                         Fecha</th>
-                    <th class="px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                    <th class="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-left">
                         Paciente</th>
-                    <th class="px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                    <th class="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-left">
                         Médico</th>
-                    <th class="px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                    <th class="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-left">
                         Meds</th>
-                    <th class="px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-left">
+                    <th class="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-left">
                         Dispensó</th>
                     <th class="px-5 py-3.5"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
                 @foreach ($historial as $item)
-                    <tr class="hover:bg-purple-50/30 transition-colors">
-                        <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                    <tr class="hover:bg-accent-50/30 transition-colors">
+                        <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                             {{ $item->dispensada_en?->format('d/m/Y H:i') ?? '—' }}
                         </td>
                         <td class="px-5 py-3.5">
                             <p class="text-xs font-bold text-slate-800">{{ $item->paciente?->nombre_completo ?? '—' }}
                             </p>
                             @if ($item->paciente?->curp)
-                                <p class="text-[10px] font-medium text-slate-400 mt-0.5">{{ $item->paciente->curp }}</p>
+                                <p class="text-xs font-medium text-slate-400 mt-0.5">{{ $item->paciente->curp }}</p>
                             @endif
                         </td>
                         <td class="px-5 py-3.5">
@@ -77,7 +77,7 @@
                         </td>
                         <td class="px-5 py-3.5">
                             <span
-                                class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold">
+                                class="px-2.5 py-1 bg-accent-50 text-accent-700 border border-accent-100 rounded-full text-xs font-bold">
                                 {{ $item->medicamentos->count() }}
                             </span>
                         </td>
@@ -88,7 +88,7 @@
                             <div class="flex justify-end">
                                 <button type="button"
                                     onclick="abrirModalReceta('{{ route('dispensaciones.show', $item) }}')"
-                                    class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                                    class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all">
                                     Ver
                                 </button>
                             </div>
@@ -101,11 +101,11 @@
 </div>
 
 <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex justify-between items-center">
-    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">
         {{ $historial->count() }} resultado(s)
     </span>
     <a href="{{ route('dispensaciones.index', ['filtro' => 'dispensadas']) }}"
-        class="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors">
+        class="text-xs font-bold text-accent-600 hover:text-accent-800 transition-colors">
         Ver historial completo →
     </a>
 </div>

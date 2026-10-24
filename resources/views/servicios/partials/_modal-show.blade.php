@@ -1,6 +1,6 @@
 {{-- Modal de Detalles de Servicio --}}
 <div id="modal-show-servicio" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-show-titulo">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
 
         <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
             <div class="flex items-center gap-3">
@@ -14,7 +14,7 @@
                     <h3 id="modal-show-titulo" class="font-extrabold text-slate-800 text-lg">
                         Detalles del Servicio
                     </h3>
-                    <p class="text-[11px] text-slate-400">Información general y estado actual</p>
+                    <p class="text-xs text-slate-400">Información general y estado actual</p>
                 </div>
             </div>
             <button type="button" onclick="cerrarModalShow()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-2" aria-label="Cerrar">&times;</button>

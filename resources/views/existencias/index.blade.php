@@ -52,13 +52,13 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-100 min-h-screen">
+    <div class="py-8 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             <!-- TARJETAS DE ESTADÍSTICAS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <a href="{{ route('existencias.index') }}"
-                    class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+                    class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4 hover:shadow-md transition-all group">
                     <div
                         class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@
                 </a>
 
                 <a href="{{ route('existencias.index', ['filtro' => 'bajo']) }}"
-                    class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+                    class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4 hover:shadow-md transition-all group">
                     <div
                         class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@
                 </a>
 
                 <a href="{{ route('existencias.index', ['filtro' => 'proximo']) }}"
-                    class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+                    class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4 hover:shadow-md transition-all group">
                     <div
                         class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@
                 </a>
 
                 <a href="{{ route('existencias.index', ['filtro' => 'caducado']) }}"
-                    class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+                    class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4 hover:shadow-md transition-all group">
                     <div
                         class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@
             <!-- BANNER DE ALERTA DE CADUCIDAD -->
             @if (isset($lotesPorCaducar) && $lotesPorCaducar->count() > 0)
                 <div
-                    class="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+                    class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
                             <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor"
@@ -146,7 +146,7 @@
             @endif
 
             <!-- BUSCADOR Y FILTROS -->
-            <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
+            <div class="bg-white p-4 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
                 <form method="GET" action="{{ route('existencias.index') }}"
                     class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1">
@@ -186,7 +186,7 @@
             </div>
 
             <!-- TABLA DE EXISTENCIAS -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -272,7 +272,7 @@
                                                 class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $color }}">
                                                 {{ $loteProximo->fecha_caducidad->format('d/m/Y') }}
                                             </span>
-                                            <span class="text-[11px] text-slate-400 block mt-1">
+                                            <span class="text-xs text-slate-400 block mt-1">
                                                 @if ($loteProximo->esta_caducado)
                                                     Caducó hace {{ abs($dias) }} días
                                                 @else
@@ -288,7 +288,7 @@
                                         {{-- BOTÓN QUE ABRE EL MODAL DE DETALLE --}}
                                         <button type="button"
                                             onclick="abrirModalDetalle('{{ route('existencias.show', $med) }}')"
-                                            class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all">
+                                            class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-600 hover:text-white rounded-xl transition-all">
                                             Ver detalle
                                         </button>
                                     </td>
@@ -333,7 +333,7 @@
         <div x-show="$store.inventario.openAlertaCaducidad" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="$store.inventario.openAlertaCaducidad = false"
-                class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 space-y-4 text-left max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 space-y-4 text-left max-h-[90vh] overflow-y-auto">
 
                 <div class="flex justify-between items-center pb-4 border-b border-slate-100">
                     <div class="flex items-center gap-3">
@@ -346,7 +346,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-base">Lotes Próximos a Caducar</h3>
-                            <p class="text-[11px] text-slate-400">Medicamentos que expiran en los próximos 30 días</p>
+                            <p class="text-xs text-slate-400">Medicamentos que expiran en los próximos 30 días</p>
                         </div>
                     </div>
                     <button @click="$store.inventario.openAlertaCaducidad = false"
@@ -358,16 +358,16 @@
                         <thead class="bg-slate-50">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                                     Medicamento</th>
                                 <th
-                                    class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                                     Lote</th>
                                 <th
-                                    class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
                                     Stock</th>
                                 <th
-                                    class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                                     Caducidad</th>
                             </tr>
                         </thead>
@@ -398,7 +398,7 @@
                                                 class="text-xs font-bold {{ $diasRestantes <= 7 ? 'text-rose-600' : 'text-amber-600' }}">
                                                 {{ $lote->fecha_caducidad->format('d/m/Y') }}
                                                 <span
-                                                    class="block text-[10px] font-medium opacity-80">({{ $diasRestantes }}
+                                                    class="block text-xs font-medium opacity-80">({{ $diasRestantes }}
                                                     días)</span>
                                             </p>
                                         </td>
@@ -424,7 +424,7 @@
         <div x-show="$store.inventario.openMovimiento" x-cloak x-data="{ tipo: '{{ old('tipo', '') }}' }"
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="$store.inventario.openMovimiento = false"
-                class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-100 space-y-4 text-left max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 space-y-4 text-left max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-100">
                     <h3 class="text-lg font-bold text-slate-900">Nuevo Movimiento de Inventario</h3>
                     <button @click="$store.inventario.openMovimiento = false"
@@ -530,7 +530,7 @@
         <div x-show="$store.inventario.openLotes" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="$store.inventario.openLotes = false"
-                class="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-5xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
                 <div id="modal-lotes-content">
                     <div class="p-10 text-center text-slate-400">Cargando lotes...</div>
                 </div>
@@ -543,7 +543,7 @@
         <div x-show="$store.inventario.openDetalle" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="$store.inventario.openDetalle = false"
-                class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
                 <div id="modal-detalle-content">
                     <div class="p-10 text-center text-slate-400">Cargando detalle...</div>
                 </div>
@@ -556,7 +556,7 @@
         function abrirModalLotes(url) {
             Alpine.store('inventario').openLotes = true;
             document.getElementById('modal-lotes-content').innerHTML =
-                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
             fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
@@ -569,7 +569,7 @@
         function abrirModalDetalle(url) {
             Alpine.store('inventario').openDetalle = true;
             document.getElementById('modal-detalle-content').innerHTML =
-                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                '<div class="p-10 text-center text-slate-400"><svg class="animate-spin h-6 w-6 mx-auto text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
             fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'

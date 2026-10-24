@@ -7,13 +7,13 @@
     <div x-show="modalCrear" @click.away="modalCrear = false" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-100 max-h-[90vh] overflow-y-auto">
+        class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-100 max-h-[90vh] overflow-y-auto">
 
         {{-- Header --}}
         <div class="flex justify-between items-center border-b border-slate-100 p-6 pb-3">
             <div class="flex items-center gap-3">
                 <div
-                    class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                    class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
@@ -37,12 +37,12 @@
             {{-- PACIENTE --}}
             <div>
                 <label for="paciente_id"
-                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Paciente *
                 </label>
                 <select name="paciente_id" id="paciente_id" x-model="form.paciente_id" @change="cargarMedicos()"
                     required
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                     <option value="">— Selecciona un paciente —</option>
                     @foreach ($pacientes ?? [] as $p)
                         @php
@@ -88,22 +88,22 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label for="fecha"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Fecha *
                     </label>
                     <input type="date" name="fecha" id="fecha" x-model="form.fecha" required
                         min="{{ now()->format('Y-m-d') }}"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                 </div>
 
                 <div>
                     <label for="turno_id"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Turno *
                     </label>
                     <select name="turno_id" id="turno_id" x-model="form.turno_id" @change="cargarHorasTurno()" required
                         :disabled="cargandoTurnos"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none disabled:opacity-60">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none disabled:opacity-60">
                         <option value="">— Selecciona un turno —</option>
                         <template x-for="t in turnos" :key="t.id">
                             <option :value="t.id" x-text="`${t.nombre} (${t.hora_inicio} - ${t.hora_fin})`">
@@ -121,12 +121,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label for="hora"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Hora *
                     </label>
                     <select name="hora" id="hora" x-model="form.hora" @change="cargarMedicos()" required
                         :disabled="!form.turno_id"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none disabled:opacity-60">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none disabled:opacity-60">
                         <option value="">— Selecciona una hora —</option>
                         <template x-for="h in horasDisponibles" :key="h">
                             <option :value="h" x-text="h"></option>
@@ -141,12 +141,12 @@
 
                 <div>
                     <label for="duracion_minutos"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Duración *
                     </label>
                     <select name="duracion_minutos" id="duracion_minutos" x-model="form.duracion_minutos"
                         @change="cargarHorasTurno(); cargarMedicos()"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                         <option value="15">15 min</option>
                         <option value="30">30 min</option>
                         <option value="45">45 min</option>
@@ -159,12 +159,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label for="especialidad_id"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Especialidad
                     </label>
                     <select name="especialidad_id" id="especialidad_id" x-model="form.especialidad_id"
                         @change="cargarMedicos()"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                         <option value="">— Todas las especialidades —</option>
                         @foreach ($especialidades ?? [] as $esp)
                             <option value="{{ $esp->id }}" @selected(old('especialidad_id') == $esp->id)>
@@ -176,11 +176,11 @@
 
                 <div>
                     <label for="servicio_id"
-                        class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                         Servicio
                     </label>
                     <select name="servicio_id" id="servicio_id" x-model="form.servicio_id" @change="cargarMedicos()"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                         <option value="">— Todos los servicios —</option>
                         @foreach ($servicios ?? [] as $srv)
                             <option value="{{ $srv->id }}" @selected(old('servicio_id') == $srv->id)>
@@ -194,11 +194,11 @@
             {{-- MÉDICO --}}
             <div>
                 <label for="medico_id"
-                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Médico *
                 </label>
                 <select name="medico_id" id="medico_id" x-model="form.medico_id" required
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none">
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none">
                     <option value="">— Selecciona fecha, turno y hora —</option>
                     <template x-for="m in medicos" :key="m.id">
                         <option :value="m.id"
@@ -219,22 +219,22 @@
             {{-- MOTIVO --}}
             <div>
                 <label for="motivo"
-                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Motivo de Consulta
                 </label>
                 <textarea name="motivo" id="motivo" rows="2" x-model="form.motivo"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none resize-none"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none resize-none"
                     placeholder="Razón principal..."></textarea>
             </div>
 
             {{-- NOTAS --}}
             <div>
                 <label for="notas"
-                    class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Notas Adicionales
                 </label>
                 <textarea name="notas" id="notas" rows="2" x-model="form.notas"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 outline-none resize-none"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:border-brand-500 outline-none resize-none"
                     placeholder="Observaciones..."></textarea>
             </div>
 
@@ -245,7 +245,7 @@
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm">
+                    class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm">
                     Guardar Cita
                 </button>
             </div>

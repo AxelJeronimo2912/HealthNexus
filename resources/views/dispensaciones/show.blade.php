@@ -12,10 +12,10 @@
     </div>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="space-y-6">
@@ -41,7 +41,7 @@
         @endif
 
         {{-- ============ ESTADO DE LA RECETA ============ --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div class="flex-1">
                     <p class="{{ $labelCls }}">Estado de la receta</p>
@@ -61,7 +61,7 @@
                         @endif
                     </div>
                     @if ($consulta->dispensada)
-                        <p class="text-[11px] font-medium text-slate-400 mt-2">
+                        <p class="text-xs font-medium text-slate-400 mt-2">
                             Dispensado por <span
                                 class="font-bold text-slate-600">{{ $consulta->dispensadaPor?->nombre_completo ?? '—' }}</span>
                             el {{ $consulta->dispensada_en?->format('d/m/Y H:i') }}
@@ -71,7 +71,7 @@
 
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 text-right shrink-0">
                     <p class="text-xs font-extrabold text-slate-700">Receta #{{ $consulta->id }}</p>
-                    <p class="text-[11px] font-medium text-slate-400 mt-0.5">
+                    <p class="text-xs font-medium text-slate-400 mt-0.5">
                         {{ $consulta->created_at->format('d/m/Y H:i') }}
                     </p>
                 </div>
@@ -79,7 +79,7 @@
         </div>
 
         {{-- ============ PACIENTE ============ --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-5">
             <div>
                 <p class="{{ $labelCls }}">Paciente</p>
                 <p class="text-2xl font-black text-slate-800 tracking-tight mt-0.5">
@@ -106,7 +106,7 @@
         </div>
 
         {{-- ============ MÉDICO ============ --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-4">
             <div>
                 <p class="{{ $labelCls }}">Médico prescriptor</p>
                 <p class="text-xs font-extrabold text-slate-800 mt-1">{{ $consulta->medico?->nombre_completo ?? '—' }}
@@ -114,8 +114,8 @@
             </div>
 
             @if ($consulta->diagnosticoPrincipal)
-                <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4">
-                    <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Diagnóstico principal (Dx)
+                <div class="bg-brand-50/60 border border-brand-100 rounded-2xl p-4">
+                    <p class="text-xs font-bold text-brand-700 uppercase tracking-wider">Diagnóstico principal (Dx)
                     </p>
                     <p class="text-xs font-extrabold text-slate-800 mt-1">
                         {{ $consulta->diagnosticoPrincipal->etiqueta }}</p>
@@ -124,10 +124,10 @@
         </div>
 
         {{-- ============ MEDICAMENTOS ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Medicamentos recetados</h3>
-                <p class="text-[11px] text-slate-400">{{ $consulta->medicamentos->count() }} medicamentos en esta
+                <p class="text-xs text-slate-400">{{ $consulta->medicamentos->count() }} medicamentos en esta
                     receta</p>
             </div>
 
@@ -146,7 +146,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach ($consulta->medicamentos as $m)
-                                <tr class="hover:bg-indigo-50/30 transition-colors">
+                                <tr class="hover:bg-brand-50/30 transition-colors">
                                     <td class="px-5 py-3.5">
                                         <p class="text-xs font-bold text-slate-800">
                                             {{ $m->nombre }}
@@ -156,17 +156,17 @@
                                             @endif
                                         </p>
                                         @if ($m->pivot->indicaciones)
-                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                                            <p class="text-xs font-medium text-slate-400 mt-0.5">
                                                 {{ $m->pivot->indicaciones }}</p>
                                         @endif
                                     </td>
                                     <td class="px-5 py-3.5">
                                         <span
-                                            class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">{{ $m->pivot->dosis ?? '—' }}</span>
+                                            class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">{{ $m->pivot->dosis ?? '—' }}</span>
                                     </td>
                                     <td class="px-5 py-3.5">
                                         <span
-                                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">{{ $m->pivot->via ?? '—' }}</span>
+                                            class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase tracking-wide">{{ $m->pivot->via ?? '—' }}</span>
                                     </td>
                                     <td class="px-5 py-3.5 text-xs font-medium text-slate-600">
                                         {{ $m->pivot->frecuencia ?? '—' }}</td>
@@ -176,13 +176,13 @@
                                         @php $stock = $m->stock_total_calculado; @endphp
                                         @if ($stock <= 0)
                                             <span
-                                                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold">{{ $stock }}</span>
+                                                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold">{{ $stock }}</span>
                                         @elseif ($stock <= $m->stock_minimo)
                                             <span
-                                                class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-[10px] font-bold">{{ $stock }}</span>
+                                                class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-bold">{{ $stock }}</span>
                                         @else
                                             <span
-                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold">{{ $stock }}</span>
+                                                class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold">{{ $stock }}</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -198,8 +198,8 @@
 
             @if ($consulta->receta_libre)
                 <div class="p-5 border-t border-slate-100">
-                    <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-4">
-                        <p class="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Indicaciones / Receta
+                    <div class="bg-accent-50/60 border border-accent-100 rounded-2xl p-4">
+                        <p class="text-xs font-bold text-accent-700 uppercase tracking-wider">Indicaciones / Receta
                             libre</p>
                         <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line mt-2">
                             {{ $consulta->receta_libre }}</p>
@@ -210,7 +210,7 @@
 
         {{-- ============ DISPENSACIÓN / REVERSIÓN ============ --}}
         @if (!$consulta->dispensada)
-            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -221,7 +221,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-base">Acción de dispensación</h3>
-                        <p class="text-[11px] text-slate-400">Al confirmar, se descontará el inventario automáticamente
+                        <p class="text-xs text-slate-400">Al confirmar, se descontará el inventario automáticamente
                         </p>
                     </div>
                 </div>
@@ -250,7 +250,7 @@
             </div>
         @else
             @if (auth()->user()?->hasRole('administrador'))
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div class="flex items-center gap-3">
                             <div
@@ -262,7 +262,7 @@
                             </div>
                             <div>
                                 <p class="text-xs font-extrabold text-slate-800">Zona administrativa</p>
-                                <p class="text-[11px] font-medium text-slate-400 mt-0.5">
+                                <p class="text-xs font-medium text-slate-400 mt-0.5">
                                     ¿Necesitas anular esta transacción? Los valores del stock serán devueltos.
                                 </p>
                             </div>

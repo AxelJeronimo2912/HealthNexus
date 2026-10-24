@@ -14,9 +14,9 @@
                 JSON_HEX_APOS | JSON_HEX_QUOT,
             );
         @endphp
-        <tr class="hover:bg-indigo-50/30 transition-colors">
+        <tr class="hover:bg-brand-50/30 transition-colors">
             <td class="px-5 py-3.5">
-                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                     {{ $esp->codigo }}
                 </span>
             </td>
@@ -31,7 +31,7 @@
             </td>
             <td class="px-5 py-3.5">
                 <span
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $esp->grupo_color }}">
+                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $esp->grupo_color }}">
                     {{ $esp->grupo_label }}
                 </span>
             </td>
@@ -40,31 +40,31 @@
             </td>
             <td class="px-5 py-3.5 text-center">
                 <span
-                    class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold">
+                    class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold">
                     {{ $esp->medicos_count }}
                 </span>
             </td>
             <td class="px-5 py-3.5 text-center">
                 <span
-                    class="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-full text-[10px] font-bold">
+                    class="px-2.5 py-1 bg-accent-50 text-accent-700 border border-accent-100 rounded-full text-xs font-bold">
                     {{ $esp->servicios_count }}
                 </span>
             </td>
             <td class="px-5 py-3.5 text-center">
                 <span
-                    class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold">
+                    class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold">
                     {{ $esp->consultas_count }}
                 </span>
             </td>
             <td class="px-5 py-3.5">
                 @if ($esp->activo)
                     <span
-                        class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                        class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold uppercase tracking-wide">
                         Activa
                     </span>
                 @else
                     <span
-                        class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                        class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold uppercase tracking-wide">
                         Inactiva
                     </span>
                 @endif
@@ -72,19 +72,19 @@
             <td class="px-5 py-3.5">
                 <div class="flex justify-end gap-2 whitespace-nowrap">
                     <button type="button" data-especialidad="{{ $espJson }}" onclick="openShowModal(this)"
-                        class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
+                        class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all">
                         Ver
                     </button>
                     <button type="button" data-especialidad="{{ $espJson }}" onclick="openEditModal(this)"
-                        class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                        class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all">
                         Editar
                     </button>
                     <button type="button" data-especialidad="{{ $espJson }}" onclick="openMedicosModal(this)"
-                        class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold transition-all">
+                        class="px-3 py-1.5 bg-accent-50 hover:bg-accent-100 text-accent-700 rounded-lg text-xs font-bold transition-all">
                         Médicos
                     </button>
                     <button type="button" data-especialidad="{{ $espJson }}" onclick="openServiciosModal(this)"
-                        class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-[11px] font-bold transition-all">
+                        class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs font-bold transition-all">
                         Servicios
                     </button>
                 </div>

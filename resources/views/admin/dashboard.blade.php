@@ -1,303 +1,158 @@
 @php $esAdmin = auth()->user()->hasRole('administrador'); @endphp
 
 <x-app-layout>
+    @php
+        $nombre = \Illuminate\Support\Str::before(auth()->user()->name, ' ');
+        $hora = (int) now()->format('H');
+        $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
+        $ocupacion = $camasTotales > 0 ? round((($camasTotales - $camasDisponibles) / $camasTotales) * 100) : 0;
+
+        $pendientes = collect([
+            $alertasCriticas > 0 ? ['tono' => 'red', 'icono' => 'bell-alert', 'texto' => $alertasCriticas . ' ' . \Illuminate\Support\Str::plural('alerta crítica', $alertasCriticas) . ' sin atender', 'url' => route('alertas.index'), 'cta' => 'Revisar'] : null,
+            $medicamentosBajos > 0 ? ['tono' => 'amber', 'icono' => 'beaker', 'texto' => $medicamentosBajos . ' ' . \Illuminate\Support\Str::plural('medicamento', $medicamentosBajos) . ' por debajo del mínimo', 'url' => route('existencias.index', ['filtro' => 'bajo']), 'cta' => 'Ver stock'] : null,
+            $ocupacion > 85 ? ['tono' => 'amber', 'icono' => 'home-modern', 'texto' => 'Ocupación de camas al ' . $ocupacion . '%', 'url' => route('camas.index'), 'cta' => 'Ver camas'] : null,
+            $auditoriaCritica > 0 ? ['tono' => 'brand', 'icono' => 'shield-exclamation', 'texto' => $auditoriaCritica . ' ' . \Illuminate\Support\Str::plural('evento crítico', $auditoriaCritica) . ' en auditoría hoy', 'url' => route('auditoria.index', ['severidad' => 'critical']), 'cta' => 'Ver logs'] : null,
+        ])->filter();
+
+        $tonos = [
+            'red' => 'bg-red-50 text-red-600 ring-red-100',
+            'amber' => 'bg-amber-50 text-amber-600 ring-amber-100',
+            'brand' => 'bg-brand-50 text-brand-600 ring-brand-100',
+        ];
+    @endphp
+
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div>
-                <h2 class="font-semibold text-xl text-slate-800 leading-tight">
-                    Panel de Administración — HealthNexus
-                </h2>
-                <p class="text-xs text-slate-400 mt-0.5">
-                    Resumen operativo del hospital en tiempo real
-                </p>
-            </div>
-            <div
-                class="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Sistema en línea
-            </div>
-        </div>
+        <x-page-header :title="$saludo . ', ' . $nombre"
+            :subtitle="ucfirst(now()->translatedFormat('l d \d\e F \d\e Y')) . ' · Panel de administración'">
+            <x-slot:actions>
+                <x-badge tone="emerald" dot>Sistema en línea</x-badge>
+            </x-slot:actions>
+        </x-page-header>
     </x-slot>
 
     <div x-data="{ modalAbierto: null }" @abrir-modal-sla.window="modalAbierto = 'sla'"
         @abrir-modal-fenotipado.window="modalAbierto = 'fenotipado'" @abrir-modal-dwh.window="modalAbierto = 'dwh'"
         @abrir-modal-ia-medica.window="modalAbierto = 'ia-medica'" @keydown.escape.window="modalAbierto = null"
-        class="py-8 bg-slate-100 min-h-screen">
+        class="py-7">
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-            {{-- TARJETA DE BIENVENIDA --}}
-<div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-3xl p-6 sm:p-8 shadow-lg text-white">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div class="space-y-1">
-            <h3 class="text-2xl font-bold">
-                Bienvenido, {{ auth()->user()->name }}
-            </h3>
-            <p class="text-sm text-indigo-100">
-                Rol activo:
-                <span class="font-semibold capitalize">
-                    {{ auth()->user()->getRoleNames()->first() ?? 'Administrador' }}
-                </span>
-            </p>
-            <p class="text-xs text-indigo-200">
-                {{ now()->translatedFormat('l d \d\e F \d\e Y') }}
-            </p>
-        </div>
+            {{-- REQUIERE ATENCIÓN --}}
+            @if ($pendientes->isNotEmpty())
+                <x-card :padding="false">
+                    <div class="flex items-center gap-2 px-5 pt-4 pb-2">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60"></span>
+                            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                        </span>
+                        <h2 class="text-sm font-semibold text-slate-900">Requiere atención</h2>
+                    </div>
+                    <ul class="divide-y divide-slate-100">
+                        @foreach ($pendientes as $p)
+                            <li>
+                                <a href="{{ $p['url'] }}" class="group flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors">
+                                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1 ring-inset {{ $tonos[$p['tono']] }}">
+                                        <x-dynamic-component :component="'heroicon-o-' . $p['icono']" class="h-[18px] w-[18px]" />
+                                    </span>
+                                    <span class="flex-1 text-sm text-slate-700">{{ $p['texto'] }}</span>
+                                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 group-hover:text-slate-900">
+                                        {{ $p['cta'] }} <x-heroicon-m-chevron-right class="h-4 w-4" />
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @else
+                <div class="flex items-center gap-3 rounded-2xl bg-emerald-50/70 px-5 py-3.5 ring-1 ring-inset ring-emerald-100">
+                    <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-600" />
+                    <p class="text-sm text-emerald-800"><span class="font-semibold">Todo en orden.</span> No hay alertas críticas ni faltantes de inventario.</p>
+                </div>
+            @endif
 
-        {{-- INSIGNIA DE LA MARCA USANDO LA IMAGEN LOCAL --}}
-        <div class="flex items-center gap-3 bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/20">
-            <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-md shrink-0 p-1">
-                <img src="{{ asset('images/logo-healthnexus.png') }}" alt="Logo HealthNexus" class="w-full h-full object-contain" />
-            </div>
-            <div class="pr-2">
-                <p class="text-xs font-bold">HealthNexus</p>
-                <p class="text-[10px] text-indigo-200">Sistema Médico</p>
-            </div>
-        </div>
+            {{-- INDICADORES CRÍTICOS --}}
+            <section>
+                <h2 class="mb-3 text-sm font-semibold text-slate-900">Indicadores críticos</h2>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <x-kpi label="Alertas activas" :value="$alertasActivas" icon="bell-alert" tone="red"
+                        hint="Requieren atención" :href="route('alertas.index')" cta="Ver todas"
+                        :badge="$alertasCriticas > 0 ? $alertasCriticas . ' críticas' : null" />
 
-    </div>
-</div>
+                    <x-kpi label="Stock bajo" :value="$medicamentosBajos" icon="beaker" tone="amber"
+                        hint="Medicamentos bajo el mínimo" :href="route('existencias.index', ['filtro' => 'bajo'])" />
 
-            {{-- 4 CARDS PRINCIPALES (KPIs) --}}
-            <div>
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                    Indicadores Críticos
-                </h3>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-
-                    {{-- CARD 1: ALERTAS --}}
-                    <a href="{{ route('alertas.index') }}"
-                        class="group bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
-                                <x-heroicon-o-bell-alert class="w-6 h-6" />
+                    <x-kpi label="Camas disponibles" :value="$camasDisponibles" icon="home-modern" tone="emerald"
+                        :hint="'De ' . $camasTotales . ' camas totales'" :href="route('camas.index')" cta="Ver distribución">
+                        <div class="mt-3">
+                            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                                <span>Ocupación</span>
+                                <span class="font-semibold tabular {{ $ocupacion > 85 ? 'text-red-600' : 'text-slate-700' }}">{{ $ocupacion }}%</span>
                             </div>
-                            @if ($alertasCriticas > 0)
-                                <span
-                                    class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold animate-pulse">
-                                    {{ $alertasCriticas }} críticas
-                                </span>
-                            @endif
-                        </div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                            Alertas Activas
-                        </p>
-                        <p class="text-3xl font-extrabold text-slate-800 mt-1">
-                            {{ $alertasActivas }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-2">
-                            Requieren atención
-                        </p>
-                        <div class="mt-4 flex items-center text-xs font-semibold text-red-600">
-                            <span>Ver todas</span>
-                            <x-heroicon-o-arrow-right
-                                class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </a>
-
-                    {{-- CARD 2: MEDICAMENTOS BAJOS --}}
-                    <a href="{{ route('existencias.index', ['filtro' => 'bajo']) }}"
-                        class="group bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                                <x-heroicon-o-beaker class="w-6 h-6" />
+                            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-full rounded-full {{ $ocupacion > 85 ? 'bg-red-500' : ($ocupacion > 70 ? 'bg-amber-500' : 'bg-emerald-500') }}"
+                                    style="width: {{ $ocupacion }}%"></div>
                             </div>
                         </div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                            Stock Bajo
-                        </p>
-                        <p class="text-3xl font-extrabold text-slate-800 mt-1">
-                            {{ $medicamentosBajos }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-2">
-                            Medicamentos por debajo del mínimo
-                        </p>
-                        <div class="mt-4 flex items-center text-xs font-semibold text-amber-600">
-                            <span>Ver detalle</span>
-                            <x-heroicon-o-arrow-right
-                                class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </a>
+                    </x-kpi>
 
-                    {{-- CARD 3: CAMAS DISPONIBLES --}}
-                    <a href="{{ route('camas.index') }}"
-                        class="group bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                <x-heroicon-o-home-modern class="w-6 h-6" />
-                            </div>
-                            @php
-                                $ocupacion =
-                                    $camasTotales > 0
-                                        ? round((($camasTotales - $camasDisponibles) / $camasTotales) * 100)
-                                        : 0;
-                            @endphp
-                            <span
-                                class="px-2 py-0.5 {{ $ocupacion > 85 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }} rounded-full text-xs font-bold">
-                                {{ $ocupacion }}% ocupado
+                    <x-kpi label="Eventos críticos" :value="$auditoriaCritica" icon="shield-exclamation" tone="brand"
+                        hint="Auditoría de hoy" :href="route('auditoria.index', ['severidad' => 'critical'])" cta="Ver logs" />
+                </div>
+            </section>
+
+            {{-- OPERACIÓN DE HOY --}}
+            <section>
+                <h2 class="mb-3 text-sm font-semibold text-slate-900">Operación de hoy</h2>
+                <div class="grid grid-cols-2 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-card lg:grid-cols-4">
+                    @foreach ([
+                        ['Pacientes activos', $resumen['pacientes_activos'], 'user-group', route('pacientes.index')],
+                        ['Citas hoy', $resumen['citas_hoy'], 'calendar-days', route('citas.index')],
+                        ['Consultas hoy', $resumen['consultas_hoy'], 'clipboard-document-list', route('citas.index')],
+                        ['Camas ocupadas', $resumen['camas_ocupadas'], 'home-modern', route('camas.index')],
+                    ] as [$label, $valor, $icono, $url])
+                        <a href="{{ $url }}"
+                            class="group flex items-center gap-3 p-5 transition-colors hover:bg-slate-50 border-slate-100 {{ $loop->index % 2 === 0 ? 'border-r' : '' }} {{ $loop->index < 2 ? 'border-b lg:border-b-0' : '' }} {{ $loop->index === 1 ? 'lg:border-r' : '' }}">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-brand-50 group-hover:text-brand-600">
+                                <x-dynamic-component :component="'heroicon-o-' . $icono" class="h-5 w-5" />
                             </span>
-                        </div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                            Camas Disponibles
-                        </p>
-                        <p class="text-3xl font-extrabold text-slate-800 mt-1">
-                            {{ $camasDisponibles }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-2">
-                            De {{ $camasTotales }} camas totales
-                        </p>
-                        <div class="mt-4 flex items-center text-xs font-semibold text-emerald-600">
-                            <span>Ver distribución</span>
-                            <x-heroicon-o-arrow-right
-                                class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </a>
-
-                    {{-- CARD 4: AUDITORÍA CRÍTICA --}}
-                    <a href="{{ route('auditoria.index', ['severidad' => 'critical']) }}"
-                        class="group bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-                        <div class="flex items-start justify-between">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                <x-heroicon-o-shield-exclamation class="w-6 h-6" />
-                            </div>
-                            @if ($auditoriaCritica > 0)
-                                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold">
-                                    {{ $auditoriaCritica }} hoy
-                                </span>
-                            @endif
-                        </div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">
-                            Eventos Críticos
-                        </p>
-                        <p class="text-3xl font-extrabold text-slate-800 mt-1">
-                            {{ $auditoriaCritica }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-2">
-                            Auditoría de hoy
-                        </p>
-                        <div class="mt-4 flex items-center text-xs font-semibold text-indigo-600">
-                            <span>Ver logs</span>
-                            <x-heroicon-o-arrow-right
-                                class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </a>
-
+                            <span>
+                                <span class="block text-2xl font-bold tracking-tight text-slate-900 tabular">{{ $valor }}</span>
+                                <span class="block text-xs text-slate-500">{{ $label }}</span>
+                            </span>
+                        </a>
+                    @endforeach
                 </div>
-            </div>
+            </section>
 
-            {{-- RESUMEN DE OPERACIÓN --}}
-            <div>
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                    Operación de Hoy
-                </h3>
-
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <a href="{{ route('pacientes.index') }}"
-                        class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
-                            <x-heroicon-o-user-group class="w-4 h-4" />
-                            Pacientes
-                        </div>
-                        <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $resumen['pacientes_activos'] }}</p>
-                    </a>
-                    <a href="{{ route('citas.index') }}"
-                        class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
-                            <x-heroicon-o-calendar-days class="w-4 h-4" />
-                            Citas hoy
-                        </div>
-                        <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $resumen['citas_hoy'] }}</p>
-                    </a>
-                    <a href="{{ route('citas.index') }}"
-                        class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
-                            <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
-                            Consultas
-                        </div>
-                        <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $resumen['consultas_hoy'] }}</p>
-                    </a>
-                    <a href="{{ route('camas.index') }}"
-                        class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase">
-                            <x-heroicon-o-home-modern class="w-4 h-4" />
-                            Ocupadas
-                        </div>
-                        <p class="text-2xl font-extrabold text-slate-800 mt-1">{{ $resumen['camas_ocupadas'] }}</p>
-                    </a>
-                </div>
-            </div>
-
-            {{-- ACCESOS RÁPIDOS --}}
-            <div>
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-                    Modelos
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-
-
-
-                    @if ($esAdmin)
-                        <button type="button" @click="$dispatch('abrir-modal-sla')"
-                            class="group bg-gradient-to-br from-orange-500 to-orange-700 p-5 rounded-3xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all text-left text-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                    <x-heroicon-o-fire class="w-5 h-5" />
+            {{-- MODELOS ANALÍTICOS --}}
+            @if ($esAdmin)
+                <section>
+                    <div class="mb-3 flex items-end justify-between">
+                        <h2 class="text-sm font-semibold text-slate-900">Modelos analíticos</h2>
+                        <p class="text-xs text-slate-500">Se abren en un panel sin salir del dashboard</p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        @foreach ([
+                            ['abrir-modal-sla', 'Pulso operativo SLA', 'Detección de anomalías', 'signal', 'from-sky-500 to-brand-600'],
+                            ['abrir-modal-fenotipado', 'Fenotipado clínico', 'K-Means + PCA', 'squares-plus', 'from-accent-500 to-accent-700'],
+                            ['abrir-modal-dwh', 'Data Warehouse', 'Big Data · Analítica', 'circle-stack', 'from-brand-500 to-brand-800'],
+                            ['abrir-modal-ia-medica', 'IA médica predictiva', '5 algoritmos', 'cpu-chip', 'from-accent-600 to-brand-700'],
+                        ] as [$evento, $titulo, $desc, $icono, $grad])
+                            <button type="button" @click="$dispatch('{{ $evento }}')"
+                                class="group relative overflow-hidden rounded-2xl bg-white p-5 text-left ring-1 ring-slate-200/70 shadow-card transition-all hover:shadow-md hover:ring-slate-300">
+                                <div class="flex items-start justify-between">
+                                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br {{ $grad }} text-white shadow-sm">
+                                        <x-dynamic-component :component="'heroicon-o-' . $icono" class="h-5 w-5" />
+                                    </span>
+                                    <x-heroicon-m-arrow-up-right class="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5 group-" />
                                 </div>
-                                <div>
-                                    <p class="text-sm font-bold">Pulso Operativo SLA</p>
-                                    <p class="text-xs text-orange-100">Detección de anomalías</p>
-                                </div>
-                            </div>
-                        </button>
-
-                        <button type="button" @click="$dispatch('abrir-modal-fenotipado')"
-                            class="group bg-gradient-to-br from-rose-500 to-red-700 p-5 rounded-3xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all text-left text-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                    <x-heroicon-o-beaker class="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold">Fenotipado Clínico</p>
-                                    <p class="text-xs text-rose-100">K-Means + PCA</p>
-                                </div>
-                            </div>
-                        </button>
-
-                        <button type="button" @click="$dispatch('abrir-modal-dwh')"
-                            class="group bg-gradient-to-br from-violet-600 to-indigo-800 p-5 rounded-3xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all text-left text-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                    <x-heroicon-o-circle-stack class="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold">Data Warehouse</p>
-                                    <p class="text-xs text-indigo-100">Big Data · Analítica</p>
-                                </div>
-                            </div>
-                        </button>
-
-                        <button type="button" @click="$dispatch('abrir-modal-ia-medica')"
-                            class="group bg-gradient-to-br from-red-600 to-rose-800 p-5 rounded-3xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all text-left text-white">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                    <x-heroicon-o-heart class="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold">IA Médica Predictiva</p>
-                                    <p class="text-xs text-rose-100">5 algoritmos</p>
-                                </div>
-                            </div>
-                        </button>
-                    @endif
-
-                </div>
-            </div>
+                                <p class="mt-4 text-sm font-semibold text-slate-900">{{ $titulo }}</p>
+                                <p class="mt-0.5 text-xs text-slate-500">{{ $desc }}</p>
+                            </button>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
 
         </div>
 

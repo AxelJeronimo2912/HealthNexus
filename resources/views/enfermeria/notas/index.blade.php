@@ -31,39 +31,30 @@
     @php
         $inputCls =
             'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-pink-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
 
         {{-- STATS --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total notas</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total notas</p>
                 <p class="text-3xl font-black text-slate-800 tracking-tight mt-1">{{ $stats['total'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-pink-600/70 uppercase tracking-wider">Hoy</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-pink-600/70 uppercase tracking-wider">Hoy</p>
                 <p class="text-3xl font-black text-pink-600 tracking-tight mt-1">{{ $stats['hoy'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-indigo-600/70 uppercase tracking-wider">Esta semana</p>
-                <p class="text-3xl font-black text-indigo-600 tracking-tight mt-1">{{ $stats['esta_semana'] }}</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-brand-600/70 uppercase tracking-wider">Esta semana</p>
+                <p class="text-3xl font-black text-brand-600 tracking-tight mt-1">{{ $stats['esta_semana'] }}</p>
             </div>
         </div>
 
         {{-- FILTROS --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5">
             <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                 <div class="md:col-span-2">
                     <label class="{{ $labelCls }}">Buscar paciente</label>
@@ -103,10 +94,10 @@
         </div>
 
         {{-- TABLA --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Notas registradas</h3>
-                <p class="text-[11px] text-slate-400">{{ $notas->total() }} notas en total</p>
+                <p class="text-xs text-slate-400">{{ $notas->total() }} notas en total</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -124,7 +115,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($notas as $nota)
                             <tr class="hover:bg-pink-50/30 transition-colors">
-                                <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                                <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                                     {{ $nota->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="px-5 py-3.5">
@@ -132,7 +123,7 @@
                                         {{ $nota->paciente?->nombre_completo ?? '—' }}</p>
                                     @if ($nota->cama)
                                         <span
-                                            class="inline-block mt-1 px-2 py-0.5 bg-pink-50 text-pink-600 rounded-full text-[10px] font-bold">
+                                            class="inline-block mt-1 px-2 py-0.5 bg-pink-50 text-pink-600 rounded-full text-xs font-bold">
                                             Cama: {{ $nota->cama->codigo }}
                                         </span>
                                     @endif
@@ -140,7 +131,7 @@
                                 <td class="px-5 py-3.5">
                                     @if ($nota->estado_paciente)
                                         <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $nota->estado_color }}">
+                                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $nota->estado_color }}">
                                             {{ ucfirst($nota->estado_paciente) }}
                                         </span>
                                     @else
@@ -159,7 +150,7 @@
                                     <div class="flex justify-end gap-2">
                                         <button type="button"
                                             onclick="abrirModalVerNota('{{ route('enfermeria.notas.show', $nota) }}')"
-                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all">
+                                            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all">
                                             Ver
                                         </button>
                                         @if ($nota->user_id === auth()->id() || auth()->user()->hasRole('administrador'))
@@ -167,7 +158,7 @@
                                                 method="POST" onsubmit="return confirm('¿Eliminar esta nota?')">
                                                 @csrf @method('DELETE')
                                                 <button
-                                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">
                                                     Eliminar
                                                 </button>
                                             </form>
@@ -196,7 +187,7 @@
         <div id="modal-nota-create" x-data="{ open: false }" x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="open = false"
-                class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
                 <div id="modal-nota-create-content">
                     <div class="p-10 text-center text-slate-400">Cargando formulario...</div>
                 </div>
@@ -209,7 +200,7 @@
         <div id="modal-nota-show" x-data="{ open: false }" x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="open = false"
-                class="bg-white rounded-3xl max-w-3xl w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative custom-scrollbar">
+                class="bg-white rounded-2xl max-w-3xl w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative custom-scrollbar">
                 <div id="modal-nota-show-content">
                     <div class="p-10 text-center text-slate-400">Cargando nota...</div>
                 </div>
@@ -222,7 +213,7 @@
         <div id="modal-administrar" x-data="{ open: false }" x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div @click.away="open = false"
-                class="bg-white rounded-3xl max-w-xl w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative custom-scrollbar">
+                class="bg-white rounded-2xl max-w-xl w-full shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto relative custom-scrollbar">
                 <div id="modal-administrar-content">
                     <div class="p-10 text-center text-slate-400">Cargando formulario...</div>
                 </div>

@@ -7,11 +7,11 @@
     <div x-show="modalDetalle" @click.away="modalDetalle = false" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        class="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 space-y-5 border border-slate-100">
+        class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 border border-slate-100">
 
         <div class="flex justify-between items-start">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0"
+                <div class="w-12 h-12 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm shrink-0"
                     x-text="citaDetalle.iniciales"></div>
                 <div>
                     <h3 class="font-extrabold text-slate-800 text-lg leading-tight" x-text="citaDetalle.paciente"></h3>
@@ -28,33 +28,33 @@
 
         <div class="space-y-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-xs">
             <div class="flex justify-between items-center py-1 border-b border-slate-200/50">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Fecha</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Fecha</span>
                 <span class="font-extrabold text-slate-800 capitalize" x-text="citaDetalle.fecha"></span>
             </div>
             <div class="flex justify-between items-center py-1 border-b border-slate-200/50">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Hora</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Hora</span>
                 <span class="font-extrabold text-slate-800" x-text="citaDetalle.hora + ' hrs'"></span>
             </div>
             <div class="flex justify-between items-center py-1 border-b border-slate-200/50">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Médico</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Médico</span>
                 <span class="font-bold text-slate-700" x-text="'Dr. ' + citaDetalle.medico"></span>
             </div>
             <div class="flex justify-between items-center py-1 border-b border-slate-200/50">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Especialidad</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Especialidad</span>
                 <span class="font-bold text-slate-700" x-text="citaDetalle.especialidad"></span>
             </div>
             <div class="flex justify-between items-center py-1 border-b border-slate-200/50">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Triage</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Triage</span>
                 <span
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100"
+                    class="px-2.5 py-1 rounded-full text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100"
                     x-text="citaDetalle.triage"></span>
             </div>
             <div class="flex justify-between items-center py-1">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Estado</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Estado</span>
                 <span class="font-bold text-slate-700" x-text="citaDetalle.estado"></span>
             </div>
             <div class="pt-2 border-t border-slate-200/60">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px] block mb-1">Motivo</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-xs block mb-1">Motivo</span>
                 <p class="text-slate-700 italic bg-white p-2.5 rounded-xl border border-slate-100"
                     x-text="citaDetalle.motivo"></p>
             </div>

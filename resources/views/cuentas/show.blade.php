@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">Cargos, descuentos y pagos del paciente</p>
             </div>
             <a href="{{ url()->previous() }}"
-                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                class="bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
                 <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -21,36 +21,18 @@
     @php
         $abierta = $cuenta->estado === 'abierta';
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
         $btnCancel = 'px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold';
     @endphp
 
     <div class="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
 
         {{-- ============ AVISO: CUENTA CERRADA ============ --}}
         @if ($cuenta->estado === 'cerrada')
-            <div class="p-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-3xl flex items-center gap-4">
+            <div class="p-4 bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl flex items-center gap-4">
                 <div
                     class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,37 +51,37 @@
         @endif
 
         {{-- ============ ENCABEZADO CON TOTALES ============ --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-5">
                 <div class="flex-1">
                     <div class="flex items-center gap-2">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                             {{ $cuenta->folio }}
                         </span>
                         <span
-                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $cuenta->estado_color }}">
+                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $cuenta->estado_color }}">
                             {{ ucfirst($cuenta->estado) }}
                         </span>
                     </div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-4">TOTAL DE LA CUENTA</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">TOTAL DE LA CUENTA</p>
                     <p class="text-4xl font-black text-slate-800 tracking-tight mt-0.5">
                         {{ $cuenta->total_formateado }}</p>
 
                     <div class="mt-4 grid grid-cols-3 gap-3">
                         <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
                             <p class="text-sm font-extrabold text-slate-800 mt-0.5">
                                 ${{ number_format((float) $cuenta->subtotal, 2) }}</p>
                         </div>
                         <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-3">
-                            <p class="text-[10px] font-bold text-emerald-600/70 uppercase tracking-wider">Pagado</p>
+                            <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider">Pagado</p>
                             <p class="text-sm font-extrabold text-emerald-600 mt-0.5">
                                 ${{ number_format((float) $cuenta->pagado, 2) }}</p>
                         </div>
                         <div
                             class="{{ (float) $cuenta->saldo > 0 ? 'bg-rose-50/60 border-rose-100' : 'bg-emerald-50/60 border-emerald-100' }} border rounded-2xl p-3">
                             <p
-                                class="text-[10px] font-bold uppercase tracking-wider {{ (float) $cuenta->saldo > 0 ? 'text-rose-500/70' : 'text-emerald-600/70' }}">
+                                class="text-xs font-bold uppercase tracking-wider {{ (float) $cuenta->saldo > 0 ? 'text-rose-500/70' : 'text-emerald-600/70' }}">
                                 Saldo</p>
                             <p
                                 class="text-sm font-extrabold mt-0.5 {{ (float) $cuenta->saldo > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
@@ -120,7 +102,7 @@
                                 </svg>
                                 Cerrar cuenta
                             </button>
-                            <p class="text-[11px] text-slate-400 leading-snug">
+                            <p class="text-xs text-slate-400 leading-snug">
                                 Paga el saldo de
                                 <strong class="text-slate-600">${{ number_format((float) $cuenta->saldo, 2) }}</strong>
                                 para poder cerrarla.
@@ -156,35 +138,35 @@
         </div>
 
         {{-- ============ CARGOS ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                 <div>
                     <h3 class="font-extrabold text-slate-800 text-base">Cargos</h3>
-                    <p class="text-[11px] text-slate-400">{{ $cuenta->items->count() }} conceptos en la cuenta</p>
+                    <p class="text-xs text-slate-400">{{ $cuenta->items->count() }} conceptos en la cuenta</p>
                 </div>
 
                 {{-- Solo cuenta ABIERTA: botones de agregar --}}
                 @if ($abierta)
                     <div class="flex flex-wrap gap-2">
                         <button type="button" onclick="abrirModalServicio()"
-                            class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all">
+                            class="px-3.5 py-2 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                             + Agregar servicio
                         </button>
 
                         <button type="button"
                             onclick="document.getElementById('modal-cargo').classList.remove('hidden')"
-                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 rounded-xl text-[11px] font-bold transition-all">
+                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 rounded-xl text-xs font-bold transition-all">
                             + Cargo manual
                         </button>
 
                         <button type="button"
                             onclick="document.getElementById('modal-descuento').classList.remove('hidden')"
-                            class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-700 border border-amber-200 rounded-xl text-[11px] font-bold transition-all">
+                            class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition-all">
                             % Descuento
                         </button>
                     </div>
                 @else
-                    <span class="text-[11px] text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
+                    <span class="text-xs text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
                 @endif
             </div>
 
@@ -205,15 +187,15 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($cuenta->items as $item)
-                            <tr class="hover:bg-indigo-50/30 transition-colors">
-                                <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                            <tr class="hover:bg-brand-50/30 transition-colors">
+                                <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                                     {{ $item->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-bold text-slate-800">{{ $item->concepto }}</p>
                                     @if ($item->cita)
                                         <span
-                                            class="inline-block mt-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold">
+                                            class="inline-block mt-1 px-2 py-0.5 bg-brand-50 text-brand-600 rounded-full text-xs font-bold">
                                             Cita #{{ $item->cita->id }}
                                         </span>
                                     @endif
@@ -239,7 +221,7 @@
                                             onsubmit="return confirm('¿Eliminar este cargo?')">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">
                                                 Eliminar
                                             </button>
                                         </form>
@@ -286,7 +268,7 @@
                             <td colspan="5" class="px-5 py-3.5 text-right text-sm font-extrabold text-slate-800">
                                 Total
                             </td>
-                            <td class="px-5 py-3.5 text-right text-base font-black text-indigo-600">
+                            <td class="px-5 py-3.5 text-right text-base font-black text-brand-600">
                                 {{ $cuenta->total_formateado }}</td>
                             @if ($abierta)
                                 <td></td>
@@ -298,20 +280,20 @@
         </div>
 
         {{-- ============ PAGOS ============ --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                 <div>
                     <h3 class="font-extrabold text-slate-800 text-base">Pagos registrados</h3>
-                    <p class="text-[11px] text-slate-400">{{ $cuenta->pagos->count() }} movimientos</p>
+                    <p class="text-xs text-slate-400">{{ $cuenta->pagos->count() }} movimientos</p>
                 </div>
 
                 @if ($abierta && (float) $cuenta->saldo > 0)
                     <button type="button" onclick="document.getElementById('modal-pago').classList.remove('hidden')"
-                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-[11px] font-bold shadow-sm transition-all">
+                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
                         + Registrar pago
                     </button>
                 @elseif ($cuenta->estado === 'cerrada')
-                    <span class="text-[11px] text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
+                    <span class="text-xs text-slate-400 font-semibold">🔒 Cuenta cerrada — no editable</span>
                 @endif
             </div>
 
@@ -330,10 +312,10 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($cuenta->pagos as $pago)
                             <tr
-                                class="hover:bg-indigo-50/30 transition-colors {{ $pago->estado === 'cancelado' ? 'opacity-50 line-through' : '' }}">
+                                class="hover:bg-brand-50/30 transition-colors {{ $pago->estado === 'cancelado' ? 'opacity-50 line-through' : '' }}">
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                                         {{ $pago->folio }}
                                     </span>
                                 </td>
@@ -343,7 +325,7 @@
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-bold text-slate-700">{{ $pago->metodo_label }}</p>
                                     @if ($pago->referencia)
-                                        <p class="text-[10px] font-medium text-slate-400">Ref: {{ $pago->referencia }}
+                                        <p class="text-xs font-medium text-slate-400">Ref: {{ $pago->referencia }}
                                         </p>
                                     @endif
                                 </td>
@@ -353,12 +335,12 @@
                                 <td class="px-5 py-3.5 text-center">
                                     @if ($pago->estado === 'aplicado')
                                         <span
-                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                             Aplicado
                                         </span>
                                     @else
                                         <span
-                                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                             Cancelado
                                         </span>
                                     @endif
@@ -367,7 +349,7 @@
                                     <div class="flex justify-end gap-2">
                                         {{-- El recibo del pago siempre se puede ver --}}
                                         <a href="{{ route('cuentas.pagos.recibo', $pago) }}" target="_blank"
-                                            class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                                            class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all">
                                             Recibo
                                         </a>
 
@@ -375,7 +357,7 @@
                                         @if ($pago->estado === 'aplicado' && $abierta)
                                             <button type="button"
                                                 onclick="cancelarPago({{ $pago->id }}, '{{ $pago->folio }}')"
-                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-bold transition-all">
+                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all">
                                                 Cancelar
                                             </button>
                                         @endif
@@ -427,10 +409,10 @@
         <div id="modal-servicio"
             class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
-                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
                     <div
-                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M12 4v16m8-8H4" />
@@ -458,7 +440,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p id="servicio-detalle" class="text-[11px] font-medium text-indigo-600 mt-1.5"></p>
+                        <p id="servicio-detalle" class="text-xs font-medium text-brand-600 mt-1.5"></p>
                     </div>
 
                     <div>
@@ -489,7 +471,7 @@
                         <button type="button" onclick="cerrarModalServicio()"
                             class="{{ $btnCancel }}">Cancelar</button>
                         <button type="submit"
-                            class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm">
+                            class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm">
                             Agregar servicio
                         </button>
                     </div>
@@ -501,7 +483,7 @@
         <div id="modal-cargo"
             class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
-                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
@@ -566,7 +548,7 @@
         <div id="modal-descuento"
             class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
-                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 font-black text-lg">
@@ -588,7 +570,7 @@
                             Descuento actual:
                             <strong>-${{ number_format((float) $cuenta->descuento_global, 2) }}</strong>
                             @if ($cuenta->motivo_descuento)
-                                <span class="text-[11px]">({{ $cuenta->motivo_descuento }})</span>
+                                <span class="text-xs">({{ $cuenta->motivo_descuento }})</span>
                             @endif
                         </p>
                     @endif
@@ -601,7 +583,7 @@
                         <input type="number" name="descuento_global" step="0.01" min="0"
                             max="{{ $cuenta->subtotal }}" required value="{{ (float) $cuenta->descuento_global }}"
                             class="{{ $inputCls }}">
-                        <p class="text-[11px] text-slate-400 mt-1">
+                        <p class="text-xs text-slate-400 mt-1">
                             No puede superar el subtotal (${{ number_format((float) $cuenta->subtotal, 2) }}).
                         </p>
                     </div>
@@ -629,7 +611,7 @@
         <div id="modal-pago"
             class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
-                class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -690,7 +672,7 @@
         {{-- ==================== MODAL CANCELAR PAGO ==================== --}}
         <div id="modal-cancelar-pago"
             class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5">
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5">
                 <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">

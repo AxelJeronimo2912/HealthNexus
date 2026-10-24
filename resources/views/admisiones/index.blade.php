@@ -20,48 +20,39 @@
 
     @php
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
-        $labelCls = 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-        $thCls = 'px-5 py-3.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
+        $labelCls = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
+        $thCls = 'px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
 
         {{-- Disponibilidad --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-emerald-600/70 uppercase tracking-wider">Camas libres</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider">Camas libres</p>
                 <p class="text-3xl font-black text-emerald-600 tracking-tight mt-1">
                     {{ $disponibilidad['camas_libres'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-rose-600/70 uppercase tracking-wider">Camas ocupadas</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-rose-600/70 uppercase tracking-wider">Camas ocupadas</p>
                 <p class="text-3xl font-black text-rose-600 tracking-tight mt-1">{{ $disponibilidad['camas_ocupadas'] }}
                 </p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-indigo-600/70 uppercase tracking-wider">Médicos activos</p>
-                <p class="text-3xl font-black text-indigo-600 tracking-tight mt-1">
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-brand-600/70 uppercase tracking-wider">Médicos activos</p>
+                <p class="text-3xl font-black text-brand-600 tracking-tight mt-1">
                     {{ $disponibilidad['medicos_activos'] }}</p>
             </div>
-            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-[11px] font-bold text-amber-600/70 uppercase tracking-wider">En espera</p>
+            <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <p class="text-xs font-bold text-amber-600/70 uppercase tracking-wider">En espera</p>
                 <p class="text-3xl font-black text-amber-600 tracking-tight mt-1">{{ $disponibilidad['en_espera'] }}</p>
             </div>
         </div>
 
         {{-- Filtros --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5">
             <form method="GET" class="flex gap-2 flex-wrap items-end">
                 <div class="min-w-[150px]">
                     <label class="{{ $labelCls }}">Fecha</label>
@@ -95,10 +86,10 @@
         </div>
 
         {{-- Tabla --}}
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100">
                 <h3 class="font-extrabold text-slate-800 text-base">Admisiones registradas</h3>
-                <p class="text-[11px] text-slate-400">{{ $admisiones->total() }} registros en total</p>
+                <p class="text-xs text-slate-400">{{ $admisiones->total() }} registros en total</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -117,27 +108,27 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($admisiones as $adm)
-                            <tr class="hover:bg-indigo-50/30 transition-colors">
+                            <tr class="hover:bg-brand-50/30 transition-colors">
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                                         {{ $adm->folio }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-3.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                                <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                                     {{ $adm->fecha_hora_llegada->format('H:i') }}
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <p class="text-xs font-bold text-slate-800">
                                         {{ $adm->paciente?->nombre_completo ?? '—' }}</p>
                                     @if ($adm->paciente?->curp)
-                                        <p class="text-[10px] font-medium text-slate-400 mt-0.5">
+                                        <p class="text-xs font-medium text-slate-400 mt-0.5">
                                             {{ $adm->paciente->curp }}</p>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                        class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase tracking-wide">
                                         {{ $adm->tipo_label }}
                                     </span>
                                 </td>
@@ -149,12 +140,12 @@
                                                 'naranja' => 'bg-orange-50 text-orange-700 border-orange-100',
                                                 'amarillo' => 'bg-amber-50 text-amber-700 border-amber-100',
                                                 'verde' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                                                'azul' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                                                'azul' => 'bg-brand-50 text-brand-700 border-brand-100',
                                                 default => 'bg-slate-100 text-slate-600 border-slate-200',
                                             };
                                         @endphp
                                         <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $triageColor }}">
+                                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $triageColor }}">
                                             {{ ucfirst($adm->triage) }}
                                         </span>
                                     @else
@@ -163,19 +154,19 @@
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <span
-                                        class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $adm->estado_color }}">
+                                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $adm->estado_color }}">
                                         {{ $adm->estado_label }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     @if ($adm->hospitalDerivado)
                                         <span
-                                            class="px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-100 rounded-full text-[10px] font-bold">
+                                            class="px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-100 rounded-full text-xs font-bold">
                                             → {{ $adm->hospitalDerivado->nombre }}
                                         </span>
                                     @elseif ($adm->cama)
                                         <span
-                                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold">
+                                            class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold">
                                             {{ $adm->cama->codigo }}
                                         </span>
                                     @else

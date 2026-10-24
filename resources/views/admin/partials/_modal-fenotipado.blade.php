@@ -5,7 +5,7 @@
     class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
     style="display: none;" @click.self="modalAbierto = null" @keydown.escape.window="modalAbierto = null">
 
-    <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100">
 
@@ -55,22 +55,22 @@
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <p class="text-xs text-slate-500 font-bold uppercase">Silhouette</p>
                         <p class="text-2xl font-extrabold text-rose-600" x-text="datos?.kpis?.silhouette"></p>
-                        <p class="text-[10px] text-slate-400">-1 a 1 (mayor = mejor)</p>
+                        <p class="text-xs text-slate-400">-1 a 1 (mayor = mejor)</p>
                     </div>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <p class="text-xs text-slate-500 font-bold uppercase">Inercia (SSE)</p>
                         <p class="text-2xl font-extrabold text-blue-600" x-text="datos?.kpis?.inercia"></p>
-                        <p class="text-[10px] text-slate-400">Suma distancias al centroide</p>
+                        <p class="text-xs text-slate-400">Suma distancias al centroide</p>
                     </div>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <p class="text-xs text-slate-500 font-bold uppercase">Iteraciones</p>
                         <p class="text-2xl font-extrabold text-emerald-600" x-text="datos?.kpis?.iteraciones"></p>
-                        <p class="text-[10px] text-slate-400">Para converger</p>
+                        <p class="text-xs text-slate-400">Para converger</p>
                     </div>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <p class="text-xs text-slate-500 font-bold uppercase">Pacientes</p>
                         <p class="text-2xl font-extrabold text-slate-800" x-text="datos?.kpis?.total"></p>
-                        <p class="text-[10px] text-slate-400">K = <span x-text="datos?.kpis?.k"></span></p>
+                        <p class="text-xs text-slate-400">K = <span x-text="datos?.kpis?.k"></span></p>
                     </div>
                 </div>
 
@@ -277,7 +277,7 @@
                             datasets: [{
                                 label: 'Inercia',
                                 data: Object.values(this.datos.codo),
-                                borderColor: '#8b5cf6',
+                                borderColor: '#7E5AE6',
                                 backgroundColor: 'rgba(139,92,246,0.15)',
                                 tension: 0.3,
                                 fill: true,

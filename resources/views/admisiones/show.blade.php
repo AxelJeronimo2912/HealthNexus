@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">Detalle, hospitalización y derivación del paciente</p>
             </div>
             <a href="{{ route('admisiones.index') }}"
-                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                class="bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
                 <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -21,42 +21,24 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
         $inputCls =
-            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none';
+            'w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none';
     @endphp
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
 
         {{-- Datos del paciente --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
             <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-5">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                             {{ $admision->folio }}
                         </span>
                         <span
-                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide {{ $admision->estado_color }}">
+                            class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $admision->estado_color }}">
                             {{ $admision->estado_label }}
                         </span>
                     </div>
@@ -109,9 +91,9 @@
                     </div>
                 @endif
                 @if ($admision->cama)
-                    <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-3 sm:col-span-2">
+                    <div class="bg-brand-50/60 border border-brand-100 rounded-2xl p-3 sm:col-span-2">
                         <dt class="{{ $labelCls }}">Cama</dt>
-                        <dd class="text-xs font-extrabold text-indigo-700 mt-1">
+                        <dd class="text-xs font-extrabold text-brand-700 mt-1">
                             {{ $admision->cama->codigo }} — {{ $admision->cama->area }}
                         </dd>
                     </div>
@@ -121,7 +103,7 @@
 
         {{-- Hospitalizar --}}
         @if ($admision->estado === 'en_espera' && $camasDisponibles->count() > 0 && $medicosDisponibles->count() > 0)
-            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
                     <div
                         class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
@@ -132,7 +114,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-base">Hospitalizar paciente</h3>
-                        <p class="text-[11px] text-slate-400">Asigna cama y médico para hospitalizar</p>
+                        <p class="text-xs text-slate-400">Asigna cama y médico para hospitalizar</p>
                     </div>
                 </div>
 
@@ -171,15 +153,15 @@
 
         {{-- Derivar --}}
         @if (in_array($admision->estado, ['en_espera', 'hospitalizado']))
-            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-base">Derivar a otro hospital</h3>
-                        <p class="text-[11px] text-slate-400">Selecciona un hospital cercano desde el mapa</p>
+                        <p class="text-xs text-slate-400">Selecciona un hospital cercano desde el mapa</p>
                     </div>
                     @if ($camasDisponibles->count() === 0 || $medicosDisponibles->count() === 0)
                         <span
-                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                            class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full text-xs font-bold uppercase tracking-wide">
                             ⚠️ Sin recursos locales
                         </span>
                     @endif
@@ -195,23 +177,23 @@
                                 <div class="flex justify-between items-start gap-2">
                                     <div class="min-w-0">
                                         <p class="text-xs font-bold text-slate-800">{{ $h->nombre }}</p>
-                                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">{{ $h->direccion }}
+                                        <p class="text-xs font-medium text-slate-400 mt-0.5">{{ $h->direccion }}
                                         </p>
                                         <div class="flex flex-wrap gap-1.5 mt-2">
                                             <span
-                                                class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-bold uppercase">{{ strtoupper($h->tipo) }}</span>
+                                                class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-bold uppercase">{{ strtoupper($h->tipo) }}</span>
                                             @if ($h->tiene_urgencias)
                                                 <span
-                                                    class="text-[10px] px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded-full font-bold uppercase">Urgencias</span>
+                                                    class="text-xs px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded-full font-bold uppercase">Urgencias</span>
                                             @endif
                                             @if ($h->tiene_uci)
                                                 <span
-                                                    class="text-[10px] px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 rounded-full font-bold uppercase">UCI</span>
+                                                    class="text-xs px-2 py-0.5 bg-accent-50 text-accent-700 border border-accent-100 rounded-full font-bold uppercase">UCI</span>
                                             @endif
                                         </div>
                                     </div>
                                     <span
-                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
+                                        class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold whitespace-nowrap shrink-0">
                                         {{ $h->distancia }} km
                                     </span>
                                 </div>
@@ -252,10 +234,10 @@
 
         {{-- Ya derivado --}}
         @if ($admision->estado === 'derivado')
-            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-5">
+            <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-5">
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -263,7 +245,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-slate-800 text-base">Paciente derivado</h3>
-                        <p class="text-[11px] text-slate-400">Información del hospital destino</p>
+                        <p class="text-xs text-slate-400">Información del hospital destino</p>
                     </div>
                 </div>
 
@@ -330,7 +312,7 @@
                     }).addTo(map);
 
                     const iconoActual = L.divIcon({
-                        html: '<div style="background:#4F46E5; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+                        html: '<div style="background:#3A40A6; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
                         className: '',
                         iconSize: [20, 20],
                         iconAnchor: [10, 10],

@@ -5,7 +5,7 @@
     class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
     style="display: none;" @click.self="modalAbierto = null" @keydown.escape.window="modalAbierto = null">
 
-    <div class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100">
 
@@ -254,7 +254,7 @@
                             datasets: [{
                                 label: 'Duración promedio (min)',
                                 data: medias,
-                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'],
+                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#7E5AE6'],
                                 borderRadius: 8,
                             }]
                         },

@@ -42,7 +42,7 @@
                 :aria-label="vista === 'mes' ? 'Mes anterior' : 'Semana anterior'">‹</button>
 
             <button type="button" @click="hoy()"
-                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition">
+                class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition">
                 Hoy
             </button>
 
@@ -56,14 +56,14 @@
             <p class="text-sm font-extrabold text-slate-700 capitalize" x-text="tituloActual"></p>
 
             <select x-model.number="mesSeleccionado" @change="irAlMes()"
-                class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:border-indigo-500 outline-none">
+                class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-brand-500 outline-none">
                 <template x-for="(nombre, idx) in meses" :key="idx">
                     <option :value="idx" x-text="nombre" :selected="idx === mesSeleccionado"></option>
                 </template>
             </select>
 
             <select x-model.number="anioSeleccionado" @change="irAlMes()"
-                class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:border-indigo-500 outline-none">
+                class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-brand-500 outline-none">
                 <template x-for="a in aniosDisponibles" :key="a">
                     <option :value="a" x-text="a" :selected="a === anioSeleccionado"></option>
                 </template>
@@ -71,21 +71,21 @@
         </div>
 
         {{-- Selector de vista --}}
-        <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden text-[11px] font-bold">
+        <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden text-xs font-bold">
             <button type="button" @click="vista = 'mes'"
-                :class="vista === 'mes' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
+                :class="vista === 'mes' ? 'bg-brand-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
                 class="px-3 py-1.5 transition">Mes</button>
             <button type="button" @click="vista = 'semana'"
-                :class="vista === 'semana' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
+                :class="vista === 'semana' ? 'bg-brand-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
                 class="px-3 py-1.5 transition border-l border-slate-200">Semana</button>
         </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
 
         <select x-model="filtroTurno"
-            class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:border-indigo-500 outline-none">
+            class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-brand-500 outline-none">
             <option value="">Todos los turnos</option>
             <template x-for="t in bloquesUnicos" :key="t.id">
                 <option :value="String(t.id)" x-text="t.nombre"></option>
@@ -93,7 +93,7 @@
         </select>
 
         <select x-model="filtroArea"
-            class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:border-indigo-500 outline-none">
+            class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-brand-500 outline-none">
             <option value="">Todas las áreas</option>
             <template x-for="a in areasDisponibles" :key="a">
                 <option :value="a" x-text="a"></option>
@@ -101,11 +101,11 @@
         </select>
 
         <button type="button" x-show="filtroTurno !== '' || filtroArea !== ''" @click="limpiarFiltros()"
-            class="text-[11px] font-bold text-indigo-600 hover:underline">
+            class="text-xs font-bold text-brand-600 hover:underline">
             Limpiar filtros
         </button>
 
-        <p class="ml-auto text-[11px] text-slate-400">
+        <p class="ml-auto text-xs text-slate-400">
             <span class="font-bold text-slate-700" x-text="contadorBloques"></span>
             <span x-text="vista === 'mes' ? 'turnos en el mes' : 'turnos en la semana'"></span>
         </p>
@@ -120,7 +120,7 @@
             {{-- Cabecera de días --}}
             <div class="grid grid-cols-7 bg-slate-50/70 border-b border-slate-100">
                 <template x-for="(nombre, idx) in diasCortos" :key="idx">
-                    <div class="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400"
+                    <div class="px-2 py-2 text-center text-xs font-bold uppercase tracking-wider text-slate-400"
                         :class="idx > 0 ? 'border-l border-slate-100' : ''" x-text="nombre"></div>
                 </template>
             </div>
@@ -130,19 +130,19 @@
                 <div class="grid grid-cols-7">
                     <template x-for="(celda, ci) in semana" :key="celda.fecha">
                         <div @click="irADia(celda.fecha)"
-                            class="min-h-[110px] p-1.5 border-b border-slate-100 cursor-pointer hover:bg-indigo-50/40 transition-colors"
+                            class="min-h-[110px] p-1.5 border-b border-slate-100 cursor-pointer hover:bg-brand-50/40 transition-colors"
                             :class="[
                                 ci > 0 ? 'border-l' : '',
                                 celda.delMes ? 'bg-white' : 'bg-slate-50/60',
-                                celda.esHoy ? 'bg-indigo-50/40' : ''
+                                celda.esHoy ? 'bg-brand-50/40' : ''
                             ]"
                             :title="'Ver semana del ' + celda.numero">
 
                             <div class="flex items-center justify-between mb-1">
                                 <span
-                                    class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-extrabold"
+                                    class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold"
                                     :class="celda.esHoy ?
-                                        'bg-indigo-600 text-white' :
+                                        'bg-brand-600 text-white' :
                                         (celda.delMes ? 'text-slate-700' : 'text-slate-300')"
                                     x-text="celda.numero"></span>
                                 <span x-show="celda.bloques.length > 0" class="text-[9px] font-bold text-slate-400"
@@ -158,7 +158,7 @@
                                         <span class="font-mono opacity-80" x-text="' ' + b.rango"></span>
                                     </div>
                                 </template>
-                                <p x-show="celda.bloques.length > 3" class="text-[9px] font-bold text-indigo-600"
+                                <p x-show="celda.bloques.length > 3" class="text-[9px] font-bold text-brand-600"
                                     x-text="'+' + (celda.bloques.length - 3) + ' más'"></p>
                             </div>
                         </div>
@@ -176,16 +176,16 @@
 
             {{-- Cabecera de días --}}
             <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-slate-100 bg-slate-50/70">
-                <div class="px-2 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">
+                <div class="px-2 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">
                     Hora
                 </div>
                 <template x-for="(dia, idx) in diasDeLaSemana" :key="dia.fecha">
                     <div class="px-2 py-2 text-center border-l border-slate-100"
-                        :class="dia.esHoy ? 'bg-indigo-50' : ''">
-                        <p class="text-[10px] font-bold uppercase tracking-wider"
-                            :class="dia.esHoy ? 'text-indigo-700' : 'text-slate-400'" x-text="dia.nombreCorto"></p>
+                        :class="dia.esHoy ? 'bg-brand-50' : ''">
+                        <p class="text-xs font-bold uppercase tracking-wider"
+                            :class="dia.esHoy ? 'text-brand-700' : 'text-slate-400'" x-text="dia.nombreCorto"></p>
                         <p class="text-[13px] font-extrabold mt-0.5"
-                            :class="dia.esHoy ? 'text-indigo-700' : 'text-slate-700'" x-text="dia.numero"></p>
+                            :class="dia.esHoy ? 'text-brand-700' : 'text-slate-700'" x-text="dia.numero"></p>
                     </div>
                 </template>
             </div>
@@ -196,7 +196,7 @@
                 {{-- Columna de horas --}}
                 <div class="border-r border-slate-100 bg-slate-50/30">
                     @foreach ($rangoHoras as $h)
-                        <div class="text-[10px] font-bold text-slate-400 text-right pr-2 border-b border-slate-100/60"
+                        <div class="text-xs font-bold text-slate-400 text-right pr-2 border-b border-slate-100/60"
                             style="height: {{ $altoPorHora }}px;">
                             <span class="relative -top-1.5">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}:00</span>
                         </div>
@@ -205,7 +205,7 @@
 
                 {{-- Columnas por día --}}
                 <template x-for="(dia, col) in diasDeLaSemana" :key="dia.fecha">
-                    <div class="relative border-r border-slate-100" :class="dia.esHoy ? 'bg-indigo-50/30' : ''"
+                    <div class="relative border-r border-slate-100" :class="dia.esHoy ? 'bg-brand-50/30' : ''"
                         style="background-image: repeating-linear-gradient(
                             to bottom,
                             #e2e8f0 0, #e2e8f0 1px,
@@ -215,7 +215,7 @@
                         {{-- Capas clickeables por hora --}}
                         @if ($clickable)
                             @foreach ($rangoHoras as $i => $h)
-                                <div class="absolute left-0 right-0 cursor-pointer hover:bg-indigo-100/40 transition-colors"
+                                <div class="absolute left-0 right-0 cursor-pointer hover:bg-brand-100/40 transition-colors"
                                     style="top: {{ $i * $altoPorHora }}px; height: {{ $altoPorHora }}px;"
                                     title="Clic para asignar a las {{ str_pad($h, 2, '0', STR_PAD_LEFT) }}:00"
                                     @click="$dispatch('precargar-turno', {
@@ -249,7 +249,7 @@
     </p>
 
     {{-- Leyenda --}}
-    <div x-show="bloques.length > 0" class="flex flex-wrap items-center gap-3 text-[10px] text-slate-500">
+    <div x-show="bloques.length > 0" class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
         <span class="font-bold text-slate-400 uppercase tracking-wider">Turnos activos:</span>
         <template x-for="b in bloquesUnicos" :key="b.id">
             <span class="inline-flex items-center gap-1.5">
@@ -260,7 +260,7 @@
     </div>
 
     {{-- Atajos de teclado (hint) --}}
-    <p class="text-[10px] text-slate-400 text-right">
+    <p class="text-xs text-slate-400 text-right">
         Atajos: <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-bold">←</kbd>
         <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-bold">→</kbd> anterior / siguiente ·
         <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-bold">H</kbd> hoy ·

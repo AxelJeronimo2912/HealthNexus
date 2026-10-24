@@ -1,4 +1,4 @@
-<div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-3">
+<div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-5 space-y-3">
     <form id="filters-form" method="GET" action="{{ route('especialidades.index') }}"
         class="flex gap-2 flex-wrap items-end">
         <div class="flex-1 min-w-[220px]">
@@ -16,7 +16,7 @@
 
                 {{-- Spinner de carga --}}
                 <span id="filter-spinner"
-                    class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                    class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></span>
 
                 {{-- Botón limpiar input --}}
                 <button type="button" id="filter-clear-buscar"
@@ -53,20 +53,20 @@
 
     {{-- Chips de filtros activos --}}
     <div id="filter-chips" class="flex flex-wrap items-center gap-2 {{ $busqueda || $grupo ? '' : 'hidden' }}">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
         <span id="chip-buscar"
-            class="{{ $busqueda ? '' : 'hidden' }} inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg text-[11px] font-bold">
+            class="{{ $busqueda ? '' : 'hidden' }} inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-lg text-xs font-bold">
             <span>Búsqueda: <span id="chip-buscar-value" class="font-mono">"{{ $busqueda }}"</span></span>
-            <button type="button" data-chip-clear="buscar" class="hover:text-indigo-900">
+            <button type="button" data-chip-clear="buscar" class="hover:text-brand-900">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </span>
         <span id="chip-grupo"
-            class="{{ $grupo ? '' : 'hidden' }} inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-lg text-[11px] font-bold">
+            class="{{ $grupo ? '' : 'hidden' }} inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent-50 text-accent-700 border border-accent-100 rounded-lg text-xs font-bold">
             <span>Grupo: <span id="chip-grupo-value">{{ ucfirst($grupo) }}</span></span>
-            <button type="button" data-chip-clear="grupo" class="hover:text-purple-900">
+            <button type="button" data-chip-clear="grupo" class="hover:text-accent-900">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>

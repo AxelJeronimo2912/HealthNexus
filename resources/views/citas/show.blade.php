@@ -6,11 +6,11 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Agenda</p>
+                <p class="text-xs uppercase tracking-wider text-slate-400 font-bold">Agenda</p>
                 <h2 class="font-extrabold text-2xl text-slate-800 tracking-tight">Detalle de la cita</h2>
             </div>
             <a href="{{ route('citas.index') }}"
-                class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-sm font-semibold text-purple-700 rounded-xl shadow-sm transition">
+                class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-accent-300 hover:bg-accent-50 text-sm font-semibold text-accent-700 rounded-xl shadow-sm transition">
                 ← Volver a la agenda
             </a>
         </div>
@@ -74,35 +74,23 @@
         };
 
         $cardCls = 'bg-white rounded-2xl shadow-sm border border-slate-200';
-        $tituloCls = 'text-xs font-bold uppercase tracking-wider text-purple-700';
+        $tituloCls = 'text-xs font-bold uppercase tracking-wider text-accent-700';
     @endphp
 
     <div class="w-full px-4 sm:px-6 lg:px-10 py-6 bg-slate-50 min-h-screen space-y-6">
 
-        @if (session('success'))
-            <div
-                class="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-xl shadow-sm font-medium text-sm">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session('error'))
-            <div
-                class="p-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-xl shadow-sm font-medium text-sm">
-                {{ session('error') }}
-            </div>
-        @endif
 
         {{-- ═══════════════ HERO ═══════════════ --}}
         <div class="{{ $cardCls }} overflow-hidden">
-            <div class="h-1.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600"></div>
+            <div class="h-1.5 bg-gradient-to-r from-accent-600 via-brand-600 to-blue-600"></div>
             <div class="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div class="flex items-center gap-5">
                     <div
-                        class="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow">
+                        class="h-16 w-16 rounded-2xl bg-gradient-to-br from-accent-600 to-brand-600 text-white flex items-center justify-center font-black text-2xl shadow">
                         {{ strtoupper(mb_substr($cita->paciente->nombre_completo, 0, 1)) }}
                     </div>
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Paciente</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Paciente</p>
                         <p class="text-2xl font-extrabold text-slate-900 leading-tight">
                             {{ $cita->paciente->nombre_completo }}</p>
                         <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -122,13 +110,13 @@
 
                 <div class="flex items-center gap-8 lg:text-right">
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Fecha</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Fecha</p>
                         <p class="text-3xl font-black text-slate-900 leading-none mt-1">
                             {{ $cita->fecha_hora->format('d/m/Y') }}</p>
                     </div>
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Hora</p>
-                        <p class="text-3xl font-black text-purple-700 leading-none mt-1">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Hora</p>
+                        <p class="text-3xl font-black text-accent-700 leading-none mt-1">
                             {{ $cita->fecha_hora->format('H:i') }}</p>
                         <p class="text-xs text-slate-500 font-medium mt-1">{{ $cita->duracion_minutos }} min</p>
                     </div>
@@ -144,10 +132,10 @@
                 {{-- CONSULTA: iniciar o ver --}}
                 @if ($cita->consulta)
                     <div
-                        class="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl shadow-md border-l-4 border-purple-500 text-white">
+                        class="bg-gradient-to-r from-slate-900 to-brand-950 p-6 rounded-2xl shadow-md border-l-4 border-accent-500 text-white">
                         <div class="flex items-center justify-between flex-wrap gap-4">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-purple-300">Consulta
+                                <p class="text-xs font-semibold uppercase tracking-wider text-accent-300">Consulta
                                     registrada</p>
                                 <p class="font-bold text-xl mt-1">
                                     {{ $cita->consulta->created_at->format('d/m/Y H:i') }}</p>
@@ -161,7 +149,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('consultas.show', $cita->consulta) }}"
-                                    class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
+                                    class="px-5 py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
                                     Ver consulta
                                 </a>
                                 @if ($cita->consulta->estado === 'borrador')
@@ -218,7 +206,7 @@
                         {{-- Stepper --}}
                         <div class="px-6 pt-6 pb-5 border-b border-slate-100">
                             <div
-                                class="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider">
+                                class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider">
                                 @foreach ($pasos as $i => $paso)
                                     @php
                                         $completado = !$esDescartada && $indiceActual !== false && $i < $indiceActual;
@@ -227,8 +215,8 @@
                                     <div class="{{ $loop->last ? '' : 'flex-1' }} flex items-center">
                                         <div class="flex flex-col items-center gap-1.5">
                                             <div
-                                                class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold
-                                                {{ $completado ? 'bg-emerald-500 text-white' : ($activo ? 'bg-purple-600 text-white ring-4 ring-purple-100' : 'bg-slate-100 text-slate-400') }}">
+                                                class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                                                {{ $completado ? 'bg-emerald-500 text-white' : ($activo ? 'bg-accent-600 text-white ring-4 ring-accent-100' : 'bg-slate-100 text-slate-400') }}">
                                                 @if ($completado)
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
                                                         fill="none" viewBox="0 0 24 24" stroke-width="3"
@@ -241,7 +229,7 @@
                                                 @endif
                                             </div>
                                             <span
-                                                class="{{ $activo ? 'text-purple-700' : ($completado ? 'text-emerald-600' : 'text-slate-400') }}">
+                                                class="{{ $activo ? 'text-accent-700' : ($completado ? 'text-emerald-600' : 'text-slate-400') }}">
                                                 {{ $flujo[$paso]['label'] }}
                                             </span>
                                         </div>
@@ -272,7 +260,7 @@
                                 </h3>
                                 @if ($esFinal && $esAdmin)
                                     <span
-                                        class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                                        class="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
                                         Modo admin · cita cerrada
                                     </span>
                                 @endif
@@ -284,7 +272,7 @@
                                         'confirmada' => 'bg-blue-600 hover:bg-blue-500 text-white',
                                         'en_curso' => 'bg-amber-500 hover:bg-amber-400 text-slate-950',
                                         'atendida' => 'bg-emerald-600 hover:bg-emerald-500 text-white',
-                                        default => 'bg-purple-600 hover:bg-purple-500 text-white',
+                                        default => 'bg-accent-600 hover:bg-accent-500 text-white',
                                     };
                                 @endphp
                                 <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST">
@@ -308,7 +296,7 @@
                             {{-- Acciones secundarias --}}
                             @if ($accionesSecundarias->isNotEmpty())
                                 <div class="mt-6 pt-5 border-t border-slate-100">
-                                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Otras
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Otras
                                         acciones</p>
                                     <div class="flex flex-wrap gap-2">
                                         @foreach ($accionesSecundarias as $estado => $label)
@@ -316,7 +304,7 @@
                                                 $esNegativo = in_array($estado, ['cancelada', 'no_asistio'], true);
                                                 $clase = $esNegativo
                                                     ? 'border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300'
-                                                    : 'border-slate-200 text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700';
+                                                    : 'border-slate-200 text-slate-700 hover:bg-accent-50 hover:border-accent-200 hover:text-accent-700';
                                             @endphp
                                             <form action="{{ route('citas.cambiar-estado', $cita) }}" method="POST"
                                                 @if ($esNegativo) onsubmit="return confirm('¿Confirmas cambiar el estado a «{{ $label }}»?')" @endif

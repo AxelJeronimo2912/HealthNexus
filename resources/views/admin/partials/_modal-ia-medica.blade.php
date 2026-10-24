@@ -5,7 +5,7 @@
     class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
     style="display: none;" @click.self="modalAbierto = null" @keydown.escape.window="modalAbierto = null">
 
-    <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100">
 
@@ -42,25 +42,25 @@
                         <label class="text-xs font-bold text-slate-500 uppercase">FC (lpm)</label>
                         <input type="number" x-model.number="input.fc" min="30" max="250"
                             class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Normal 60–100</p>
+                        <p class="text-xs text-slate-400 mt-1">Normal 60–100</p>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">SpO₂ (%)</label>
                         <input type="number" x-model.number="input.spo2" min="50" max="100"
                             class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Normal 95–100</p>
+                        <p class="text-xs text-slate-400 mt-1">Normal 95–100</p>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">Temp (°C)</label>
                         <input type="number" step="0.1" x-model.number="input.temp" min="34" max="43"
                             class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Normal 36–37.5</p>
+                        <p class="text-xs text-slate-400 mt-1">Normal 36–37.5</p>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">Edad (años)</label>
                         <input type="number" x-model.number="input.edad" min="0" max="120"
                             class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500">
-                        <p class="text-[10px] text-slate-400 mt-1">0–120</p>
+                        <p class="text-xs text-slate-400 mt-1">0–120</p>
                     </div>
                 </div>
 
@@ -95,7 +95,7 @@
                                 <p class="text-3xl font-extrabold text-slate-800 mt-1"
                                     x-text="resultado?.logistica?.porcentaje + '%'"></p>
                                 <p class="text-xs text-slate-500">Probabilidad de estado crítico</p>
-                                <p class="text-[10px] text-slate-400 mt-2 font-mono"
+                                <p class="text-xs text-slate-400 mt-2 font-mono"
                                     x-text="resultado?.logistica?.formula"></p>
                             </div>
 
@@ -111,7 +111,7 @@
                                     x-text="resultado?.svm?.riesgo + ' riesgo'"></p>
                                 <p class="text-xs text-slate-500">Hiperplano: <span
                                         x-text="resultado?.svm?.hiperplano"></span></p>
-                                <p class="text-[10px] text-slate-400 mt-2 font-mono" x-text="resultado?.svm?.formula">
+                                <p class="text-xs text-slate-400 mt-2 font-mono" x-text="resultado?.svm?.formula">
                                 </p>
                             </div>
 
@@ -144,7 +144,7 @@
                                     x-text="resultado?.rf?.voto_final"></p>
                                 <div class="flex gap-1 mt-2">
                                     <template x-for="(v, i) in resultado?.rf?.votos || []" :key="i">
-                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded"
+                                        <span class="px-2 py-0.5 text-xs font-bold rounded"
                                             :class="v === 'Crítico' ? 'bg-red-100 text-red-700' :
                                                 'bg-emerald-100 text-emerald-700'"
                                             x-text="'Árbol ' + (i+1)"></span>
@@ -165,7 +165,7 @@
                                     Actual: <span x-text="resultado?.lineal?.spo2_actual"></span>% ·
                                     <span class="font-bold" x-text="resultado?.lineal?.estado"></span>
                                 </p>
-                                <p class="text-[10px] text-slate-400 mt-2 font-mono"
+                                <p class="text-xs text-slate-400 mt-2 font-mono"
                                     x-text="resultado?.lineal?.formula"></p>
                             </div>
 
@@ -198,11 +198,11 @@
                             </p>
                             <p class="text-xs text-amber-600 mt-1">Predicción del modelo financiero</p>
                         </div>
-                        <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
-                            <p class="text-xs font-bold text-indigo-700 uppercase">Días de estancia</p>
-                            <p class="text-3xl font-extrabold text-indigo-900 mt-1" x-text="resultado?.dias?.rango">
+                        <div class="bg-brand-50 border border-brand-200 rounded-2xl p-4">
+                            <p class="text-xs font-bold text-brand-700 uppercase">Días de estancia</p>
+                            <p class="text-3xl font-extrabold text-brand-900 mt-1" x-text="resultado?.dias?.rango">
                             </p>
-                            <p class="text-xs text-indigo-600 mt-1">Estimación de hospitalización</p>
+                            <p class="text-xs text-brand-600 mt-1">Estimación de hospitalización</p>
                         </div>
                     </div>
 

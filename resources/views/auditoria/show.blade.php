@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">Información completa del registro de auditoría</p>
             </div>
             <a href="{{ route('auditoria.index') }}"
-                class="bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
+                class="bg-white hover:bg-brand-50 text-slate-700 hover:text-brand-600 border border-slate-200 hover:border-brand-200 px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 group shrink-0">
                 <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -19,18 +19,18 @@
     </x-slot>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-6">
 
             {{-- ============ ENCABEZADO ============ --}}
             <div
                 class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pb-5 border-b border-slate-100">
                 <div class="min-w-0">
                     <span
-                        class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $log->evento_color }}">
+                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $log->evento_color }}">
                         {{ $log->evento_label }}
                     </span>
                     <p class="text-lg font-extrabold text-slate-800 mt-3 leading-snug">
@@ -60,7 +60,7 @@
                 <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
                     <dt class="{{ $labelCls }}">Módulo</dt>
                     <dd class="mt-1">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">
                             {{ $log->modulo_label }}
                         </span>
                     </dd>
@@ -83,7 +83,7 @@
                 <div
                     class="{{ $log->es_sensible ? 'bg-rose-50/60 border-rose-100' : 'bg-slate-50/70 border-slate-100' }} border rounded-2xl p-3">
                     <dt
-                        class="text-[10px] font-bold uppercase tracking-wider {{ $log->es_sensible ? 'text-rose-600/70' : 'text-slate-400' }}">
+                        class="text-xs font-bold uppercase tracking-wider {{ $log->es_sensible ? 'text-rose-600/70' : 'text-slate-400' }}">
                         Sensible
                     </dt>
                     <dd
@@ -98,7 +98,7 @@
                 <div class="pt-5 border-t border-slate-100">
                     <p class="{{ $labelCls }} mb-2">Metadatos</p>
                     <pre
-                        class="text-[11px] font-mono text-slate-700 bg-slate-50 border border-slate-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        class="text-xs font-mono text-slate-700 bg-slate-50 border border-slate-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             @endif
 
@@ -116,7 +116,7 @@
                         <p class="{{ $labelCls }}">Datos antes</p>
                     </div>
                     <pre
-                        class="text-[11px] font-mono text-rose-900 bg-rose-50 border border-rose-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->datos_antes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        class="text-xs font-mono text-rose-900 bg-rose-50 border border-rose-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->datos_antes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             @endif
 
@@ -134,7 +134,7 @@
                         <p class="{{ $labelCls }}">Datos después</p>
                     </div>
                     <pre
-                        class="text-[11px] font-mono text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->datos_despues, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        class="text-xs font-mono text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 overflow-x-auto leading-relaxed">{{ json_encode($log->datos_despues, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             @endif
         </div>

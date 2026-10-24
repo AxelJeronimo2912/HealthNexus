@@ -10,7 +10,7 @@
     </div>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="space-y-6">
@@ -21,11 +21,11 @@
                 <p class="{{ $labelCls }}">Movimiento #{{ $movimiento->id }}</p>
                 <div class="mt-2">
                     <span
-                        class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $movimiento->tipo_color }}">
+                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $movimiento->tipo_color }}">
                         {{ $movimiento->tipo_label }}
                     </span>
                 </div>
-                <p class="text-[11px] font-medium text-slate-400 mt-2">
+                <p class="text-xs font-medium text-slate-400 mt-2">
                     {{ $movimiento->created_at->format('d/m/Y H:i:s') }}
                 </p>
             </div>
@@ -33,7 +33,7 @@
             <div
                 class="{{ $movimiento->cantidad >= 0 ? 'bg-emerald-50/60 border-emerald-100' : 'bg-rose-50/60 border-rose-100' }} border rounded-2xl p-4 text-right shrink-0">
                 <p
-                    class="text-[11px] font-bold uppercase tracking-wider {{ $movimiento->cantidad >= 0 ? 'text-emerald-600/70' : 'text-rose-500/70' }}">
+                    class="text-xs font-bold uppercase tracking-wider {{ $movimiento->cantidad >= 0 ? 'text-emerald-600/70' : 'text-rose-500/70' }}">
                     Cantidad
                 </p>
                 <p
@@ -57,7 +57,7 @@
             </p>
             @if ($movimiento->medicamento)
                 <a href="{{ route('existencias.show', $movimiento->medicamento) }}" target="_blank"
-                    class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all">
+                    class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all">
                     Ver existencias
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
@@ -72,25 +72,25 @@
                 <p class="{{ $labelCls }} mb-3">Lote</p>
                 <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
-                        <dt class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Código</dt>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider">Código</dt>
                         <dd class="mt-1">
                             <span
-                                class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                                class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                                 {{ $movimiento->lote->codigo_lote ?? 'LOTE-' . $movimiento->lote->id }}
                             </span>
                         </dd>
                     </div>
                     <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
-                        <dt class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Caducidad</dt>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider">Caducidad</dt>
                         <dd class="text-xs font-extrabold text-slate-800 mt-1">
                             {{ $movimiento->lote->fecha_caducidad->format('d/m/Y') }}
                         </dd>
                     </div>
                     <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3 sm:col-span-2">
-                        <dt class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estado</dt>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</dt>
                         <dd class="mt-1">
                             <span
-                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $movimiento->lote->estado_color }}">
+                                class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $movimiento->lote->estado_color }}">
                                 {{ $movimiento->lote->estado_label }}
                             </span>
                         </dd>
@@ -103,18 +103,18 @@
         <div class="border-t border-slate-100 pt-5">
             <p class="{{ $labelCls }} mb-3">Cambio de stock</p>
             <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 flex flex-wrap items-center gap-3">
-                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                     {{ $movimiento->stock_anterior }}
                 </span>
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-                <span class="px-2 py-1 bg-slate-800 text-white rounded-lg text-[11px] font-mono font-bold">
+                <span class="px-2 py-1 bg-slate-800 text-white rounded-lg text-xs font-mono font-bold">
                     {{ $movimiento->stock_nuevo }}
                 </span>
                 <span
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border {{ $movimiento->cantidad >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100' }}">
+                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border {{ $movimiento->cantidad >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100' }}">
                     {{ $movimiento->cantidad >= 0 ? '+' : '' }}{{ $movimiento->cantidad }}
                 </span>
             </div>
@@ -138,14 +138,14 @@
                 <div
                     class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tipo</p>
                         <p class="text-xs font-extrabold text-slate-800 mt-0.5">
                             {{ ucfirst($movimiento->referencia_tipo) }}
                         </p>
                     </div>
                     @if ($movimiento->referencia_tipo === 'consulta')
                         <a href="{{ route('consultas.show', $movimiento->referencia_id) }}" target="_blank"
-                            class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-all inline-flex items-center gap-1.5">
+                            class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5">
                             Ver consulta
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"

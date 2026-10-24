@@ -19,11 +19,11 @@
     </x-slot>
 
     @php
-        $labelCls = 'text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+        $labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-wider';
     @endphp
 
     <div class="py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+        <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card space-y-6">
 
             {{-- ============ ALERTA REACCIÓN ADVERSA ============ --}}
             @if ($administracion->reaccion_adversa)
@@ -72,7 +72,7 @@
                 <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-3">
                     <dt class="{{ $labelCls }}">Dosis</dt>
                     <dd class="mt-1">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-mono font-bold">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-mono font-bold">
                             {{ $administracion->dosis }}
                         </span>
                     </dd>
@@ -82,7 +82,7 @@
                     <dt class="{{ $labelCls }}">Vía</dt>
                     <dd class="mt-1">
                         <span
-                            class="px-2.5 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                            class="px-2.5 py-1 bg-brand-50 text-brand-700 border border-brand-100 rounded-full text-xs font-bold uppercase tracking-wide">
                             {{ $administracion->via }}
                         </span>
                     </dd>

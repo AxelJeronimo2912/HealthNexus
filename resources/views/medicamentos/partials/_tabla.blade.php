@@ -1,10 +1,10 @@
 @php
-    $thCls = 'px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider';
+    $thCls = 'px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider';
 @endphp
 
 <div class="px-6 py-4 border-b border-slate-100">
     <h3 class="font-extrabold text-slate-800 text-base">Catálogo de medicamentos</h3>
-    <p class="text-[11px] text-slate-400">{{ $medicamentos->total() }} medicamentos registrados</p>
+    <p class="text-xs text-slate-400">{{ $medicamentos->total() }} medicamentos registrados</p>
 </div>
 
 <div class="overflow-x-auto">
@@ -31,14 +31,14 @@
                     {{-- MEDICAMENTO --}}
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-indigo-950 flex items-center justify-center text-xs font-extrabold text-slate-500 group-hover:text-indigo-400 transition-colors duration-200 shrink-0">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-brand-950 flex items-center justify-center text-xs font-extrabold text-slate-500 group-hover:text-brand-400 transition-colors duration-200 shrink-0">
                                 {{ mb_strtoupper(mb_substr($med->nombre, 0, 2)) }}
                             </div>
                             <div class="min-w-0">
-                                <p class="text-sm font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                                <p class="text-sm font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors truncate">
                                     {{ $med->nombre }}
                                 </p>
-                                <p class="text-[11px] text-slate-400 mt-0.5">ID: #{{ $med->id }}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">ID: #{{ $med->id }}</p>
                             </div>
                         </div>
                     </td>
@@ -66,40 +66,39 @@
                     {{-- ESTADO --}}
                     <td class="px-6 py-4">
                         @if ($med->activo ?? true)
-                            <span class="inline-flex px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">Activo</span>
+                            <x-badge tone="emerald" dot>Activo</x-badge>
                         @else
-                            <span class="inline-flex px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">Inactivo</span>
+                            <x-badge tone="slate" dot>Inactivo</x-badge>
                         @endif
                     </td>
 
                     {{-- ACCIONES --}}
                     <td class="px-6 py-4">
-                        <div class="flex items-center justify-end gap-1">
-
-                            {{-- Ver --}}
-                            <button type="button" @click="openShow = true" title="Ver detalles"
-                                class="p-2 rounded-xl text-slate-800 hover:bg-slate-200/70 active:scale-90 transition-all">
-                                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </button>
-
-                            {{-- Editar --}}
-                            <button type="button" @click="openEdit = true" title="Editar"
-                                class="p-2 rounded-xl text-purple-500 hover:bg-purple-50 active:scale-90 transition-all">
-                                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                </svg>
-                            </button>
-
-                            {{-- Eliminar --}}
-                            <button type="button" @click="openDelete = true" title="Eliminar"
-                                class="p-2 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all">
-                                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                </svg>
-                            </button>
+                        <div class="flex justify-end" x-data="{ menu: false, pos: {} }" @keydown.escape.window="menu = false" @scroll.window="menu = false" @resize.window="menu = false">
+                            <div class="relative">
+                                <button type="button" x-ref="btn" @click.outside="menu = false"
+                                    @click="const r = $refs.btn.getBoundingClientRect(); const arriba = r.bottom + 170 > window.innerHeight; pos = arriba ? { right: (window.innerWidth - r.right) + 'px', bottom: (window.innerHeight - r.top + 4) + 'px', top: 'auto' } : { right: (window.innerWidth - r.right) + 'px', top: (r.bottom + 4) + 'px', bottom: 'auto' }; menu = !menu"
+                                    class="grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                    title="Acciones" :aria-expanded="menu">
+                                    <x-heroicon-m-ellipsis-horizontal class="h-5 w-5" />
+                                </button>
+                                <div x-show="menu" x-cloak x-transition.opacity.duration.100ms
+                                    :style="pos" class="fixed z-40 w-44 overflow-hidden rounded-xl bg-white p-1 text-left shadow-pop ring-1 ring-slate-200">
+                                    <button type="button" @click="menu = false; openShow = true"
+                                        class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                        <x-heroicon-o-eye class="h-4 w-4 text-slate-400" /> Ver detalle
+                                    </button>
+                                    <button type="button" @click="menu = false; openEdit = true"
+                                        class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                        <x-heroicon-o-pencil-square class="h-4 w-4 text-slate-400" /> Editar
+                                    </button>
+                                    <div class="my-1 h-px bg-slate-100"></div>
+                                    <button type="button" @click="menu = false; openDelete = true"
+                                        class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+                                        <x-heroicon-o-trash class="h-4 w-4" /> Eliminar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         @include('medicamentos.partials._modal-show')
@@ -109,8 +108,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-12 text-center">
-                        <p class="text-xs font-semibold text-slate-400">No se encontraron medicamentos registrados.</p>
+                    <td colspan="5">
+                        <x-empty-state icon="beaker" title="No se encontraron medicamentos"
+                            description="Ajusta la búsqueda o registra un nuevo medicamento en el catálogo.">
+                            <x-button icon="plus" size="sm" @click="$store.medicamentos.openCreate = true">Nuevo medicamento</x-button>
+                        </x-empty-state>
                     </td>
                 </tr>
             @endforelse

@@ -29,13 +29,13 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-100 min-h-screen" x-data="pacientesIndex()" x-init="init()">
+    <div class="py-8 min-h-screen" x-data="pacientesIndex()" x-init="init()">
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             <!-- MÉTRICAS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
                         class="w-12 h-12 rounded-2xl bg-nexus-primary/10 text-nexus-primary flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
                         class="w-12 h-12 rounded-2xl bg-nexus-secondary/10 text-nexus-secondary flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card flex items-center gap-4">
                     <div
                         class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,21 +81,9 @@
                 </div>
             </div>
 
-            @if (session('success'))
-                <div
-                    class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <span class="font-medium">{{ session('success') }}</span>
-                </div>
-            @endif
 
             <!-- BUSCADOR -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 flex items-center gap-3">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card p-4 flex items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +110,7 @@
             </div>
 
             <!-- TABLA -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden">
                 <div class="overflow-x-auto" id="tabla-pacientes">
                     @include('pacientes._tabla', [
                         'pacientes' => $pacientes,
@@ -141,7 +129,7 @@
 
             <div x-show="modalAbierto" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <h3 class="font-bold text-lg text-slate-800"
@@ -253,6 +241,13 @@
                     window.cerrarModalPaciente = () => this.cerrarModal();
                     window.recargarTablaPacientes = (mensaje) => this.recargarTabla(mensaje);
                     window.mostrarToast = (mensaje) => this.mostrarToast(mensaje);
+
+                    // Búsqueda que llega desde la paleta de comandos (Ctrl+K)
+                    const inicial = new URLSearchParams(window.location.search).get('buscar');
+                    if (inicial) {
+                        this.busqueda = inicial;
+                        this.buscar();
+                    }
                 },
 
                 // ============ BUSCADOR EN VIVO ============
