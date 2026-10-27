@@ -57,6 +57,7 @@ class AuthenticatedSessionController extends Controller
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
-    return redirect('/');
+    // Borra la caché del navegador para que no queden páginas con datos al volver atrás.
+    return redirect('/')->header('Clear-Site-Data', '"cache"');
 }
 }

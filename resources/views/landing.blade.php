@@ -12,6 +12,7 @@
 <meta property="og:url" content="{{ url('/') }}">
 <meta property="og:image" content="{{ asset('images/logo-healthnexus.png') }}">
 <link rel="icon" type="image/png" href="{{ asset('images/favicon-64.png') }}">
+@include('partials.pwa')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
