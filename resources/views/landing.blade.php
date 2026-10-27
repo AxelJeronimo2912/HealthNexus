@@ -510,14 +510,56 @@
             </div>
         </section>
 
-        <footer style="border-top: 1px solid #E3E6F2; background: #FFFFFF; padding: 32px 24px">
-            <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; color: #4A4F75">
-                <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
-                <nav aria-label="Pie de página" style="display: flex; flex-wrap: wrap; gap: 20px">
-                    <a href="{{ route('privacidad') }}">Aviso de privacidad</a>
-                    <a href="{{ route('terminos') }}">Términos de uso</a>
-                    <a href="mailto:{{ config('legal.correo') }}">Contacto</a>
-                </nav>
+        <footer style="background: #0D1230; color: #C9CDF0; padding: 56px 24px 28px">
+            <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px">
+
+                    <div style="display: flex; flex-direction: column; gap: 14px; grid-column: span 1; min-width: 0">
+                        <a href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 19px">
+                            @include('partials.logo')
+                            <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7">BY NEXARA</span></span>
+                        </a>
+                        <p style="margin: 0; font-size: 14px; line-height: 1.6">Gestión hospitalaria y control de accesos en web y app móvil para el personal del hospital.</p>
+                        <p style="margin: 0; font-size: 13px; color: #9EA3F7">Hecho en Toluca, México</p>
+                        <button id="hn-instalar" type="button" hidden style="align-self: flex-start; margin-top: 4px; display: inline-flex; align-items: center; gap: 8px; background: #5B5FEF; color: #FFFFFF; border: none; border-radius: 10px; padding: 10px 16px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
+                            </svg>
+                            Instalar app
+                        </button>
+                    </div>
+
+                    <nav aria-label="Producto" style="display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+                        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFFFFF">Producto</span>
+                        <a href="#modulos" style="color: #C9CDF0; text-decoration: none">Módulos</a>
+                        <a href="#movil" style="color: #C9CDF0; text-decoration: none">App móvil</a>
+                        <a href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
+                        <a href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
+                        <a href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
+                        <a href="{{ url('/login') }}" style="color: #C9CDF0; text-decoration: none">Iniciar sesión</a>
+                    </nav>
+
+                    <nav aria-label="Legal" style="display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+                        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFFFFF">Legal</span>
+                        <a href="{{ route('privacidad') }}" style="color: #C9CDF0; text-decoration: none">Aviso de privacidad</a>
+                        <a href="{{ route('terminos') }}" style="color: #C9CDF0; text-decoration: none">Términos de uso</a>
+                        <span style="font-size: 13px; line-height: 1.5; color: #9EA3F7">Basado en NOM-004, NOM-024 y la LFPDPPP</span>
+                    </nav>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; min-width: 0">
+                        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFFFFF">Contacto</span>
+                        <a href="mailto:{{ config('legal.correo') }}" style="color: #C9CDF0; text-decoration: none; overflow-wrap: anywhere">{{ config('legal.correo') }}</a>
+                        <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #C9CDF0; text-decoration: none">Sitio de NEXARA ↗</a>
+                        <span style="font-size: 13px; line-height: 1.5; color: #9EA3F7">Acceso exclusivo para personal registrado del hospital.</span>
+                    </div>
+                </div>
+
+                <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #9EA3F7; border-top: 1px solid #343A73; padding-top: 20px">HealthNexus es una herramienta de apoyo para la operación del hospital. Las alertas y la clasificación de triage no sustituyen el criterio del profesional de la salud.</p>
+
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px">
+                    <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #FFFFFF">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
+                    <a href="#inicio" style="color: #C9CDF0; text-decoration: none">Volver arriba ↑</a>
+                </div>
             </div>
         </footer>
 
@@ -528,6 +570,28 @@
                 a.closest("details").removeAttribute("open")
             })
         })
+    </script>
+    <script>
+        (function() {
+            var boton = document.getElementById('hn-instalar');
+            var aviso = null;
+            window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                aviso = e;
+                boton.hidden = false;
+            });
+            boton.addEventListener('click', function() {
+                if (!aviso) return;
+                aviso.prompt();
+                aviso.userChoice.finally(function() {
+                    aviso = null;
+                    boton.hidden = true;
+                });
+            });
+            window.addEventListener('appinstalled', function() {
+                boton.hidden = true;
+            });
+        })();
     </script>
 </body>
 
