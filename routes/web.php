@@ -42,12 +42,17 @@ use App\Http\Controllers\AuditoriaController;
 | Raíz
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
-});
+    return view('landing');
+})->name('inicio');
+
+Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
+Route::view('/terminos', 'legal.terminos')->name('terminos');
+
 
 /*
 |--------------------------------------------------------------------------
