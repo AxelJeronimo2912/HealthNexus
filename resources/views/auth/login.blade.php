@@ -52,7 +52,7 @@
 
         <p class="mt-8 flex items-start gap-2 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500 ring-1 ring-inset ring-slate-100">
             <x-heroicon-o-shield-check class="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
-            Después de tu contraseña te pediremos tu PIN de 4 dígitos para completar el acceso.
+            Después de tu contraseña te pediremos tu PIN de 4 dígitos para completar el acceso, para el perfil de médico.
         </p>
     </x-auth-shell>
 </x-guest-layout>
