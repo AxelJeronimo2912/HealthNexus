@@ -19,36 +19,64 @@
 html{scroll-behavior:smooth}
 body{margin:0}
 a{color:#3B3FC4}a:hover{color:#2A2D96}
+html{scroll-behavior:smooth}
+section[id]{scroll-margin-top:16px}
+.hn-menu{display:none;position:relative}
+.hn-menu summary{list-style:none;cursor:pointer;width:44px;height:44px;border:1px solid #343A73;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#FFFFFF}
+.hn-menu summary::-webkit-details-marker{display:none}
+.hn-menu-list{position:absolute;right:0;top:52px;z-index:20;min-width:200px;background:#141A40;border:1px solid #343A73;border-radius:14px;padding:8px;display:flex;flex-direction:column;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.hn-menu-list a{color:#E4E6FA;text-decoration:none;padding:12px 14px;border-radius:10px;font-size:15px}
+.hn-menu-list a:hover{background:#1E2552;color:#FFFFFF}
+@media (max-width:760px){
+.hn-link{display:none!important}
+.hn-menu{display:block}
+.hn-nav{gap:10px!important;flex-wrap:nowrap!important}
+.hn-login{padding:10px 14px!important;font-size:14px!important}
+.hn-header{padding:14px 16px!important;flex-wrap:nowrap!important;gap:8px!important}
+.hn-brand{font-size:18px!important;gap:8px!important;min-width:0}
+.hn-hero{padding:36px 16px 72px!important}
+.hn-hero-grid{gap:36px!important}
+.hn-badge{font-size:11px!important;letter-spacing:.04em!important;padding:7px 12px!important}
+.hn-h1{font-size:clamp(34px,9.5vw,44px)!important;line-height:1.1!important}
+.hn-lead{font-size:17px!important}
+.hn-h2{font-size:clamp(26px,7vw,32px)!important}
+.hn-cta a{flex:1 1 100%;text-align:center}
+.hn-panel{padding:24px!important;gap:28px!important;border-radius:20px!important}
+section{padding-left:16px!important;padding-right:16px!important}
+section[id]:not(#inicio){padding-top:40px!important;padding-bottom:40px!important}
+#modulos{padding-top:64px!important}
+}
 </style>
 </head>
 <body>
 <div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #141A33; background: #F5F7FB; min-height: 100vh">
 
 <header style="background: #0D1230; color: #FFFFFF">
-<div style="max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
-<a href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 20px">
+<div class="hn-header" style="max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<a class="hn-brand" href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 20px">
 @include('partials.logo')
 <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7">BY NEXARA</span></span>
 </a>
-<nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
-<a href="#modulos" style="color: #C9CDF0; text-decoration: none">Módulos</a>
-<a href="#movil" style="color: #C9CDF0; text-decoration: none">App móvil</a>
-<a href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
-<a href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
-<a href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
-<a href="#nexara" style="color: #C9CDF0; text-decoration: none">NEXARA</a>
-<a href="{{ url('/login') }}" style="background: #5B5FEF; color: #FFFFFF; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 600">Iniciar sesión</a>
+<nav class="hn-nav" aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
+<a class="hn-link" href="#modulos" style="color: #C9CDF0; text-decoration: none">Módulos</a>
+<a class="hn-link" href="#movil" style="color: #C9CDF0; text-decoration: none">App móvil</a>
+<a class="hn-link" href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
+<a class="hn-link" href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
+<a class="hn-link" href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
+<a class="hn-link" href="#nexara" style="color: #C9CDF0; text-decoration: none">NEXARA</a>
+<details class="hn-menu"><summary aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></summary><div class="hn-menu-list"><a href="#modulos">Módulos</a><a href="#movil">App móvil</a><a href="#plataforma">Plataforma</a><a href="#seguridad">Seguridad</a><a href="#normas">Normas</a><a href="#nexara">NEXARA</a></div></details>
+<a class="hn-login" href="{{ url('/login') }}" style="background: #5B5FEF; color: #FFFFFF; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 600">Iniciar sesión</a>
 </nav>
 </div>
 </header>
 
-<section id="inicio" style="background: #0D1230; color: #FFFFFF; padding: 72px 24px 96px">
-<div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
+<section id="inicio" class="hn-hero" style="background: #0D1230; color: #FFFFFF; padding: 72px 24px 96px">
+<div class="hn-hero-grid" style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
 <div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-<span style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Gestión hospitalaria y control de accesos · por NEXARA</span>
-<h1 style="margin: 0; font-size: 56px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em">Toda la operación clínica de tu hospital, en un solo lugar.</h1>
-<p style="margin: 0; font-size: 19px; line-height: 1.6; color: #C9CDF0; max-width: 560px">HealthNexus conecta pacientes, triage, signos vitales, medicación, citas y camas para que administración, médicos y enfermería trabajen con la misma información, desde la web o el celular, con acceso solo para personal y dispositivos autorizados.</p>
-<div style="display: flex; flex-wrap: wrap; gap: 14px; padding-top: 8px">
+<span class="hn-badge" style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Gestión hospitalaria y control de accesos · por NEXARA</span>
+<h1 class="hn-h1" style="margin: 0; font-size: 56px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em">Toda la operación clínica de tu hospital, en un solo lugar.</h1>
+<p class="hn-lead" style="margin: 0; font-size: 19px; line-height: 1.6; color: #C9CDF0; max-width: 560px">HealthNexus conecta pacientes, triage, signos vitales, medicación, citas y camas para que administración, médicos y enfermería trabajen con la misma información, desde la web o el celular, con acceso solo para personal y dispositivos autorizados.</p>
+<div class="hn-cta" style="display: flex; flex-wrap: wrap; gap: 14px; padding-top: 8px">
 <a href="{{ url('/login') }}" style="background: #5B5FEF; color: #FFFFFF; text-decoration: none; padding: 16px 26px; border-radius: 12px; font-weight: 700; font-size: 16px">Acceder al sistema</a>
 <a href="#modulos" style="color: #FFFFFF; text-decoration: none; padding: 16px 26px; border-radius: 12px; font-weight: 600; font-size: 16px; border: 1px solid #343A73">Conocer los módulos</a>
 </div>
@@ -88,7 +116,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px">
 <div style="display: flex; flex-direction: column; gap: 12px; max-width: 640px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Módulos</span>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em">Todo lo que el hospital necesita, organizado por área</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 40px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em">Todo lo que el hospital necesita, organizado por área</h2>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
 
@@ -163,10 +191,10 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 </section>
 
 <section id="movil" style="padding: 56px 24px">
-<div style="max-width: 1200px; margin: 0 auto; background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div class="hn-panel" style="max-width: 1200px; margin: 0 auto; background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
 <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Web + móvil</span>
-<h2 style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">El sistema acompaña a tu personal por todo el hospital</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">El sistema acompaña a tu personal por todo el hospital</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4A4F75">La app móvil para Android es de uso exclusivo para el personal del hospital. Médicos y enfermería registran triage, signos vitales y medicación desde el piso, y todo queda al instante en la plataforma web porque ambas usan la misma API.</p>
 <ul style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; font-size: 15px; color: #33395C">
 <li style="display: flex; gap: 8px; align-items: flex-start"><span style="color: #1F7A6C; font-weight: 800">✓</span>Menú lateral con los módulos de cada rol</li>
@@ -198,7 +226,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px">
 <div style="display: flex; flex-direction: column; gap: 12px; max-width: 700px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Plataforma</span>
-<h2 style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Tres piezas, una sola información</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Tres piezas, una sola información</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4A4F75">HealthNexus ya funciona en producción en la nube de AWS, con la web, la API y la app conectadas a la misma base de datos.</p>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px">
@@ -234,7 +262,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px">
 <div style="display: flex; flex-direction: column; gap: 12px; max-width: 680px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Seguridad y privacidad</span>
-<h2 style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Los datos de salud se tratan con cuidado</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Los datos de salud se tratan con cuidado</h2>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px">
 <div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B3FC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="font-weight: 700; font-size: 17px">Conexión cifrada</span><span style="font-size: 14px; line-height: 1.55; color: #4A4F75">Todo el tráfico viaja por HTTPS.</span></div>
@@ -253,7 +281,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px">
 <div style="display: flex; flex-direction: column; gap: 12px; max-width: 720px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Normas y estándares</span>
-<h2 style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Construido con base en normas reconocidas</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Construido con base en normas reconocidas</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4A4F75">Usamos estas normas como referencia para diseñar, desarrollar y proteger el sistema.</p>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px">
@@ -279,10 +307,10 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 </section>
 
 <section id="nexara" style="padding: 56px 24px 96px">
-<div style="max-width: 1200px; margin: 0 auto; background: #0D1230; color: #FFFFFF; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; gap: 48px">
+<div class="hn-panel" style="max-width: 1200px; margin: 0 auto; background: #0D1230; color: #FFFFFF; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; gap: 48px">
 <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Quiénes somos</span>
-<h2 style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por NEXARA</h2>
+<h2 class="hn-h2" style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por NEXARA</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">NEXARA es la startup que diseña y desarrolla HealthNexus de punta a punta: la plataforma web, la app móvil y la API que las conecta. Nació en la Universidad Tecnológica del Valle de Toluca, en Ingeniería en Desarrollo y Gestión de Software, y trabaja con metodología Scrum en entregas por sprint.</p>
 <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9CDF0">El acceso al sistema es exclusivo para personal registrado del hospital.</p>
 <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="align-self: flex-start; margin-top: 8px; color: #FFFFFF; text-decoration: none; padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid #343A73">Conoce NEXARA →</a>
@@ -308,5 +336,6 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 </footer>
 
 </div>
+<script>document.querySelectorAll(".hn-menu-list a").forEach(function(a){a.addEventListener("click",function(){a.closest("details").removeAttribute("open")})})</script>
 </body>
 </html>
