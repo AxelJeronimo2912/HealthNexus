@@ -1,2 +1,3 @@
 User-agent: *
 Disallow:
+Sitemap: https://healthnexus-web.duckdns.org/sitemap.xml

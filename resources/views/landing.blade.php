@@ -285,6 +285,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 <h2 style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por NEXARA</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">NEXARA es la startup que diseña y desarrolla HealthNexus de punta a punta: la plataforma web, la app móvil y la API que las conecta. Nació en la Universidad Tecnológica del Valle de Toluca, en Ingeniería en Desarrollo y Gestión de Software, y trabaja con metodología Scrum en entregas por sprint.</p>
 <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9CDF0">El acceso al sistema es exclusivo para personal registrado del hospital.</p>
+<a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="align-self: flex-start; margin-top: 8px; color: #FFFFFF; text-decoration: none; padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid #343A73">Conoce NEXARA →</a>
 </div>
 <div style="flex: 1 1 320px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-content: start">
 <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesus Felipe Aviles</span><span style="font-size: 13px; color: #C9CDF0">Scrum Master · API y app móvil</span></div>
@@ -297,7 +298,7 @@ a{color:#3B3FC4}a:hover{color:#2A2D96}
 
 <footer style="border-top: 1px solid #E3E6F2; background: #FFFFFF; padding: 32px 24px">
 <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; color: #4A4F75">
-<span>© 2026 NEXARA · HealthNexus es un producto de NEXARA</span>
+<span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
 <nav aria-label="Pie de página" style="display: flex; flex-wrap: wrap; gap: 20px">
 <a href="{{ route('privacidad') }}">Aviso de privacidad</a>
 <a href="{{ route('terminos') }}">Términos de uso</a>

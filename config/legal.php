@@ -10,6 +10,7 @@
 
 return [
     'empresa'       => env('LEGAL_EMPRESA', 'NEXARA'),
+    'sitio'         => env('LEGAL_SITIO', 'https://jesusfelipea.github.io/Sitio_Web_Nexara/'),
     'domicilio'     => env('LEGAL_DOMICILIO', '[DOMICILIO DE NEXARA]'),
     'correo'        => env('LEGAL_CORREO', '[CORREO DE PRIVACIDAD]'),
     'ciudad'        => env('LEGAL_CIUDAD', 'Toluca, Estado de México'),

@@ -55,7 +55,7 @@
 
 <footer style="border-top: 1px solid #E3E6F2; background: #FFFFFF; padding: 32px 24px">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; color: #4A4F75">
-        <span>© {{ date('Y') }} NEXARA · HealthNexus es un producto de NEXARA</span>
+        <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
         <nav aria-label="Pie de página" style="display: flex; flex-wrap: wrap; gap: 20px">
             <a href="{{ route('privacidad') }}">Aviso de privacidad</a>
             <a href="{{ route('terminos') }}">Términos de uso</a>
