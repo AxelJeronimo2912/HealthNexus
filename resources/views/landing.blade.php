@@ -4,11 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HealthNexus — Gestión hospitalaria y control de accesos | NEXARA</title>
-    <meta name="description" content="HealthNexus, de NEXARA: pacientes, triage, signos vitales, medicación y control de accesos para hospitales, en web y app móvil.">
+    <title>HealthNexus — Gestión hospitalaria y control de accesos</title>
+    <meta name="description" content="HealthNexus: pacientes, triage, signos vitales, medicación y control de accesos para hospitales, en web y app móvil.">
     <link rel="canonical" href="{{ url('/') }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="HealthNexus · by NEXARA">
+    <meta property="og:title" content="HealthNexus">
     <meta property="og:description" content="Gestión hospitalaria y control de accesos en web y app móvil.">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:image" content="{{ asset('images/logo-healthnexus.png') }}">
@@ -185,7 +185,7 @@
             <div class="hn-header" style="max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
                 <a class="hn-brand" href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 20px">
                     @include('partials.logo')
-                    <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7">BY NEXARA</span></span>
+                    <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7"></span></span>
                 </a>
                 <nav class="hn-nav" aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
                     <a class="hn-link" href="#modulos" style="color: #C9CDF0; text-decoration: none">Módulos</a>
@@ -193,12 +193,12 @@
                     <a class="hn-link" href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
                     <a class="hn-link" href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
                     <a class="hn-link" href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
-                    <a class="hn-link" href="#nexara" style="color: #C9CDF0; text-decoration: none">NEXARA</a>
+                    <a class="hn-link" href="#nexara" style="color: #C9CDF0; text-decoration: none"></a>
                     <details class="hn-menu">
                         <summary aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                                 <path d="M4 7h16M4 12h16M4 17h16"></path>
                             </svg></summary>
-                        <div class="hn-menu-list"><a href="#modulos">Módulos</a><a href="#movil">App móvil</a><a href="#plataforma">Plataforma</a><a href="#seguridad">Seguridad</a><a href="#normas">Normas</a><a href="#nexara">NEXARA</a></div>
+                        <div class="hn-menu-list"><a href="#modulos">Módulos</a><a href="#movil">App móvil</a><a href="#plataforma">Plataforma</a><a href="#seguridad">Seguridad</a><a href="#normas">Normas</a><a href="#nexara">HealthNexus</a></div>
                     </details>
                     <a class="hn-login" href="{{ url('/login') }}" style="background: #5B5FEF; color: #FFFFFF; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 600">Iniciar sesión</a>
                 </nav>
@@ -208,7 +208,7 @@
         <section id="inicio" class="hn-hero" style="background: #0D1230; color: #FFFFFF; padding: 72px 24px 96px">
             <div class="hn-hero-grid" style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
                 <div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-                    <span class="hn-badge" style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Gestión hospitalaria y control de accesos · por NEXARA</span>
+                    <span class="hn-badge" style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Gestión hospitalaria y control de accesos · por HealthNexus</span>
                     <h1 class="hn-h1" style="margin: 0; font-size: 56px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em">Toda la operación clínica de tu hospital, en un solo lugar.</h1>
                     <p class="hn-lead" style="margin: 0; font-size: 19px; line-height: 1.6; color: #C9CDF0; max-width: 560px">HealthNexus conecta pacientes, triage, signos vitales, medicación, citas y camas para que administración, médicos y enfermería trabajen con la misma información, desde la web o el celular, con acceso solo para personal y dispositivos autorizados.</p>
                     <div class="hn-cta" style="display: flex; flex-wrap: wrap; gap: 14px; padding-top: 8px">
@@ -494,10 +494,10 @@
             <div class="hn-panel" style="max-width: 1200px; margin: 0 auto; background: #0D1230; color: #FFFFFF; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; gap: 48px">
                 <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
                     <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Quiénes somos</span>
-                    <h2 class="hn-h2" style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por NEXARA</h2>
-                    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">NEXARA es la startup que diseña y desarrolla HealthNexus de punta a punta: la plataforma web, la app móvil y la API que las conecta. Nació en la Universidad Tecnológica del Valle de Toluca, en Ingeniería en Desarrollo y Gestión de Software, y trabaja con metodología Scrum en entregas por sprint.</p>
+                    <h2 class="hn-h2" style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por HealthNexus</h2>
+                    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">HealthNexus es la startup que diseña y desarrolla este proyecto de punta a punta: la plataforma web, la app móvil y la API que las conecta. Nació en la Universidad Tecnológica del Valle de Toluca, en Ingeniería en Desarrollo y Gestión de Software, y trabaja con metodología Scrum en entregas por sprint.</p>
                     <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9CDF0">El acceso al sistema es exclusivo para personal registrado del hospital.</p>
-                    <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="align-self: flex-start; margin-top: 8px; color: #FFFFFF; text-decoration: none; padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid #343A73">Conoce NEXARA →</a>
+                    <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="align-self: flex-start; margin-top: 8px; color: #FFFFFF; text-decoration: none; padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid #343A73">Conoce HealthNexus →</a>
                 </div>
                 <div style="flex: 1 1 320px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-content: start">
                     <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesus Felipe Aviles</span><span style="font-size: 13px; color: #C9CDF0">Scrum Master · API y app móvil</span></div>
@@ -517,7 +517,7 @@
                     <div style="display: flex; flex-direction: column; gap: 14px; grid-column: span 1; min-width: 0">
                         <a href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 19px">
                             @include('partials.logo')
-                            <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7">BY NEXARA</span></span>
+                            <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7"></span></span>
                         </a>
                         <p style="margin: 0; font-size: 14px; line-height: 1.6">Gestión hospitalaria y control de accesos en web y app móvil para el personal del hospital.</p>
                         <p style="margin: 0; font-size: 13px; color: #9EA3F7">Hecho en Toluca, México</p>
@@ -549,7 +549,7 @@
                     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; min-width: 0">
                         <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFFFFF">Contacto</span>
                         <a href="mailto:{{ config('legal.correo') }}" style="color: #C9CDF0; text-decoration: none; overflow-wrap: anywhere">{{ config('legal.correo') }}</a>
-                        <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #C9CDF0; text-decoration: none">Sitio de NEXARA ↗</a>
+                        <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #C9CDF0; text-decoration: none">Sitio de HealthNexus ↗</a>
                         <span style="font-size: 13px; line-height: 1.5; color: #9EA3F7">Acceso exclusivo para personal registrado del hospital.</span>
                     </div>
                 </div>
@@ -557,7 +557,7 @@
                 <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #9EA3F7; border-top: 1px solid #343A73; padding-top: 20px">HealthNexus es una herramienta de apoyo para la operación del hospital. Las alertas y la clasificación de triage no sustituyen el criterio del profesional de la salud.</p>
 
                 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px">
-                    <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #FFFFFF">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
+                    <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #FFFFFF">HealthNexus</a> · HealthNexus es un producto de HealthNexus</span>
                     <a href="#inicio" style="color: #C9CDF0; text-decoration: none">Volver arriba ↑</a>
                 </div>
             </div>

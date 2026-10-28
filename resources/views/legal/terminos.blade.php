@@ -1,13 +1,13 @@
 @extends('layouts.legal')
 
 @section('titulo', 'Términos de uso')
-@section('descripcion', 'Términos y condiciones de uso de la plataforma HealthNexus, desarrollada por NEXARA.')
+@section('descripcion', 'Términos y condiciones de uso de la plataforma HealthNexus.')
 
 @section('contenido')
 <h1>Términos de uso</h1>
 <p class="fecha">Última actualización: {{ config('legal.actualizacion') }}</p>
 
-<p>Estos términos regulan el uso de HealthNexus, la plataforma de gestión hospitalaria y control de accesos desarrollada por {{ config('legal.empresa') }}, que incluye el sitio web, la aplicación móvil y la API. Al iniciar sesión aceptas estos términos y el <a href="{{ route('privacidad') }}">Aviso de privacidad</a>.</p>
+<p>Estos términos regulan el uso de HealthNexus, la plataforma de gestión hospitalaria y control de accesos desarrollada e implementada, que incluye el sitio web, la aplicación móvil y la API. Al iniciar sesión aceptas estos términos y el <a href="{{ route('privacidad') }}">Aviso de privacidad</a>.</p>
 
 <h2>1. Quién puede usar HealthNexus</h2>
 <ul>
@@ -33,7 +33,7 @@
     <li>Consultar información de pacientes que no estén a tu cargo o sin una razón relacionada con su atención.</li>
     <li>Copiar, exportar, fotografiar o difundir información clínica fuera de los casos autorizados por el hospital.</li>
     <li>Intentar entrar con cuentas ajenas, saltarse los controles de acceso o usar dispositivos no autorizados.</li>
-    <li>Realizar pruebas de seguridad, escaneos, extracción masiva de datos o ingeniería inversa de la app o la API sin autorización por escrito de {{ config('legal.empresa') }}.</li>
+    <li>Realizar pruebas de seguridad, escaneos, extracción masiva de datos o ingeniería inversa de la app o la API sin autorización por escrito de HealthNexus.</li>
     <li>Introducir información falsa o alterar registros clínicos de forma indebida.</li>
 </ul>
 
@@ -44,13 +44,13 @@
 <p>HealthNexus es una herramienta de apoyo para registrar y consultar información. Las alertas de signos vitales y la clasificación de triage ayudan a priorizar, pero <strong>no sustituyen el criterio del profesional de la salud</strong>. Las decisiones clínicas son responsabilidad del personal que atiende al paciente.</p>
 
 <h2>7. Disponibilidad del servicio</h2>
-<p>{{ config('legal.empresa') }} procura que la plataforma esté disponible de forma continua, pero puede haber interrupciones por mantenimiento, actualizaciones o causas ajenas, como fallas de internet o del proveedor de infraestructura. Siempre que sea posible, el mantenimiento programado se avisará con anticipación. El hospital debe contar con un procedimiento alterno para seguir atendiendo si el sistema no está disponible.</p>
+<p>HealthNexus procura que la plataforma esté disponible de forma continua, pero puede haber interrupciones por mantenimiento, actualizaciones o causas ajenas, como fallas de internet o del proveedor de infraestructura. Siempre que sea posible, el mantenimiento programado se avisará con anticipación. El hospital debe contar con un procedimiento alterno para seguir atendiendo si el sistema no está disponible.</p>
 
 <h2>8. Suspensión de cuentas</h2>
-<p>El hospital o {{ config('legal.empresa') }} pueden suspender o bloquear una cuenta o un dispositivo, sin previo aviso, cuando detecten un uso contrario a estos términos, un riesgo para la seguridad de la información o a solicitud del propio hospital.</p>
+<p>El hospital o HealthNexus pueden suspender o bloquear una cuenta o un dispositivo, sin previo aviso, cuando detecten un uso contrario a estos términos, un riesgo para la seguridad de la información o a solicitud del propio hospital.</p>
 
 <h2>9. Propiedad intelectual</h2>
-<p>El software, el diseño, la marca HealthNexus y su logotipo pertenecen a {{ config('legal.empresa') }}. El uso de la plataforma no te da ningún derecho sobre ellos. La información clínica registrada pertenece al hospital y a sus pacientes, conforme a la ley.</p>
+<p>El software, el diseño, la marca HealthNexus y su logotipo pertenecen a HealthNexus. El uso de la plataforma no te da ningún derecho sobre ellos. La información clínica registrada pertenece al hospital y a sus pacientes, conforme a la ley.</p>
 
 <h2>10. Cambios a estos términos</h2>
 <p>Estos términos pueden actualizarse. La versión vigente siempre estará publicada en esta página con su fecha de actualización. Si los cambios son importantes, se avisará dentro de la plataforma.</p>

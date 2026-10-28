@@ -13,7 +13,7 @@
 <p>HealthNexus es un sistema que usan los hospitales para su operación. Por eso hay dos papeles distintos:</p>
 <ul>
     <li><strong>El hospital o institución de salud</strong> que contrata y opera HealthNexus es el <strong>responsable</strong> de los datos de sus pacientes y de su personal. Para ejercer tus derechos sobre esos datos, también puedes acudir directamente al hospital.</li>
-    <li><strong>{{ config('legal.empresa') }}</strong>, con domicilio en {{ config('legal.domicilio') }}, desarrolla y mantiene la plataforma. Trata los datos <strong>por cuenta del hospital</strong> (como encargado), solo para prestar el servicio y nunca para fines propios.</li>
+    <li><strong>HealthNexus</strong>, con domicilio en {{ config('legal.domicilio') }}, desarrolla y mantiene la plataforma. Trata los datos <strong>por cuenta del hospital</strong> (como encargado), solo para prestar el servicio y nunca para fines propios.</li>
 </ul>
 <p>Contacto para temas de privacidad: <a href="mailto:{{ config('legal.correo') }}">{{ config('legal.correo') }}</a></p>
 
