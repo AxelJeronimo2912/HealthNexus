@@ -185,7 +185,7 @@
             <div class="hn-header" style="max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
                 <a class="hn-brand" href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 20px">
                     @include('partials.logo')
-                    <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7"></span></span>
+                    <span>Health<span style="color: #B9A6FF">Nexus</span></span>
                 </a>
                 <nav class="hn-nav" aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
                     <a class="hn-link" href="#modulos" style="color: #C9CDF0; text-decoration: none">Módulos</a>
@@ -193,12 +193,12 @@
                     <a class="hn-link" href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
                     <a class="hn-link" href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
                     <a class="hn-link" href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
-                    <a class="hn-link" href="#nexara" style="color: #C9CDF0; text-decoration: none"></a>
+                    <a class="hn-link" href="#nosotros" style="color: #C9CDF0; text-decoration: none">Nosotros</a>
                     <details class="hn-menu">
                         <summary aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                                 <path d="M4 7h16M4 12h16M4 17h16"></path>
                             </svg></summary>
-                        <div class="hn-menu-list"><a href="#modulos">Módulos</a><a href="#movil">App móvil</a><a href="#plataforma">Plataforma</a><a href="#seguridad">Seguridad</a><a href="#normas">Normas</a><a href="#nexara">HealthNexus</a></div>
+                        <div class="hn-menu-list"><a href="#modulos">Módulos</a><a href="#movil">App móvil</a><a href="#plataforma">Plataforma</a><a href="#seguridad">Seguridad</a><a href="#normas">Normas</a><a href="#nosotros">Nosotros</a></div>
                     </details>
                     <a class="hn-login" href="{{ url('/login') }}" style="background: #5B5FEF; color: #FFFFFF; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 600">Iniciar sesión</a>
                 </nav>
@@ -208,7 +208,7 @@
         <section id="inicio" class="hn-hero" style="background: #0D1230; color: #FFFFFF; padding: 72px 24px 96px">
             <div class="hn-hero-grid" style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
                 <div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-                    <span class="hn-badge" style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Gestión hospitalaria y control de accesos · por HealthNexus</span>
+                    <span class="hn-badge" style="align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9EA3F7; border: 1px solid #343A73; padding: 8px 14px; border-radius: 999px">Tecnología para el sector salud</span>
                     <h1 class="hn-h1" style="margin: 0; font-size: 56px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em">Toda la operación clínica de tu hospital, en un solo lugar.</h1>
                     <p class="hn-lead" style="margin: 0; font-size: 19px; line-height: 1.6; color: #C9CDF0; max-width: 560px">HealthNexus conecta pacientes, triage, signos vitales, medicación, citas y camas para que administración, médicos y enfermería trabajen con la misma información, desde la web o el celular, con acceso solo para personal y dispositivos autorizados.</p>
                     <div class="hn-cta" style="display: flex; flex-wrap: wrap; gap: 14px; padding-top: 8px">
@@ -252,7 +252,7 @@
                 <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700; font-size: 16px">Administración</span><span style="font-size: 14px; line-height: 1.5; color: #4A4F75">Usuarios, roles, dispositivos, auditoría y cuentas por cobrar.</span></div>
                 <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700; font-size: 16px">Médicos</span><span style="font-size: 14px; line-height: 1.5; color: #4A4F75">Triage, consultas y expediente, con PIN como segundo factor.</span></div>
                 <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700; font-size: 16px">Enfermería</span><span style="font-size: 14px; line-height: 1.5; color: #4A4F75">Signos vitales, medicación, notas y seguimiento.</span></div>
-                <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700; font-size: 16px">Recepción</span><span style="font-size: 14px; line-height: 1.5; color: #4A4F75">Registro de pacientes, citas y control de camas.</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 700; font-size: 16px">Farmacia</span><span style="font-size: 14px; line-height: 1.5; color: #4A4F75">Inventario por lote, dispensación y alertas de stock y caducidad.</span></div>
             </div>
         </section>
 
@@ -341,7 +341,7 @@
                         <h3 style="margin: 0; font-size: 21px; font-weight: 700">Usuarios y roles</h3>
                         <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: #33395C">
                             <li>Alta del personal con su rol en el hospital</li>
-                            <li>Permisos distintos para médico, enfermería, recepción y administración</li>
+                            <li>Permisos distintos para médico, enfermería, farmacia y administración</li>
                             <li>PIN personal para el rol de médico</li>
                             <li>Cuentas activas, suspendidas o bloqueadas</li>
                         </ul>
@@ -466,47 +466,65 @@
                 <div style="display: flex; flex-direction: column; gap: 12px; max-width: 720px">
                     <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #3B3FC4">Normas y estándares</span>
                     <h2 class="hn-h2" style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800">Construido con base en normas reconocidas</h2>
-                    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4A4F75">Usamos estas normas como referencia para diseñar, desarrollar y proteger el sistema.</p>
+                    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #4A4F75">Tomamos estas leyes, normas y estándares como referencia para diseñar, desarrollar y proteger el sistema.</p>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px">
-
-                    <div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 20px">
-                        <h3 style="margin: 0; font-size: 20px; font-weight: 700">Normativa mexicana en salud y datos</h3>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-004-SSA3-2012</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Del expediente clínico: contenido mínimo, integridad y confidencialidad.</span></div>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-024-SSA3-2012</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Sistemas de información de registro electrónico para la salud.</span></div>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">LFPDPPP (2025)</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Ley Federal de Protección de Datos Personales en Posesión de los Particulares. Los datos de salud se tratan como datos sensibles.</span></div>
-                    </div>
-
-                    <div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 20px">
-                        <h3 style="margin: 0; font-size: 20px; font-weight: 700">Estándares internacionales</h3>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO/IEC 25010</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Modelo de calidad del producto de software.</span></div>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO/IEC 27001</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Buenas prácticas de seguridad de la información.</span></div>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO/IEC/IEEE 12207</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Procesos del ciclo de vida del software.</span></div>
-                        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO 9241-210 y WCAG 2.1</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Diseño centrado en el usuario y accesibilidad web.</span></div>
-                    </div>
-
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
+<div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+<h3 style="margin: 0; font-size: 20px; font-weight: 700">Leyes</h3>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">LFPDPPP (2025)</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Ley Federal de Protección de Datos Personales en Posesión de los Particulares. Los datos de salud son datos sensibles: aviso de privacidad, consentimiento y confidencialidad.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">Ley General de Salud y su Reglamento</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Marco de la atención médica y del registro clínico que maneja la plataforma.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">Constitución, artículos 6 y 16</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Derecho a la protección de los datos personales.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">Código Penal Federal, art. 211 bis 1 a 7</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Sanciona el acceso ilícito a sistemas informáticos.</span></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+<h3 style="margin: 0; font-size: 20px; font-weight: 700">Normas oficiales mexicanas</h3>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-004-SSA3-2012</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Del expediente clínico: contenido, integración y conservación.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-024-SSA3-2012</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Sistemas de registro electrónico para la salud: interoperabilidad, seguridad y trazabilidad.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-035-SSA3-2012</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Información en salud que se genera y se reporta.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">NOM-019-SSA3-2013</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Práctica de enfermería: notas y administración de medicamentos.</span></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3E6F2; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+<h3 style="margin: 0; font-size: 20px; font-weight: 700">Estándares internacionales</h3>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO/IEC 27001 y 27002</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Seguridad de la información: control de acceso, cifrado y auditoría.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO 31000</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Gestión de riesgos del proyecto.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">ISO/IEC 25010 · 12207 · 29148</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Calidad del producto, ciclo de vida del software e ingeniería de requisitos.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; color: #3B3FC4">HL7 FHIR · OWASP · WCAG 2.1</span><span style="font-size: 15px; line-height: 1.5; color: #33395C">Intercambio de información clínica, pruebas de seguridad y accesibilidad.</span></div>
+</div>
                 </div>
-                <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #5A6080">HealthNexus toma estas normas como referencia de diseño y desarrollo; no cuenta con una certificación ISO.</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #5A6080">HealthNexus es un proyecto académico: toma estas normas como referencia de diseño y criterios de revisión. La certificación o el dictamen formal de cumplimiento queda fuera de su alcance.</p>
             </div>
         </section>
 
-        <section id="nexara" style="padding: 56px 24px 96px">
-            <div class="hn-panel" style="max-width: 1200px; margin: 0 auto; background: #0D1230; color: #FFFFFF; border-radius: 24px; padding: 48px; display: flex; flex-wrap: wrap; gap: 48px">
-                <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
-                    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Quiénes somos</span>
-                    <h2 class="hn-h2" style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Desarrollado por HealthNexus</h2>
-                    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">HealthNexus es la startup que diseña y desarrolla este proyecto de punta a punta: la plataforma web, la app móvil y la API que las conecta. Nació en la Universidad Tecnológica del Valle de Toluca, en Ingeniería en Desarrollo y Gestión de Software, y trabaja con metodología Scrum en entregas por sprint.</p>
-                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9CDF0">El acceso al sistema es exclusivo para personal registrado del hospital.</p>
-                    <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="align-self: flex-start; margin-top: 8px; color: #FFFFFF; text-decoration: none; padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid #343A73">Conoce HealthNexus →</a>
+        <section id="nosotros" style="padding: 56px 24px 96px">
+            <div class="hn-panel" style="max-width: 1200px; margin: 0 auto; background: #0D1230; color: #FFFFFF; border-radius: 24px; padding: 48px; display: flex; flex-direction: column; gap: 36px">
+                <div style="display: flex; flex-wrap: wrap; gap: 40px">
+                    <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+                        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Quiénes somos</span>
+                        <h2 class="hn-h2" style="margin: 0; font-size: 34px; line-height: 1.2; font-weight: 800">Una startup de tecnología para el sector salud</h2>
+                        <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9CDF0">HealthNexus nació como proyecto integrador de Ingeniería en Desarrollo y Gestión de Software en la Universidad Tecnológica del Valle de Toluca, a partir de un problema frecuente: muchas instituciones de salud administran su información de forma manual o con sistemas aislados, sin controlar quién puede ver o modificar cada dato.</p>
+                        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #C9CDF0">Para definir el alcance encuestamos a 79 instituciones de salud. El proyecto pasó de un sistema de control de acceso por roles a una solución hospitalaria integral, con módulos clínicos, administrativos, financieros y de inteligencia artificial, una API propia y una app móvil. Trabajamos con Scrum en entregas cada dos semanas.</p>
+                    </div>
+                    <div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+                        <div style="background: #141A40; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Misión</span><span style="font-size: 15px; line-height: 1.6; color: #E4E6FA">Ofrecer una plataforma web y móvil que permita a las instituciones de salud administrar de forma segura su información clínica, operativa y financiera, de modo que cada persona acceda solo a lo que su rol le permite.</span></div>
+                        <div style="background: #141A40; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Visión</span><span style="font-size: 15px; line-height: 1.6; color: #E4E6FA">Ser una plataforma de referencia en la administración hospitalaria, que garantice un acceso seguro y controlado a la información y apoye la toma de decisiones con inteligencia artificial.</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 10px">
+                            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Valores</span>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Seguridad</span><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Confidencialidad</span><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Trazabilidad</span><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Cumplimiento normativo</span><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Trabajo en equipo</span><span style="font-size: 13px; font-weight: 600; color: #FFFFFF; border: 1px solid #343A73; padding: 6px 12px; border-radius: 999px">Mejora continua</span></div>
+                        </div>
+                    </div>
                 </div>
-                <div style="flex: 1 1 320px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-content: start">
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesus Felipe Aviles</span><span style="font-size: 13px; color: #C9CDF0">Scrum Master · API y app móvil</span></div>
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Aransa Villarreal Anzaldo</span><span style="font-size: 13px; color: #C9CDF0">Product Owner</span></div>
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Axel Joaquín Cruz Jerónimo</span><span style="font-size: 13px; color: #C9CDF0">Backend · Plataforma web</span></div>
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Kenia Medina Gil</span><span style="font-size: 13px; color: #C9CDF0">Full Stack</span></div>
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesús Reza Gonzales</span><span style="font-size: 13px; color: #C9CDF0">Frontend</span></div>
-                    <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Ariadna Joely Pacheco Juarez</span><span style="font-size: 13px; color: #C9CDF0">QA y pruebas</span></div>
+                <div style="display: flex; flex-direction: column; gap: 14px">
+                    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9EA3F7">Equipo</span>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px">
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Aransa Villarreal Anzaldo</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">Product Owner</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Define y prioriza los requerimientos y valida las entregas con el cliente.</span></div>
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesús Felipe Aviles</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">Scrum Master</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Facilita el proceso, retira impedimentos y mantiene el tablero y la documentación.</span></div>
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Kenia Medina Gil</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">Full Stack</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Integra la interfaz con la lógica del servidor y la API.</span></div>
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Axel Joaquín Cruz Jerónimo</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">Backend</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Lógica de negocio, validaciones, base de datos y API.</span></div>
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Jesús Reza González</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">Frontend</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Pantallas web y móviles, formularios, tablas y paneles.</span></div>
+                        <div style="border: 1px solid #343A73; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Ariadna Joely Pacheco Juárez</span><span style="font-size: 13px; font-weight: 600; color: #B9A6FF">QA / Testing</span><span style="font-size: 13px; line-height: 1.5; color: #C9CDF0">Pruebas manuales y automatizadas y validación de criterios.</span></div>
+                    </div>
                 </div>
+                <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9CDF0">El acceso al sistema es exclusivo para personal registrado del hospital.</p>
             </div>
         </section>
 
@@ -517,10 +535,9 @@
                     <div style="display: flex; flex-direction: column; gap: 14px; grid-column: span 1; min-width: 0">
                         <a href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 19px">
                             @include('partials.logo')
-                            <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7"></span></span>
+                            <span>Health<span style="color: #B9A6FF">Nexus</span></span>
                         </a>
                         <p style="margin: 0; font-size: 14px; line-height: 1.6">Gestión hospitalaria y control de accesos en web y app móvil para el personal del hospital.</p>
-                        <p style="margin: 0; font-size: 13px; color: #9EA3F7">Hecho en Toluca, México</p>
                         <button id="hn-instalar" type="button" hidden style="align-self: flex-start; margin-top: 4px; display: inline-flex; align-items: center; gap: 8px; background: #5B5FEF; color: #FFFFFF; border: none; border-radius: 10px; padding: 10px 16px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
@@ -536,6 +553,7 @@
                         <a href="#plataforma" style="color: #C9CDF0; text-decoration: none">Plataforma</a>
                         <a href="#seguridad" style="color: #C9CDF0; text-decoration: none">Seguridad</a>
                         <a href="#normas" style="color: #C9CDF0; text-decoration: none">Normas</a>
+                        <a href="#nosotros" style="color: #C9CDF0; text-decoration: none">Nosotros</a>
                         <a href="{{ url('/login') }}" style="color: #C9CDF0; text-decoration: none">Iniciar sesión</a>
                     </nav>
 
@@ -549,7 +567,8 @@
                     <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; min-width: 0">
                         <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #FFFFFF">Contacto</span>
                         <a href="mailto:{{ config('legal.correo') }}" style="color: #C9CDF0; text-decoration: none; overflow-wrap: anywhere">{{ config('legal.correo') }}</a>
-                        <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #C9CDF0; text-decoration: none">Sitio de HealthNexus ↗</a>
+                        <a href="tel:{{ preg_replace('/\D/', '', config('legal.telefono')) }}" style="color: #C9CDF0; text-decoration: none">{{ config('legal.telefono') }}</a>
+                        <span style="font-size: 13px; line-height: 1.5; color: #9EA3F7">{{ config('legal.domicilio') }}</span>
                         <span style="font-size: 13px; line-height: 1.5; color: #9EA3F7">Acceso exclusivo para personal registrado del hospital.</span>
                     </div>
                 </div>
@@ -557,7 +576,7 @@
                 <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #9EA3F7; border-top: 1px solid #343A73; padding-top: 20px">HealthNexus es una herramienta de apoyo para la operación del hospital. Las alertas y la clasificación de triage no sustituyen el criterio del profesional de la salud.</p>
 
                 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px">
-                    <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener" style="color: #FFFFFF">HealthNexus</a> · HealthNexus es un producto de HealthNexus</span>
+                    <span>© {{ date('Y') }} HealthNexus. Todos los derechos reservados.</span>
                     <a href="#inicio" style="color: #C9CDF0; text-decoration: none">Volver arriba ↑</a>
                 </div>
             </div>

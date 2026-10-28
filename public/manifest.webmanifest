@@ -2,7 +2,7 @@
   "id": "/",
   "name": "HealthNexus",
   "short_name": "HealthNexus",
-  "description": "Gestión hospitalaria y control de accesos, por NEXARA.",
+  "description": "Gestión hospitalaria y control de acceso a la información en salud.",
   "lang": "es-MX",
   "dir": "ltr",
   "start_url": "/dashboard",

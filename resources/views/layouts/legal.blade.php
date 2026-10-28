@@ -37,7 +37,7 @@
     <div style="max-width: 1200px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
         <a href="{{ url('/') }}" style="display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 800; font-size: 20px">
             @include('partials.logo')
-            <span style="display: flex; flex-direction: column; line-height: 1.1"><span>Health<span style="color: #B9A6FF">Nexus</span></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: #9EA3F7">BY NEXARA</span></span>
+            <span>Health<span style="color: #B9A6FF">Nexus</span></span>
         </a>
         <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
             <a href="{{ url('/') }}" style="color: #C9CDF0; text-decoration: none">Inicio</a>
@@ -56,7 +56,7 @@
 
 <footer style="border-top: 1px solid #E3E6F2; background: #FFFFFF; padding: 32px 24px">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; color: #4A4F75">
-        <span>© {{ date('Y') }} <a href="{{ config('legal.sitio') }}" target="_blank" rel="noopener">NEXARA</a> · HealthNexus es un producto de NEXARA</span>
+        <span>© {{ date('Y') }} HealthNexus. Todos los derechos reservados.</span>
         <nav aria-label="Pie de página" style="display: flex; flex-wrap: wrap; gap: 20px">
             <a href="{{ route('privacidad') }}">Aviso de privacidad</a>
             <a href="{{ route('terminos') }}">Términos de uso</a>

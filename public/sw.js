@@ -8,7 +8,7 @@
  *
  * Al cambiar este archivo, sube la versión para que se limpie la caché anterior.
  */
-const VERSION = 'hn-static-v1';
+const VERSION = 'hn-static-v2';
 const PRECACHE = [
   '/offline.html',
   '/images/icons/icon-192.png',
