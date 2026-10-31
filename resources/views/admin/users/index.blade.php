@@ -14,6 +14,7 @@
                 </svg>
                 Nuevo Colaborador
             </a>
+            
         </div>
     </x-slot>
 
