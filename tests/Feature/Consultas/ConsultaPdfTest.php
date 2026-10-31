@@ -3,6 +3,7 @@
 namespace Tests\Feature\Consultas;
 
 use App\Models\Consulta;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -24,7 +25,7 @@ use Tests\TestCase;
  */
 class ConsultaPdfTest extends TestCase
 {
-    use RefreshDatabase, CreaDatosClinicos;
+    use CreaDatosClinicos, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -41,26 +42,26 @@ class ConsultaPdfTest extends TestCase
     /**
      * Consulta completa: diagnósticos, receta con medicamento y notas.
      */
-    private function consultaCompleta(?\App\Models\User $medico = null): Consulta
+    private function consultaCompleta(?User $medico = null): Consulta
     {
         $medico ??= $this->crearMedico();
         $paciente = $this->crearPaciente();
 
         $consulta = $this->crearConsulta($medico, [
-            'diagnostico_principal_id'  => $this->crearDiagnostico('J00', 'Rinofaringitis aguda')->id,
+            'diagnostico_principal_id' => $this->crearDiagnostico('J00', 'Rinofaringitis aguda')->id,
             'diagnostico_secundario_id' => $this->crearDiagnostico('R51', 'Cefalea')->id,
-            'frecuencia_respiratoria'   => 18,
-            'glucosa'                   => 95,
-            'perimetro_abdominal'       => 88.5,
-            'receta_libre'              => 'Reposo relativo e hidratación abundante.',
-            'notas'                     => 'Regresar a control en 7 días.',
+            'frecuencia_respiratoria' => 18,
+            'glucosa' => 95,
+            'perimetro_abdominal' => 88.5,
+            'receta_libre' => 'Reposo relativo e hidratación abundante.',
+            'notas' => 'Regresar a control en 7 días.',
         ], $paciente);
 
         $consulta->medicamentos()->attach($this->crearMedicamento(10)->id, [
-            'dosis'        => '1 tableta',
-            'via'          => 'Oral',
-            'frecuencia'   => 'Cada 8 horas',
-            'duracion'     => '5 días',
+            'dosis' => '1 tableta',
+            'via' => 'Oral',
+            'frecuencia' => 'Cada 8 horas',
+            'duracion' => '5 días',
             'indicaciones' => 'Después de los alimentos',
         ]);
 
@@ -136,16 +137,16 @@ class ConsultaPdfTest extends TestCase
 
         // Solo lo obligatorio: sin diagnósticos, receta, notas ni signos.
         $consulta = $this->crearConsulta($medico, [
-            'subjetivo'           => null,
-            'objetivo'            => null,
-            'analisis'            => null,
-            'plan'                => null,
-            'temperatura'         => null,
+            'subjetivo' => null,
+            'objetivo' => null,
+            'analisis' => null,
+            'plan' => null,
+            'temperatura' => null,
             'frecuencia_cardiaca' => null,
-            'presion_arterial'    => null,
-            'saturacion_oxigeno'  => null,
-            'peso'                => null,
-            'talla'               => null,
+            'presion_arterial' => null,
+            'saturacion_oxigeno' => null,
+            'peso' => null,
+            'talla' => null,
         ]);
 
         $response = $this->actingAs($medico)->get(route('consultas.pdf', $consulta));
@@ -157,7 +158,7 @@ class ConsultaPdfTest extends TestCase
     {
         $medico = $this->crearMedico(['nombre' => 'Ángeles', 'apellido_paterno' => 'Peña']);
         $paciente = $this->crearPaciente([
-            'nombre'           => 'José Ñandú',
+            'nombre' => 'José Ñandú',
             'apellido_paterno' => 'Muñoz',
             'apellido_materno' => 'Núñez',
         ]);
@@ -208,20 +209,15 @@ class ConsultaPdfTest extends TestCase
             ->assertSee('Consulta médica')
             // Médico y firma
             ->assertSee('Laura Ramírez Soto')
-            ->assertSee('Cédula: 12345678')
+            ->assertSee('Cédula profesional: 12345678')
             // Paciente
             ->assertSee('Juan Pérez López')
             ->assertSee('Penicilina')
             ->assertSee('O+')
-            ->assertSee($consulta->paciente->edad . ' años')
-            // Signos vitales y somatometría
-            ->assertSee('36.8 °C')
-            ->assertSee('120/80')
-            ->assertSee('98%')
-            ->assertSee('70.00 kg')
-            ->assertSee('1.75 m')
-            ->assertSee('22.9')
-            ->assertSee('88.50 cm');
+            ->assertSee($consulta->paciente->edad.' años')
+            // Signos vitales y somatometría (la unidad va en el encabezado de cada columna)
+            ->assertSeeInOrder(['Temp. (°C)', 'TA (mmHg)', 'SpO₂ (%)', '36.8', '120/80', '98'])
+            ->assertSeeInOrder(['Peso (kg)', 'Talla (m)', 'IMC', 'Perímetro abdominal (cm)', '70.00', '1.75', '22.9', '88.50']);
     }
 
     public function test_plantilla_de_consulta_muestra_el_soap_descifrado(): void
@@ -245,7 +241,7 @@ class ConsultaPdfTest extends TestCase
             ->assertSee('[R51]')
             ->assertSee('Cefalea')
             // Receta
-            ->assertSee('Paracetamol 500 mg')
+            ->assertSeeText('Paracetamol 500 mg')
             ->assertSee('1 tableta')
             ->assertSee('Cada 8 horas')
             ->assertSee('5 días')
@@ -259,7 +255,7 @@ class ConsultaPdfTest extends TestCase
     {
         $consulta = $this->cargarRelaciones($this->crearConsulta($this->crearMedico(), [
             'receta_libre' => null,
-            'notas'        => null,
+            'notas' => null,
         ]));
 
         $this->view('consultas.pdf.consulta', ['consulta' => $consulta])
@@ -270,7 +266,7 @@ class ConsultaPdfTest extends TestCase
     public function test_plantilla_de_consulta_usa_guion_cuando_faltan_diagnosticos_y_datos(): void
     {
         $consulta = $this->cargarRelaciones($this->crearConsulta($this->crearMedico(), [
-            'temperatura'  => null,
+            'temperatura' => null,
             'presion_arterial' => null,
         ]));
 
@@ -309,7 +305,10 @@ class ConsultaPdfTest extends TestCase
     public function test_pdf_de_receta_sin_medicamentos_se_genera_sin_error(): void
     {
         $medico = $this->crearMedico();
-        $consulta = $this->crearConsulta($medico, ['receta_libre' => 'Solo reposo.']);
+        $consulta = $this->crearConsulta($medico, [
+            'receta_libre' => 'Solo reposo.',
+            'diagnostico_principal_id' => $this->crearDiagnostico()->id,
+        ]);
 
         $response = $this->actingAs($medico)->get(route('consultas.receta.pdf', $consulta));
 
@@ -350,10 +349,10 @@ class ConsultaPdfTest extends TestCase
         $this->view('consultas.pdf.receta', ['consulta' => $consulta])
             ->assertSee('Receta médica')
             ->assertSee('Juan Pérez López')
-            ->assertSee($consulta->paciente->edad . ' años')
+            ->assertSee($consulta->paciente->edad.' años')
             ->assertSee($consulta->created_at->format('d/m/Y'))
             // Medicamento con su posología
-            ->assertSee('Paracetamol 500 mg')
+            ->assertSeeText('Paracetamol 500 mg')
             ->assertSee('1 tableta')
             ->assertSee('Oral')
             ->assertSee('Cada 8 horas')
@@ -362,9 +361,9 @@ class ConsultaPdfTest extends TestCase
             // Indicaciones adicionales
             ->assertSee('Reposo relativo e hidratación abundante.')
             // Firma
-            ->assertSee('Firma del médico')
+            ->assertSee('válida únicamente con la firma del médico')
             ->assertSee('Laura Ramírez Soto')
-            ->assertSee('Cédula: 12345678');
+            ->assertSee('Cédula profesional: 12345678');
     }
 
     public function test_plantilla_de_receta_omite_la_tabla_si_no_hay_medicamentos(): void
@@ -386,7 +385,7 @@ class ConsultaPdfTest extends TestCase
     {
         return [
             'PDF de consulta' => ['consultas.pdf'],
-            'PDF de receta'   => ['consultas.receta.pdf'],
+            'PDF de receta' => ['consultas.receta.pdf'],
         ];
     }
 

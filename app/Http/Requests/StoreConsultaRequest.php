@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Diagnostico;
 use App\Models\Medicamento;
 use App\Models\Paciente;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,12 +19,12 @@ class StoreConsultaRequest extends FormRequest
         return [
             // ===== SOAP =====
             'subjetivo' => ['nullable', 'string', 'max:5000'],
-            'objetivo'  => ['nullable', 'string', 'max:5000'],
-            'analisis'  => ['nullable', 'string', 'max:5000'],
-            'plan'      => ['nullable', 'string', 'max:5000'],
+            'objetivo' => ['nullable', 'string', 'max:5000'],
+            'analisis' => ['nullable', 'string', 'max:5000'],
+            'plan' => ['nullable', 'string', 'max:5000'],
 
             // ===== Diagnósticos =====
-            'diagnostico_principal_id'  => ['nullable', 'exists:diagnosticos,id'],
+            'diagnostico_principal_id' => ['nullable', 'exists:diagnosticos,id'],
             'diagnostico_secundario_id' => [
                 'nullable',
                 'exists:diagnosticos,id',
@@ -33,29 +32,29 @@ class StoreConsultaRequest extends FormRequest
             ],
 
             // ===== Signos vitales (rangos clínicos) =====
-            'temperatura'             => ['nullable', 'numeric', 'between:30,45'],
-            'frecuencia_cardiaca'     => ['nullable', 'integer', 'between:20,250'],
+            'temperatura' => ['nullable', 'numeric', 'between:30,45'],
+            'frecuencia_cardiaca' => ['nullable', 'integer', 'between:20,250'],
             'frecuencia_respiratoria' => ['nullable', 'integer', 'between:5,80'],
-            'presion_arterial'        => ['nullable', 'string', 'regex:/^\d{2,3}\/\d{2,3}$/'],
-            'saturacion_oxigeno'      => ['nullable', 'integer', 'between:50,100'],
-            'glucosa'                 => ['nullable', 'numeric', 'between:20,800'],
+            'presion_arterial' => ['nullable', 'string', 'regex:/^\d{2,3}\/\d{2,3}$/'],
+            'saturacion_oxigeno' => ['nullable', 'integer', 'between:50,100'],
+            'glucosa' => ['nullable', 'numeric', 'between:20,800'],
 
             // ===== Somatometría =====
-            'peso'                => ['nullable', 'numeric', 'between:0.5,500'],
-            'talla'               => ['nullable', 'numeric', 'between:0.3,2.5'],
+            'peso' => ['nullable', 'numeric', 'between:0.5,500'],
+            'talla' => ['nullable', 'numeric', 'between:0.3,2.5'],
             'perimetro_abdominal' => ['nullable', 'numeric', 'between:20,300'],
 
             // ===== Receta =====
             'receta_libre' => ['nullable', 'string', 'max:5000'],
-            'notas'        => ['nullable', 'string', 'max:2000'],
+            'notas' => ['nullable', 'string', 'max:2000'],
 
-            'medicamentos'                 => ['nullable', 'array', 'max:20'],
-            'medicamentos.*.id'            => ['nullable', 'exists:medicamentos,id'],
-            'medicamentos.*.dosis'         => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.via'           => ['nullable', 'string', 'max:50'],
-            'medicamentos.*.frecuencia'    => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.duracion'      => ['nullable', 'string', 'max:100'],
-            'medicamentos.*.indicaciones'  => ['nullable', 'string', 'max:500'],
+            'medicamentos' => ['nullable', 'array', 'max:20'],
+            'medicamentos.*.id' => ['nullable', 'exists:medicamentos,id'],
+            'medicamentos.*.dosis' => ['nullable', 'string', 'max:100'],
+            'medicamentos.*.via' => ['nullable', 'string', 'max:50'],
+            'medicamentos.*.frecuencia' => ['nullable', 'string', 'max:100'],
+            'medicamentos.*.duracion' => ['nullable', 'string', 'max:100'],
+            'medicamentos.*.indicaciones' => ['nullable', 'string', 'max:500'],
 
             // ===== Flags =====
             'finalizar' => ['nullable', 'boolean'],
@@ -65,19 +64,19 @@ class StoreConsultaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'diagnostico_principal_id.exists'  => 'El diagnóstico principal no existe.',
+            'diagnostico_principal_id.exists' => 'El diagnóstico principal no existe.',
             'diagnostico_secundario_id.exists' => 'El diagnóstico secundario no existe.',
             'diagnostico_secundario_id.different' => 'El diagnóstico secundario no puede ser igual al principal.',
 
-            'temperatura.between'             => 'La temperatura debe estar entre 30 y 45 °C.',
-            'frecuencia_cardiaca.between'     => 'La frecuencia cardíaca debe estar entre 20 y 250 lpm.',
+            'temperatura.between' => 'La temperatura debe estar entre 30 y 45 °C.',
+            'frecuencia_cardiaca.between' => 'La frecuencia cardíaca debe estar entre 20 y 250 lpm.',
             'frecuencia_respiratoria.between' => 'La frecuencia respiratoria debe estar entre 5 y 80 rpm.',
-            'presion_arterial.regex'          => 'La presión debe tener el formato 120/80.',
-            'saturacion_oxigeno.between'      => 'La saturación debe estar entre 50 y 100%.',
-            'glucosa.between'                 => 'La glucosa debe estar entre 20 y 800 mg/dL.',
+            'presion_arterial.regex' => 'La presión debe tener el formato 120/80.',
+            'saturacion_oxigeno.between' => 'La saturación debe estar entre 50 y 100%.',
+            'glucosa.between' => 'La glucosa debe estar entre 20 y 800 mg/dL.',
 
-            'peso.between'                => 'El peso debe estar entre 0.5 y 500 kg.',
-            'talla.between'               => 'La talla debe estar entre 0.3 y 2.5 m.',
+            'peso.between' => 'El peso debe estar entre 0.5 y 500 kg.',
+            'talla.between' => 'La talla debe estar entre 0.3 y 2.5 m.',
             'perimetro_abdominal.between' => 'El perímetro abdominal debe estar entre 20 y 300 cm.',
 
             'medicamentos.max' => 'No puedes recetar más de 20 medicamentos.',
@@ -93,6 +92,9 @@ class StoreConsultaRequest extends FormRequest
 
             $paciente = Paciente::find($this->route('cita')?->paciente_id);
 
+            // Si "medicamentos" no es un arreglo, la regla 'array' ya lo reporta; aquí se ignora para no fallar con 500.
+            $medicamentos = is_array($this->medicamentos) ? $this->medicamentos : [];
+
             // ===== Regla 1: Coherencia peso/talla vs IMC =====
             if ($this->peso && $this->talla) {
                 $imc = $this->peso / ($this->talla ** 2);
@@ -103,11 +105,11 @@ class StoreConsultaRequest extends FormRequest
             }
 
             // ===== Regla 2: No repetir medicamentos (ignorando filas vacías) =====
-            $ids = collect($this->medicamentos ?? [])
+            $ids = collect($medicamentos)
                 ->pluck('id')
                 ->filter() // <-- Ignora los IDs vacíos/nulos
                 ->values();
-                
+
             if ($ids->count() !== $ids->unique()->count()) {
                 $v->errors()->add('medicamentos',
                     'No puedes recetar el mismo medicamento dos veces.');
@@ -115,11 +117,11 @@ class StoreConsultaRequest extends FormRequest
 
             // ===== Regla 3: Medicamentos sin dosis/frecuencia cuando se finaliza =====
             if ($this->boolean('finalizar')) {
-                foreach ($this->medicamentos ?? [] as $i => $m) {
-                    
+                foreach ($medicamentos as $i => $m) {
+
                     // Ignorar filas completamente vacías (sin ID de medicamento)
                     if (empty($m['id'])) {
-                        continue; 
+                        continue;
                     }
 
                     if (empty($m['dosis'])) {
@@ -136,8 +138,8 @@ class StoreConsultaRequest extends FormRequest
             // ===== Regla 4: Alergias vs medicamentos =====
             if ($paciente && $paciente->alergias) {
                 $alergias = strtolower($paciente->alergias);
-                foreach ($this->medicamentos ?? [] as $i => $m) {
-                    
+                foreach ($medicamentos as $i => $m) {
+
                     // Ignorar filas vacías
                     if (empty($m['id'])) {
                         continue;

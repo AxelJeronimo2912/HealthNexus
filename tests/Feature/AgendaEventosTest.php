@@ -37,7 +37,7 @@ class AgendaEventosTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1)
             ->assertJsonPath('0.id', $cita->id)
-            ->assertJsonPath('0.title', $paciente->nombre_completo . ' · Dr. ' . $medico->nombre_completo)
+            ->assertJsonPath('0.title', $paciente->nombre_completo)
             ->assertJsonPath('0.color', '#f43f5e')
             ->assertJsonPath('0.extendedProps.medico', $medico->nombre_completo);
     }

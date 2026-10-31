@@ -16,7 +16,7 @@ use Tests\TestCase;
  */
 class RegistroConsultaTest extends TestCase
 {
-    use RefreshDatabase, CreaDatosClinicos;
+    use CreaDatosClinicos, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -91,8 +91,8 @@ class RegistroConsultaTest extends TestCase
     {
         return [
             'programada' => ['programada'],
-            'cancelada'  => ['cancelada'],
-            'atendida'   => ['atendida'],
+            'cancelada' => ['cancelada'],
+            'atendida' => ['atendida'],
             'no asistió' => ['no_asistio'],
         ];
     }
@@ -106,7 +106,7 @@ class RegistroConsultaTest extends TestCase
             ->get(route('consultas.iniciar', $cita))
             ->assertRedirect(route('signos-vitales.create', [
                 'paciente_id' => $cita->paciente_id,
-                'cita_id'     => $cita->id,
+                'cita_id' => $cita->id,
             ]))
             ->assertSessionHas('warning');
     }
@@ -121,7 +121,7 @@ class RegistroConsultaTest extends TestCase
             ->get(route('consultas.iniciar', $cita))
             ->assertRedirect(route('signos-vitales.create', [
                 'paciente_id' => $cita->paciente_id,
-                'cita_id'     => $cita->id,
+                'cita_id' => $cita->id,
             ]))
             ->assertSessionHas('warning');
     }
@@ -166,11 +166,11 @@ class RegistroConsultaTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('consultas', [
-            'id'          => $consulta->id,
-            'cita_id'     => $cita->id,
+            'id' => $consulta->id,
+            'cita_id' => $cita->id,
             'paciente_id' => $cita->paciente_id,
-            'medico_id'   => $medico->id,
-            'estado'      => 'borrador',
+            'medico_id' => $medico->id,
+            'estado' => 'borrador',
         ]);
         $this->assertNull($consulta->finalizada_en);
     }
@@ -181,7 +181,10 @@ class RegistroConsultaTest extends TestCase
         $cita = $this->crearCita($medico);
 
         $this->actingAs($medico)
-            ->post(route('consultas.store', $cita), $this->datosConsulta(['finalizar' => 1]))
+            ->post(route('consultas.store', $cita), $this->datosConsulta([
+                'finalizar' => 1,
+                'diagnostico_principal_id' => $this->crearDiagnostico()->id,
+            ]))
             ->assertSessionHasNoErrors();
 
         $consulta = Consulta::firstOrFail();
@@ -198,12 +201,12 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
-                'presion_arterial'        => '130/85',
+                'presion_arterial' => '130/85',
                 'frecuencia_respiratoria' => 18,
-                'glucosa'                 => 95,
-                'perimetro_abdominal'     => 88.5,
-                'receta_libre'            => 'Reposo relativo e hidratación.',
-                'notas'                   => 'Regresar si empeora.',
+                'glucosa' => 95,
+                'perimetro_abdominal' => 88.5,
+                'receta_libre' => 'Reposo relativo e hidratación.',
+                'notas' => 'Regresar si empeora.',
             ]));
 
         $consulta = Consulta::firstOrFail();
@@ -242,7 +245,7 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
-                'peso'  => 70,
+                'peso' => 70,
                 'talla' => 1.75,
             ]));
 
@@ -260,8 +263,8 @@ class RegistroConsultaTest extends TestCase
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
                 'paciente_id' => $otroPaciente->id,
-                'medico_id'   => $intruso->id,
-                'cita_id'     => 999,
+                'medico_id' => $intruso->id,
+                'cita_id' => 999,
             ]));
 
         $consulta = Consulta::firstOrFail();
@@ -280,7 +283,7 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
-                'diagnostico_principal_id'  => $principal->id,
+                'diagnostico_principal_id' => $principal->id,
                 'diagnostico_secundario_id' => $secundario->id,
             ]));
 
@@ -311,25 +314,25 @@ class RegistroConsultaTest extends TestCase
     public static function datosInvalidos(): array
     {
         return [
-            'temperatura menor a 30'        => ['temperatura', ['temperatura' => 29.9]],
-            'temperatura mayor a 45'        => ['temperatura', ['temperatura' => 45.1]],
-            'temperatura no numérica'       => ['temperatura', ['temperatura' => 'caliente']],
-            'FC menor a 20'                 => ['frecuencia_cardiaca', ['frecuencia_cardiaca' => 19]],
-            'FC mayor a 250'                => ['frecuencia_cardiaca', ['frecuencia_cardiaca' => 251]],
-            'FR menor a 5'                  => ['frecuencia_respiratoria', ['frecuencia_respiratoria' => 4]],
-            'FR mayor a 80'                 => ['frecuencia_respiratoria', ['frecuencia_respiratoria' => 81]],
-            'saturación mayor a 100'        => ['saturacion_oxigeno', ['saturacion_oxigeno' => 101]],
-            'saturación negativa'           => ['saturacion_oxigeno', ['saturacion_oxigeno' => -1]],
-            'glucosa mayor a 1000'          => ['glucosa', ['glucosa' => 1001]],
-            'peso menor a 0.5'              => ['peso', ['peso' => 0.4]],
-            'peso mayor a 400'              => ['peso', ['peso' => 401]],
-            'talla menor a 0.3'             => ['talla', ['talla' => 0.29]],
-            'talla mayor a 2.5'             => ['talla', ['talla' => 2.6]],
-            'presión arterial muy larga'    => ['presion_arterial', ['presion_arterial' => str_repeat('1', 21)]],
-            'diagnóstico principal inexistente'  => ['diagnostico_principal_id', ['diagnostico_principal_id' => 99999]],
+            'temperatura menor a 30' => ['temperatura', ['temperatura' => 29.9]],
+            'temperatura mayor a 45' => ['temperatura', ['temperatura' => 45.1]],
+            'temperatura no numérica' => ['temperatura', ['temperatura' => 'caliente']],
+            'FC menor a 20' => ['frecuencia_cardiaca', ['frecuencia_cardiaca' => 19]],
+            'FC mayor a 250' => ['frecuencia_cardiaca', ['frecuencia_cardiaca' => 251]],
+            'FR menor a 5' => ['frecuencia_respiratoria', ['frecuencia_respiratoria' => 4]],
+            'FR mayor a 80' => ['frecuencia_respiratoria', ['frecuencia_respiratoria' => 81]],
+            'saturación mayor a 100' => ['saturacion_oxigeno', ['saturacion_oxigeno' => 101]],
+            'saturación negativa' => ['saturacion_oxigeno', ['saturacion_oxigeno' => -1]],
+            'glucosa mayor a 1000' => ['glucosa', ['glucosa' => 1001]],
+            'peso menor a 0.5' => ['peso', ['peso' => 0.4]],
+            'peso mayor a 400' => ['peso', ['peso' => 401]],
+            'talla menor a 0.3' => ['talla', ['talla' => 0.29]],
+            'talla mayor a 2.5' => ['talla', ['talla' => 2.6]],
+            'presión arterial muy larga' => ['presion_arterial', ['presion_arterial' => str_repeat('1', 21)]],
+            'diagnóstico principal inexistente' => ['diagnostico_principal_id', ['diagnostico_principal_id' => 99999]],
             'diagnóstico secundario inexistente' => ['diagnostico_secundario_id', ['diagnostico_secundario_id' => 99999]],
-            'medicamento inexistente'       => ['medicamentos.0.id', ['medicamentos' => [['id' => 99999]]]],
-            'medicamentos no es arreglo'    => ['medicamentos', ['medicamentos' => 'paracetamol']],
+            'medicamento inexistente' => ['medicamentos.0.id', ['medicamentos' => [['id' => 99999]]]],
+            'medicamentos no es arreglo' => ['medicamentos', ['medicamentos' => 'paracetamol']],
         ];
     }
 
@@ -340,11 +343,11 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
-                'temperatura'             => 30,
-                'frecuencia_cardiaca'     => 250,
+                'temperatura' => 30,
+                'frecuencia_cardiaca' => 250,
                 'frecuencia_respiratoria' => 5,
-                'saturacion_oxigeno'      => 100,
-                'glucosa'                 => 0,
+                'saturacion_oxigeno' => 100,
+                'glucosa' => 20,
             ]))
             ->assertSessionHasNoErrors();
 
@@ -364,11 +367,11 @@ class RegistroConsultaTest extends TestCase
         $this->actingAs($medico)
             ->post(route('consultas.store', $cita), $this->datosConsulta([
                 'medicamentos' => [[
-                    'id'           => $medicamento->id,
-                    'dosis'        => '1 tableta',
-                    'via'          => 'Oral',
-                    'frecuencia'   => 'Cada 8 horas',
-                    'duracion'     => '5 días',
+                    'id' => $medicamento->id,
+                    'dosis' => '1 tableta',
+                    'via' => 'Oral',
+                    'frecuencia' => 'Cada 8 horas',
+                    'duracion' => '5 días',
                     'indicaciones' => 'Después de los alimentos',
                 ]],
             ]))
@@ -378,32 +381,32 @@ class RegistroConsultaTest extends TestCase
 
         // Receta guardada con sus datos de pivote
         $this->assertDatabaseHas('consulta_medicamento', [
-            'consulta_id'    => $consulta->id,
+            'consulta_id' => $consulta->id,
             'medicamento_id' => $medicamento->id,
-            'dosis'          => '1 tableta',
-            'via'            => 'Oral',
-            'frecuencia'     => 'Cada 8 horas',
-            'duracion'       => '5 días',
-            'indicaciones'   => 'Después de los alimentos',
+            'dosis' => '1 tableta',
+            'via' => 'Oral',
+            'frecuencia' => 'Cada 8 horas',
+            'duracion' => '5 días',
+            'indicaciones' => 'Después de los alimentos',
         ]);
 
         // Inventario: stock global y lote
         $this->assertSame(9, $medicamento->fresh()->stock_actual);
         $this->assertDatabaseHas('lotes', [
-            'medicamento_id'      => $medicamento->id,
+            'medicamento_id' => $medicamento->id,
             'cantidad_disponible' => 9,
         ]);
 
         // Movimiento de salida trazable a la consulta
         $this->assertDatabaseHas('movimientos_inventario', [
-            'medicamento_id'  => $medicamento->id,
-            'tipo'            => 'salida',
-            'cantidad'        => -1,
-            'stock_anterior'  => 10,
-            'stock_nuevo'     => 9,
+            'medicamento_id' => $medicamento->id,
+            'tipo' => 'salida',
+            'cantidad' => -1,
+            'stock_anterior' => 10,
+            'stock_nuevo' => 9,
             'referencia_tipo' => 'consulta',
-            'referencia_id'   => $consulta->id,
-            'user_id'         => $medico->id,
+            'referencia_id' => $consulta->id,
+            'user_id' => $medico->id,
         ]);
     }
 
@@ -457,8 +460,9 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->put(route('consultas.update', $consulta), $this->datosConsulta([
-                'analisis'  => 'Migraña sin aura.',
+                'analisis' => 'Migraña sin aura.',
                 'finalizar' => 1,
+                'diagnostico_principal_id' => $this->crearDiagnostico()->id,
             ]))
             ->assertRedirect(route('consultas.show', $consulta))
             ->assertSessionHas('success');
@@ -532,12 +536,12 @@ class RegistroConsultaTest extends TestCase
         $this->assertCount(0, $consulta->fresh()->medicamentos);
         $this->assertSame(10, $medicamento->fresh()->stock_actual);
         $this->assertDatabaseHas('movimientos_inventario', [
-            'medicamento_id'  => $medicamento->id,
-            'tipo'            => 'entrada',
-            'cantidad'        => 1,
+            'medicamento_id' => $medicamento->id,
+            'tipo' => 'entrada',
+            'cantidad' => 1,
             'referencia_tipo' => 'consulta',
-            'referencia_id'   => $consulta->id,
-            'motivo'          => 'Devolución por edición de consulta',
+            'referencia_id' => $consulta->id,
+            'motivo' => 'Devolución por edición de consulta',
         ]);
     }
 
@@ -564,6 +568,22 @@ class RegistroConsultaTest extends TestCase
         $this->assertSame('2 tabletas', $consulta->fresh()->medicamentos->first()->pivot->dosis);
     }
 
+    public function test_al_editar_no_permite_recetar_un_medicamento_al_que_el_paciente_es_alergico(): void
+    {
+        $medico = $this->crearMedico();
+        $consulta = $this->crearConsulta($medico);
+        $alergeno = $this->crearMedicamento(10, ['nombre' => 'Penicilina']);
+
+        $this->actingAs($medico)
+            ->put(route('consultas.update', $consulta), $this->datosConsulta([
+                'medicamentos' => [['id' => $alergeno->id, 'dosis' => '1 tableta']],
+            ]))
+            ->assertSessionHasErrors('medicamentos.0.id');
+
+        $this->assertCount(0, $consulta->fresh()->medicamentos);
+        $this->assertSame(10, $alergeno->fresh()->stock_actual);
+    }
+
     public function test_agregar_medicamento_sin_stock_al_editar_falla_y_no_modifica_la_consulta(): void
     {
         $medico = $this->crearMedico();
@@ -572,7 +592,7 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->put(route('consultas.update', $consulta), $this->datosConsulta([
-                'analisis'     => 'No debería guardarse',
+                'analisis' => 'No debería guardarse',
                 'medicamentos' => [['id' => $agotado->id]],
             ]))
             ->assertSessionHasErrors('medicamentos');
@@ -637,7 +657,7 @@ class RegistroConsultaTest extends TestCase
     {
         return [
             'enfermería' => ['enfermeria'],
-            'farmacia'   => ['farmacia'],
+            'farmacia' => ['farmacia'],
         ];
     }
 
