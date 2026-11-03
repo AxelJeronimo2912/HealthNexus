@@ -12,7 +12,10 @@ use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 use App\Models\Especialidad;
 use Illuminate\Http\Request;   
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class UserController extends Controller
+
 {
     /**
      * Devuelve true si el rol es médico (o cualquier variante: medico a, b, m, etc.)
@@ -218,4 +221,25 @@ public function marcarPrincipal(User $user, $pivotId): RedirectResponse
 
     return back()->with('success', 'Especialidad marcada como principal.');
 }
+/**
+     * Generar reporte operativo en PDF de los colaboradores registrados.
+     */
+    public function reportePdf(Request $request)
+    {
+        $users = \App\Models\User::with('roles')->orderBy('name')->get();
+
+        $stats = [
+            'total' => $users->count(),
+            'activos' => $users->where('activo', true)->count(),
+            'inactivos' => $users->where('activo', false)->count(),
+        ];
+
+        $fechaEmision = now()->format('d/m/Y H:i');
+
+        // Carga la vista PDF de usuarios
+        $pdf = Pdf::loadView('admin.users.pdf.reporte', compact('users', 'stats', 'fechaEmision'));
+
+        // Descarga directa del archivo PDF
+        return $pdf->download('reporte-colaboradores-' . now()->format('Y-m-d') . '.pdf');
+    }
 }

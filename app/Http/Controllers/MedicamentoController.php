@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\InventarioService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MedicamentoController extends Controller
 {
@@ -156,5 +157,25 @@ class MedicamentoController extends Controller
             'precio_venta.min' => 'El precio de venta debe ser mayor a $0.00.',
             'precio_venta.gte' => 'El precio de venta NO puede ser menor al precio de compra. ¡Estarías perdiendo dinero!',
         ]);
+    }
+    /**
+     * Generar reporte en PDF de medicamentos con stock bajo o crítico.
+     */
+    public function reporteStockBajo()
+    {
+        // Consulta optimizada para inventario bajo
+        $medicamentos = Medicamento::query()
+            ->whereColumn('stock_actual', '<=', 'stock_minimo')
+            ->where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        $fecha = now()->format('d/m/Y H:i');
+
+        // Carga la vista del PDF que crearemos en resources/views/pdf/inventario-bajo.blade.php
+        $pdf = Pdf::loadView('medicamentos.pdf.inventario-bajo', compact('medicamentos', 'fecha'));
+
+        // Descarga directa del archivo PDF
+        return $pdf->download('reporte-stock-bajo-' . now()->format('Y-m-d') . '.pdf');
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use App\Enums\AuditEvent;
 use App\Services\AuditoriaService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CamaController extends Controller
 {
@@ -293,5 +294,35 @@ class CamaController extends Controller
             'codigo.required' => 'El código de la cama es obligatorio.',
             'codigo.unique'   => 'Ya existe una cama con ese código.',
         ]);
+    }
+    /**
+     * Generar reporte operativo en PDF de camas hospitalarias.
+     */
+    public function reporteCamas(Request $request)
+    {
+        // Puedes conservar el filtro de estado si el usuario seleccionó uno en la vista
+        $query = Cama::query();
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        $camas = $query->orderBy('area')->orderBy('codigo')->get();
+        
+        $stats = [
+            'total' => Cama::count(),
+            'disponibles' => Cama::where('estado', 'disponible')->count(),
+            'ocupadas' => Cama::where('estado', 'ocupada')->count(),
+            'mantenimiento' => Cama::where('estado', 'mantenimiento')->count(),
+            'limpieza' => Cama::where('estado', 'limpieza')->count(),
+        ];
+
+        $fecha = now()->format('d/m/Y H:i');
+
+        // Carga la vista PDF de camas
+        $pdf = Pdf::loadView('camas.pdf.reporte', compact('camas', 'stats', 'fecha'));
+
+        // Descarga el archivo PDF
+        return $pdf->download('reporte-camas-' . now()->format('Y-m-d') . '.pdf');
     }
 }
