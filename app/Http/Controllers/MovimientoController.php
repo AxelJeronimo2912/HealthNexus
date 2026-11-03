@@ -11,15 +11,19 @@ use Illuminate\View\View;
 
 class MovimientoController extends Controller
 {
+    /**
+     * Mostrar el listado del historial de movimientos con filtros avanzados.
+     */
     public function index(Request $request): View
     {
         $user = auth()->user();
         $esAdmin = $user->hasRole('administrador');
 
-        // Filtros
+        // Captura de filtros
         $medicamentoId = $request->input('medicamento_id');
         $tipo = $request->input('tipo');
         $userId = $request->input('user_id');
+        $loteId = $request->input('lote_id');
         $desde = $request->input('desde');
         $hasta = $request->input('hasta');
 
@@ -38,6 +42,10 @@ class MovimientoController extends Controller
             $query->where('user_id', $userId);
         }
 
+        if ($loteId) {
+            $query->where('lote_id', $loteId);
+        }
+
         if ($desde) {
             $query->whereDate('created_at', '>=', $desde);
         }
@@ -48,11 +56,12 @@ class MovimientoController extends Controller
 
         $movimientos = $query->paginate(25)->withQueryString();
 
-        // Datos para filtros
+        // Datos para alimentar los selects de los filtros
         $medicamentos = Medicamento::orderBy('nombre')->get(['id', 'nombre', 'concentracion']);
         $usuarios = User::orderBy('nombre')->get(['id', 'nombre', 'apellido_paterno']);
+        $lotes = Lote::orderBy('codigo_lote')->get(['id', 'codigo_lote']);
 
-        // Estadísticas globales
+        // Estadísticas globales de inventario
         $stats = [
             'total_movimientos' => MovimientoInventario::count(),
             'entradas_hoy' => MovimientoInventario::where('tipo', 'entrada')->whereDate('created_at', today())->count(),
@@ -64,19 +73,19 @@ class MovimientoController extends Controller
         ];
 
         return view('movimientos.index', compact(
-            'movimientos', 'medicamentos', 'usuarios', 'stats',
-            'medicamentoId', 'tipo', 'userId', 'desde', 'hasta'
+            'movimientos', 'medicamentos', 'usuarios', 'lotes', 'stats',
+            'medicamentoId', 'tipo', 'userId', 'loteId', 'desde', 'hasta'
         ));
     }
 
     /**
-     * Detalle de un movimiento individual.
+     * Detalle de un movimiento individual para el modal por AJAX.
      */
-    public function show(Request $request, MovimientoInventario $movimiento) // <-- Quitamos el ": View" y agregamos $request
+    public function show(Request $request, MovimientoInventario $movimiento)
     {
         $movimiento->load(['medicamento', 'lote', 'user']);
 
-        // Si es una petición del modal por AJAX, devolvemos solo el HTML
+        // Si es una petición asíncrona (AJAX), devolvemos solo el render del componente del modal
         if ($request->ajax()) {
             return view('movimientos.show', compact('movimiento'))->render();
         }
