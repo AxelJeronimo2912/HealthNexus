@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,6 +21,7 @@
         h1 {
             color: #0d9488;
             font-size: 19px;
+            margin: 0 0 8px;
         }
 
         .fecha {
@@ -132,7 +134,7 @@
             @forelse ($users as $i => $user)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ $user->nombre_completo }}</td>
+                    <td>{{ $user->nombre_completo ?: $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->getRoleNames()->first() ?? 'Sin rol' }}</td>
                     <td>

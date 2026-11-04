@@ -11,6 +11,7 @@ use App\Models\Cuenta;
 use App\Models\Servicio;
 use App\Enums\AuditEvent;
 use App\Services\AuditoriaService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CitaController extends Controller
 {
@@ -234,5 +235,37 @@ class CitaController extends Controller
         }
 
         return view('citas.partials.historial-modal', compact('historial'));
+    }
+    /**
+     * Generar reporte operativo en PDF de las citas de una fecha específica.
+     */
+    public function reportePdf(Request $request)
+    {
+        // Toma la fecha solicitada o usa el día actual por defecto
+        $fecha = $request->filled('fecha') 
+            ? \Carbon\Carbon::parse($request->fecha) 
+            : today();
+
+        $citas = \App\Models\Cita::with(['paciente', 'medico'])
+            ->whereDate('fecha_hora', $fecha)
+            ->orderBy('fecha_hora')
+            ->get();
+
+        $stats = [
+            'total' => $citas->count(),
+            'programadas' => $citas->where('estado', 'programada')->count(),
+            'confirmadas' => $citas->where('estado', 'confirmada')->count(),
+            'atendidas' => $citas->where('estado', 'atendida')->count(),
+            'canceladas' => $citas->where('estado', 'cancelada')->count(),
+        ];
+
+        $fechaTexto = $fecha->locale('es')->translatedFormat('d \d\e F \d\e Y');
+        $fechaEmision = now()->format('d/m/Y H:i');
+
+        // Carga la vista PDF de citas
+        $pdf = Pdf::loadView('citas.pdf.reporte', compact('citas', 'stats', 'fechaTexto', 'fechaEmision'));
+
+        // Descarga el archivo PDF con nombre dinámico basado en la fecha
+        return $pdf->download('reporte-citas-' . $fecha->format('Y-m-d') . '.pdf');
     }
 }
