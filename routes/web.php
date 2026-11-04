@@ -117,10 +117,14 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
             ->name('ia-medica-predecir');
 
         // Usuarios
-        Route::get('users/reporte-pdf', [\App\Http\Controllers\Admin\UserController::class, 'reportePdf'])->name('users.reporte-pdf');
+        // Usuarios
+        Route::get('users/reporte-pdf', [UserController::class, 'reportePdf'])
+         ->name('users.reporte-pdf');
+
         Route::resource('users', UserController::class);
-        Route::post('users/{user}/regenerar-pin', [UserController::class, 'regenerarPin'])
-            ->name('users.regenerar-pin');
+
+         Route::post('users/{user}/regenerar-pin', [UserController::class, 'regenerarPin'])
+          ->name('users.regenerar-pin');
 
         // Roles y permisos
         Route::resource('roles', RoleController::class);
@@ -197,7 +201,6 @@ Route::middleware(['auth', 'rol.prefijo:farmac'])
 */
 Route::middleware(['auth', 'permission:medicamentos.ver'])
     ->group(function () {
-        Route::get('/medicamentos/reporte-stock-bajo', [MedicamentoController::class, 'reporteStockBajo'])->name('medicamentos.reporte-stock-bajo');
         Route::resource('medicamentos', MedicamentoController::class);
     });
 
@@ -225,7 +228,6 @@ Route::middleware(['auth', 'permission:expediente.ver'])
 */
 Route::middleware(['auth', 'permission:camas.ver'])
     ->group(function () {
-        Route::get('/camas/reporte-pdf', [CamaController::class, 'reporteCamas'])->name('camas.reporte-pdf');
         Route::resource('camas', CamaController::class);
         Route::patch('/camas/{cama}/estado', [CamaController::class, 'cambiarEstado'])
     ->name('camas.cambiarEstado');
@@ -274,7 +276,6 @@ Route::middleware(['auth', 'permission:citas.ver'])
     ->prefix('citas')
     ->name('citas.')
     ->group(function () {
-        Route::get('/reporte-pdf', [CitaController::class, 'reportePdf'])->name('reporte-pdf');
         Route::get('/', [CitaController::class, 'index'])->name('index');
 
         Route::get('/historial', [CitaController::class, 'historial'])->name('historial');
