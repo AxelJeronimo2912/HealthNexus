@@ -201,12 +201,13 @@ Route::middleware(['auth', 'rol.prefijo:farmac'])
 */
 Route::middleware(['auth', 'permission:medicamentos.ver'])
     ->group(function () {
+
+        // Reporte PDF de medicamentos con stock bajo
+        Route::get('/medicamentos/reporte-stock-bajo', [MedicamentoController::class, 'reporteStockBajo'])
+            ->name('medicamentos.reporte-stock-bajo');
+
         Route::resource('medicamentos', MedicamentoController::class);
     });
-
-Route::post('/medicamentos/{medicamento}/entrada', [MedicamentoController::class, 'entrada'])
-    ->middleware(['auth', 'permission:medicamentos.ver'])
-    ->name('medicamentos.entrada');
 
 /*
 |--------------------------------------------------------------------------
@@ -228,11 +229,16 @@ Route::middleware(['auth', 'permission:expediente.ver'])
 */
 Route::middleware(['auth', 'permission:camas.ver'])
     ->group(function () {
-        Route::resource('camas', CamaController::class);
-        Route::patch('/camas/{cama}/estado', [CamaController::class, 'cambiarEstado'])
-    ->name('camas.cambiarEstado');
-    });
 
+        // Reporte PDF de camas
+        Route::get('/camas/reporte-pdf', [CamaController::class, 'reporteCamas'])
+            ->name('camas.reporte-pdf');
+
+        Route::resource('camas', CamaController::class);
+
+        Route::patch('/camas/{cama}/estado', [CamaController::class, 'cambiarEstado'])
+            ->name('camas.cambiarEstado');
+    });
 /*
 |--------------------------------------------------------------------------
 | Módulo de Signos Vitales
@@ -277,6 +283,10 @@ Route::middleware(['auth', 'permission:citas.ver'])
     ->name('citas.')
     ->group(function () {
         Route::get('/', [CitaController::class, 'index'])->name('index');
+
+        // Reporte PDF de citas
+        Route::get('/reporte-pdf', [CitaController::class, 'reportePdf'])
+            ->name('reporte-pdf');
 
         Route::get('/historial', [CitaController::class, 'historial'])->name('historial');
 
