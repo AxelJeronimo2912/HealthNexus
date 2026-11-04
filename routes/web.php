@@ -117,9 +117,14 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
             ->name('ia-medica-predecir');
 
         // Usuarios
+        // Usuarios
+        Route::get('users/reporte-pdf', [UserController::class, 'reportePdf'])
+         ->name('users.reporte-pdf');
+
         Route::resource('users', UserController::class);
-        Route::post('users/{user}/regenerar-pin', [UserController::class, 'regenerarPin'])
-            ->name('users.regenerar-pin');
+
+         Route::post('users/{user}/regenerar-pin', [UserController::class, 'regenerarPin'])
+          ->name('users.regenerar-pin');
 
         // Roles y permisos
         Route::resource('roles', RoleController::class);

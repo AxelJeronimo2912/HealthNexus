@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RegisteredUserController extends Controller
 {
@@ -48,4 +49,29 @@ class RegisteredUserController extends Controller
 
         return redirect(route('dashboard', absolute: false));
     }
+    public function reportePdf()
+{
+    $users = User::with('roles')
+        ->orderBy('apellido_paterno')
+        ->orderBy('nombre')
+        ->get();
+
+    $stats = [
+        'total' => $users->count(),
+        'activos' => $users->where('activo', true)->count(),
+        'inactivos' => $users->where('activo', false)->count(),
+    ];
+
+    $fechaEmision = now()->format('d/m/Y H:i');
+
+    $pdf = Pdf::loadView('admin.users.pdf.reporte', compact(
+        'users',
+        'stats',
+        'fechaEmision'
+    ));
+
+    return $pdf->download(
+        'reporte-colaboradores-' . now()->format('Y-m-d') . '.pdf'
+    );
+}
 }
