@@ -27,6 +27,7 @@ class EspecialidadRequest extends FormRequest
             ],
             'nombre' => [
                 'required', 'string', 'min:3', 'max:150',
+                'regex:/^[\pL\pN\s\.\,\-\(\)\/]+$/u',
                 Rule::unique('especialidades', 'nombre')->ignore($id),
             ],
             'descripcion' => ['nullable', 'string', 'max:1000'],
@@ -49,6 +50,7 @@ class EspecialidadRequest extends FormRequest
             'nombre.required' => 'El nombre de la especialidad es obligatorio.',
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
             'nombre.max'      => 'El nombre no puede superar los 150 caracteres.',
+            'nombre.regex'    => 'El nombre solo puede contener letras, números, espacios y los signos . , - ( ) /',
             'nombre.unique'   => 'Ya existe una especialidad con ese nombre.',
 
             'descripcion.max' => 'La descripción no puede superar los 1000 caracteres.',

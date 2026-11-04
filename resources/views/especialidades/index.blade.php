@@ -354,7 +354,8 @@
                 </div>
 
                 <form action="{{ route('especialidades.store') }}" method="POST" class="p-6 space-y-5">
-                    @csrf
+                 @csrf
+                 <input type="hidden" name="_modal" value="create">
                     @include('especialidades._form', ['especialidad' => null, 'prefix' => 'create'])
                     <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
                         <button type="button" onclick="closeModal('modal-create')"
@@ -403,10 +404,10 @@
                         </svg>
                     </button>
                 </div>
-
                 <form id="form-edit" method="POST" class="p-6 space-y-5">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="_modal" value="edit">
                     <input type="hidden" name="especialidad_id" id="edit_especialidad_id"
                         value="{{ old('especialidad_id') }}">
                     @include('especialidades._form', ['especialidad' => null, 'prefix' => 'edit'])
