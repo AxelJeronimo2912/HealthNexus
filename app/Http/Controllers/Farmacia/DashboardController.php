@@ -13,7 +13,6 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        // 1. Medicamentos con stock bajo
         $medicamentosBajos = Medicamento::where('activo', true)
             ->with('lotes')
             ->get()
@@ -21,44 +20,44 @@ class DashboardController extends Controller
             ->sortBy(fn($m) => $m->stock_total_calculado)
             ->values();
 
-        // 2. Medicamentos críticos (top 10 de los bajos)
         $medicamentosCriticos = $medicamentosBajos->take(10);
 
-        // Contador precalculado
         $medicamentosBajosTotal = $medicamentosBajos->count();
 
-        // 3. Recetas pendientes de dispensar (CORREGIDO)
-        // Buscamos consultas finalizadas, no dispensadas, que tengan medicamentos o receta libre
-        $recetasPendientes = Consulta::where('dispensada', false)
+        $recetasPendientesQuery = Consulta::where('estado', 'finalizada')
+            ->where('dispensada', false)
             ->where(function ($query) {
                 $query->whereHas('medicamentos')
-                      ->orWhereNotNull('receta_libre');
-            })
-            ->with(['paciente', 'medico'])
+                    ->orWhereNotNull('receta_libre');
+            });
+
+        $recetasPendientesTotal = (clone $recetasPendientesQuery)->count();
+
+        $recetasPendientes = $recetasPendientesQuery
+            ->with(['paciente', 'medico', 'medicamentos'])
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-        $recetasPendientesTotal = $recetasPendientes->count();
-
-        // 4. Dispensaciones de hoy
         $dispensacionesHoy = Consulta::where('dispensada', true)
             ->whereDate('dispensada_en', today())
             ->count();
 
-        // 5. Alertas de stock
-        $alertasStock = Alerta::whereIn('estado', ['activa', 'vista'])
+        $alertasStockQuery = Alerta::whereIn('estado', ['activa', 'vista'])
             ->where(function ($q) {
                 $q->where('titulo', 'LIKE', '%stock%')
-                  ->orWhere('titulo', 'LIKE', '%medicamento%');
-            })
+                    ->orWhere('titulo', 'LIKE', '%medicamento%');
+            });
+
+        $alertasStockTotal = (clone $alertasStockQuery)->count();
+
+        $alertasStock = $alertasStockQuery
+            ->orderByDesc('created_at')
             ->limit(5)
             ->get();
 
-        $alertasStockTotal = $alertasStock->count();
-
-        // 6. Top 5 medicamentos con mayor consumo (predicción)
         $topDemanda = PrediccionService::rankingDemanda(30, 5);
+
         $topDemandaTotal = count($topDemanda);
 
         return view('farmacia.dashboard', compact(

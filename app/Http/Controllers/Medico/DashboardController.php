@@ -15,34 +15,35 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // 1. Citas de hoy asignadas al médico
         $citasHoy = Cita::where('medico_id', $user->id)
             ->whereDate('fecha_hora', today())
             ->with(['paciente', 'consulta'])
             ->orderBy('fecha_hora')
             ->get();
 
-        // 2. Pacientes asignados al médico
-        $pacientesAsignados = $user->pacientesAsignados()->count();
+        $pacientesAsignadosIds = $user->pacientesAsignados()
+            ->pluck('paciente_id')
+            ->unique();
 
-        // 3. Consultas finalizadas hoy por este médico
-        //    (cuenta solo consultas reales, no citas)
+        $pacientesAsignados = $pacientesAsignadosIds->count();
+
         $consultasHoy = Consulta::where('medico_id', $user->id)
             ->whereDate('created_at', today())
             ->count();
 
-        // 4. Citas atendidas hoy
         $citasAtendidasHoy = Cita::where('medico_id', $user->id)
             ->whereDate('fecha_hora', today())
             ->where('estado', 'atendida')
             ->count();
 
-        // 5. Alertas activas relacionadas
         $alertasActivas = Alerta::whereIn('estado', ['activa', 'vista'])
             ->whereIn('nivel', ['critico', 'advertencia'])
+            ->where(function ($query) use ($user) {
+                $query->whereNull('user_id')
+                    ->orWhere('user_id', $user->id);
+            })
             ->count();
 
-        // 6. Próximas citas (siguiente 3 días, sin contar hoy)
         $proximasCitas = Cita::where('medico_id', $user->id)
             ->whereDate('fecha_hora', '>', today())
             ->whereDate('fecha_hora', '<=', today()->addDays(3))
@@ -51,15 +52,19 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // 7. Pacientes con signos vitales anormales recientes
-        $pacientesRiesgo = Paciente::whereHas('signosVitales', function ($q) {
+        $riesgoQuery = Paciente::whereIn('id', $pacientesAsignadosIds)
+            ->whereHas('signosVitales', function ($q) {
                 $q->where('created_at', '>=', now()->subHours(24))
-                  ->where(function ($qq) {
-                      $qq->whereIn('triage', ['rojo', 'naranja'])
-                         ->orWhere('saturacion_oxigeno', '<', 92)
-                         ->orWhere('frecuencia_cardiaca', '>', 120);
-                  });
-            })
+                    ->where(function ($qq) {
+                        $qq->whereIn('triage', ['rojo', 'naranja'])
+                            ->orWhere('saturacion_oxigeno', '<', 92)
+                            ->orWhere('frecuencia_cardiaca', '>', 120);
+                    });
+            });
+
+        $pacientesRiesgoTotal = (clone $riesgoQuery)->count();
+
+        $pacientesRiesgo = $riesgoQuery
             ->with('ultimoSignoVital')
             ->limit(5)
             ->get();
@@ -71,7 +76,8 @@ class DashboardController extends Controller
             'citasAtendidasHoy',
             'alertasActivas',
             'proximasCitas',
-            'pacientesRiesgo'
+            'pacientesRiesgo',
+            'pacientesRiesgoTotal'
         ));
     }
 }

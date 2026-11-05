@@ -4,6 +4,7 @@
         $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
         $nombreCorto = \Illuminate\Support\Str::before(auth()->user()->nombre_completo ?? auth()->user()->name, ' ');
     @endphp
+
     <x-slot name="header">
         <x-page-header :title="$saludo . ', ' . $nombreCorto"
             :subtitle="ucfirst(now()->translatedFormat('l d \d\e F \d\e Y')) . ' · Panel médico · Tu agenda y pacientes del día'">
@@ -16,33 +17,27 @@
     <div class="py-7">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-            {{-- KPIs --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {{-- INDICADORES PRINCIPALES --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
-                <a href="{{ route('citas.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                <a href="{{ route('citas.index') }}" class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
                         <x-heroicon-o-calendar-days class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Citas hoy</p>
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $citasHoy->count() }}</p>
-                    <p class="text-xs text-slate-500 mt-1">
-                        {{ $citasAtendidasHoy }} atendidas
-                    </p>
+                    <p class="text-xs text-slate-500 mt-1">{{ $citasAtendidasHoy }} atendidas</p>
                 </a>
 
-                <a href="{{ route('pacientes.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <a href="{{ route('pacientes.index') }}" class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <x-heroicon-o-user-group class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Pacientes asignados</p>
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $pacientesAsignados }}</p>
                 </a>
 
-                <div class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                         <x-heroicon-o-clipboard-document-list class="w-6 h-6" />
                     </div>
@@ -50,44 +45,46 @@
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $consultasHoy }}</p>
                 </div>
 
-                <a href="{{ route('alertas.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                <a href="{{ route('alertas.index') }}" class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
                         <x-heroicon-o-bell-alert class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Alertas activas</p>
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $alertasActivas }}</p>
                 </a>
 
+                <a href="{{ route('expedientes.index') }}" class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                        <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mt-4">Pacientes en riesgo</p>
+                    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $pacientesRiesgoTotal }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Signos anormales en 24 horas</p>
+                </a>
             </div>
 
-            {{-- AGENDA DE HOY + PACIENTES EN RIESGO --}}
+            {{-- AGENDA Y PACIENTES EN RIESGO --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {{-- Agenda de hoy --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
                             <x-heroicon-o-clock class="w-5 h-5 text-brand-600" />
                             Agenda de hoy
                         </h4>
-                        <a href="{{ route('citas.index') }}"
-                            class="text-xs font-bold text-brand-600 hover:text-teal-800">
-                            Ver todo →
-                        </a>
+                        <a href="{{ route('citas.index') }}" class="text-xs font-bold text-brand-600">Ver todo →</a>
                     </div>
 
                     @forelse($citasHoy as $cita)
                         <div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-                            <div
-                                class="w-2 h-2 rounded-full
+                            <div class="w-2 h-2 rounded-full
                                 {{ $cita->estado === 'atendida' ? 'bg-emerald-500' : '' }}
                                 {{ $cita->estado === 'en_curso' ? 'bg-yellow-500 animate-pulse' : '' }}
                                 {{ $cita->estado === 'confirmada' ? 'bg-teal-500' : '' }}
                                 {{ $cita->estado === 'cancelada' ? 'bg-red-500' : '' }}
                                 {{ !$cita->estado ? 'bg-slate-300' : '' }}">
                             </div>
+
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate">
                                     {{ $cita->paciente->nombre_completo ?? 'Paciente' }}
@@ -97,21 +94,13 @@
                                     · {{ ucfirst($cita->estado ?? 'pendiente') }}
                                 </p>
                             </div>
+
                             @if ($cita->estado === 'confirmada' && !$cita->consulta)
-                                <a href="{{ route('consultas.iniciar', $cita) }}"
-                                    class="text-xs font-bold text-brand-600 hover:text-teal-800 whitespace-nowrap">
-                                    Iniciar →
-                                </a>
+                                <a href="{{ route('consultas.iniciar', $cita) }}" class="text-xs font-bold text-brand-600 whitespace-nowrap">Iniciar →</a>
                             @elseif($cita->consulta)
-                                <a href="{{ route('consultas.show', $cita->consulta) }}"
-                                    class="text-xs font-bold text-brand-600 hover:text-brand-800 whitespace-nowrap">
-                                    Ver consulta →
-                                </a>
+                                <a href="{{ route('consultas.show', $cita->consulta) }}" class="text-xs font-bold text-brand-600 whitespace-nowrap">Ver consulta →</a>
                             @else
-                                <a href="{{ route('citas.show', $cita) }}"
-                                    class="text-xs font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
-                                    Ver →
-                                </a>
+                                <a href="{{ route('citas.show', $cita) }}" class="text-xs font-bold text-slate-500 whitespace-nowrap">Ver →</a>
                             @endif
                         </div>
                     @empty
@@ -122,7 +111,6 @@
                     @endforelse
                 </div>
 
-                {{-- Pacientes en riesgo --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -143,10 +131,7 @@
                                     @endif
                                 </p>
                             </div>
-                            <a href="{{ route('expedientes.show', $p) }}"
-                                class="text-xs font-bold text-red-600 hover:text-red-800 whitespace-nowrap">
-                                Ver →
-                            </a>
+                            <a href="{{ route('expedientes.show', $p) }}" class="text-xs font-bold text-red-600 whitespace-nowrap">Ver →</a>
                         </div>
                     @empty
                         <div class="text-center py-8">
@@ -155,7 +140,6 @@
                         </div>
                     @endforelse
                 </div>
-
             </div>
 
             {{-- PRÓXIMAS CITAS --}}
@@ -165,10 +149,7 @@
                         <x-heroicon-o-calendar class="w-5 h-5 text-brand-600" />
                         Próximas citas (3 días)
                     </h4>
-                    <a href="{{ route('agenda.index') }}"
-                        class="text-xs font-bold text-brand-600 hover:text-brand-800">
-                        Ver agenda →
-                    </a>
+                    <a href="{{ route('agenda.index') }}" class="text-xs font-bold text-brand-600">Ver agenda →</a>
                 </div>
 
                 @forelse($proximasCitas as $cita)
@@ -195,11 +176,9 @@
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Accesos rápidos</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
-                    <a href="{{ route('citas.index') }}"
-                        class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <a href="{{ route('citas.index') }}" class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
                                 <x-heroicon-o-calendar-days class="w-5 h-5" />
                             </div>
                             <div>
@@ -209,11 +188,9 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('agenda.index') }}"
-                        class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <a href="{{ route('agenda.index') }}" class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                                 <x-heroicon-o-calendar class="w-5 h-5" />
                             </div>
                             <div>
@@ -223,11 +200,9 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('expedientes.index') }}"
-                        class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <a href="{{ route('expedientes.index') }}" class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                                 <x-heroicon-o-document-text class="w-5 h-5" />
                             </div>
                             <div>
@@ -237,8 +212,7 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('asistente.index') }}"
-                        class="group bg-gradient-to-br from-brand-600 to-brand-800 p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all text-left text-white">
+                    <a href="{{ route('asistente.index') }}" class="group bg-gradient-to-br from-brand-600 to-brand-800 p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all text-left text-white">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                                 <x-heroicon-o-sparkles class="w-5 h-5" />
@@ -252,7 +226,6 @@
 
                 </div>
             </div>
-
         </div>
     </div>
 </x-app-layout>
