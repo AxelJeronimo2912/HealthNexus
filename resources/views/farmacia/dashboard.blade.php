@@ -4,6 +4,7 @@
         $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
         $nombreCorto = \Illuminate\Support\Str::before(auth()->user()->nombre_completo ?? auth()->user()->name, ' ');
     @endphp
+
     <x-slot name="header">
         <x-page-header :title="$saludo . ', ' . $nombreCorto"
             :subtitle="ucfirst(now()->translatedFormat('l d \d\e F \d\e Y')) . ' · Panel de farmacia'">
@@ -16,13 +17,12 @@
     <div class="py-7">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-            {{-- KPIs --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {{-- INDICADORES PRINCIPALES --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
                 <a href="{{ route('existencias.index', ['filtro' => 'bajo']) }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                         <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Stock bajo</p>
@@ -31,9 +31,8 @@
                 </a>
 
                 <a href="{{ route('dispensaciones.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <x-heroicon-o-clipboard-document-list class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Recetas pendientes</p>
@@ -41,7 +40,7 @@
                     <p class="text-xs text-slate-500 mt-1">Por dispensar</p>
                 </a>
 
-                <div class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
+                <div class="bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                         <x-heroicon-o-check-circle class="w-6 h-6" />
                     </div>
@@ -51,22 +50,31 @@
                 </div>
 
                 <a href="{{ route('prediccion.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
                         <x-heroicon-o-cpu-chip class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Predicción IA</p>
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $topDemandaTotal }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Medicamentos monitoreados</p>
+                    <p class="text-xs text-slate-500 mt-1">Medicamentos en ranking</p>
+                </a>
+
+                <a href="{{ route('alertas.index') }}"
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+                        <x-heroicon-o-bell-alert class="w-6 h-6" />
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mt-4">Alertas de inventario</p>
+                    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $alertasStockTotal }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Stock y medicamentos</p>
                 </a>
 
             </div>
 
-            {{-- MEDICAMENTOS CRÍTICOS + RECETAS PENDIENTES --}}
+            {{-- MEDICAMENTOS CRÍTICOS Y RECETAS PENDIENTES --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {{-- Medicamentos críticos --}}
+                {{-- MEDICAMENTOS CRÍTICOS --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -82,6 +90,7 @@
                     @forelse($medicamentosCriticos as $m)
                         <div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
                             <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate">
                                     {{ $m->nombre }} {{ $m->concentracion }}
@@ -90,6 +99,7 @@
                                     Stock: {{ $m->stock_total_calculado }} · Mín: {{ $m->stock_minimo }}
                                 </p>
                             </div>
+
                             <a href="{{ route('existencias.show', $m) }}"
                                 class="text-xs font-bold text-red-600 hover:text-red-800 whitespace-nowrap">
                                 Ver →
@@ -103,7 +113,7 @@
                     @endforelse
                 </div>
 
-                {{-- Recetas pendientes --}}
+                {{-- RECETAS PENDIENTES --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -127,6 +137,7 @@
                                     · {{ $c->medicamentos->count() }} medicamentos
                                 </p>
                             </div>
+
                             <a href="{{ route('dispensaciones.show', $c) }}"
                                 class="text-xs font-bold text-blue-600 hover:text-blue-800 whitespace-nowrap">
                                 Dispensar →
@@ -157,10 +168,10 @@
 
                 @forelse($topDemanda as $item)
                     <div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">
+                        <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">
                             {{ $loop->iteration }}
                         </div>
+
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-slate-800 truncate">
                                 {{ $item['nombre'] ?? ($item['medicamento'] ?? 'N/A') }}
@@ -182,7 +193,8 @@
                         <x-heroicon-o-bell-alert class="w-5 h-5" />
                         Alertas de stock ({{ $alertasStockTotal }})
                     </h4>
-                    @foreach ($alertasStock as $alerta)
+
+                    @foreach($alertasStock as $alerta)
                         <div class="flex items-center gap-3 py-2 border-b border-amber-100 last:border-0">
                             <div class="w-2 h-2 rounded-full bg-amber-500"></div>
                             <div class="flex-1">
@@ -199,13 +211,13 @@
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
                     Accesos rápidos
                 </h4>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
                     <a href="{{ route('medicamentos.index') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                                 <x-heroicon-o-beaker class="w-5 h-5" />
                             </div>
                             <div>
@@ -218,8 +230,7 @@
                     <a href="{{ route('existencias.index') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                                 <x-heroicon-o-archive-box class="w-5 h-5" />
                             </div>
                             <div>
@@ -232,8 +243,7 @@
                     <a href="{{ route('movimientos.index') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                                 <x-heroicon-o-arrow-path class="w-5 h-5" />
                             </div>
                             <div>

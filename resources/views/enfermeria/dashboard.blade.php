@@ -4,6 +4,7 @@
         $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
         $nombreCorto = \Illuminate\Support\Str::before(auth()->user()->nombre_completo ?? auth()->user()->name, ' ');
     @endphp
+
     <x-slot name="header">
         <x-page-header :title="$saludo . ', ' . $nombreCorto"
             :subtitle="ucfirst(now()->translatedFormat('l d \d\e F \d\e Y')) . ' · Panel de enfermería'">
@@ -16,13 +17,12 @@
     <div class="py-7">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-            {{-- KPIs --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {{-- INDICADORES PRINCIPALES --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
                 <a href="{{ route('signos-vitales.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
                         <x-heroicon-o-heart class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Signos hoy</p>
@@ -31,20 +31,20 @@
                 </a>
 
                 <a href="{{ route('camas.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                         <x-heroicon-o-home-modern class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Camas ocupadas</p>
-                    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $camasOcupadas }}/{{ $camasTotales }}</p>
+                    <p class="text-3xl font-extrabold text-slate-800 mt-1">
+                        {{ $camasOcupadas }}/{{ $camasTotales }}
+                    </p>
                     <p class="text-xs text-slate-500 mt-1">{{ $camasDisponibles }} disponibles</p>
                 </a>
 
                 <a href="{{ route('admisiones.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
                         <x-heroicon-o-clipboard-document-check class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Admisiones en espera</p>
@@ -52,23 +52,31 @@
                     <p class="text-xs text-slate-500 mt-1">Requieren atención</p>
                 </a>
 
+                <a href="{{ route('pacientes.index') }}"
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <x-heroicon-o-user-group class="w-6 h-6" />
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mt-4">Pacientes en seguimiento</p>
+                    <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $pacientesEnSeguimientoTotal }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Cama activa o signos recientes</p>
+                </a>
+
                 <a href="{{ route('alertas.index') }}"
-                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md hover:ring-slate-300 transition-all">
-                    <div
-                        class="w-12 h-12 rounded-2xl bg-yellow-50 text-yellow-600 flex items-center justify-center group-hover:bg-yellow-600 group-hover:text-white transition-colors">
+                    class="group bg-white p-6 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-yellow-50 text-yellow-600 flex items-center justify-center">
                         <x-heroicon-o-bell-alert class="w-6 h-6" />
                     </div>
                     <p class="text-xs font-bold text-slate-400 uppercase mt-4">Alertas activas</p>
                     <p class="text-3xl font-extrabold text-slate-800 mt-1">{{ $alertasActivasTotal }}</p>
-                    <p class="text-xs text-slate-500 mt-1">Últimas 5 mostradas</p>
+                    <p class="text-xs text-slate-500 mt-1">Alertas vigentes</p>
                 </a>
 
             </div>
 
-            {{-- PACIENTES EN SEGUIMIENTO + ADMISIONES EN ESPERA --}}
+            {{-- PACIENTES EN SEGUIMIENTO Y ADMISIONES --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {{-- Pacientes en seguimiento --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -83,16 +91,18 @@
 
                     @forelse($pacientesEnSeguimiento as $p)
                         <div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-                            <div
-                                class="w-2 h-2 rounded-full {{ $p->en_seguimiento ? 'bg-red-500 animate-pulse' : 'bg-emerald-500' }}">
-                            </div>
+                            <div class="w-2 h-2 rounded-full {{ $p->en_seguimiento ? 'bg-red-500 animate-pulse' : 'bg-emerald-500' }}"></div>
+
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-slate-800 truncate">{{ $p->nombre_completo }}</p>
+                                <p class="text-sm font-bold text-slate-800 truncate">
+                                    {{ $p->nombre_completo }}
+                                </p>
                                 <p class="text-xs text-slate-500 truncate">
                                     {{ $p->edad }} años · Último signo:
                                     {{ $p->ultimoSignoVital?->created_at?->diffForHumans() ?? 'Sin datos' }}
                                 </p>
                             </div>
+
                             <a href="{{ route('signos-vitales.create') }}?paciente_id={{ $p->id }}"
                                 class="text-xs font-bold text-accent-600 hover:text-accent-800 whitespace-nowrap">
                                 Registrar →
@@ -106,7 +116,7 @@
                     @endforelse
                 </div>
 
-                {{-- Admisiones en espera --}}
+                {{-- ADMISIONES EN ESPERA --}}
                 <div class="bg-white rounded-2xl border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -121,8 +131,7 @@
 
                     @forelse($admisionesEnEspera as $a)
                         <div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-                            <span
-                                class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap
+                            <span class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap
                                 @if ($a->triage === 'rojo') bg-red-100 text-red-700
                                 @elseif($a->triage === 'naranja') bg-orange-100 text-orange-700
                                 @elseif($a->triage === 'amarillo') bg-yellow-100 text-yellow-700
@@ -131,6 +140,7 @@
                                 @else bg-slate-100 text-slate-600 @endif">
                                 {{ strtoupper($a->triage ?? 'N/A') }}
                             </span>
+
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-slate-800 truncate">
                                     {{ $a->paciente->nombre_completo ?? 'Paciente' }}
@@ -140,6 +150,7 @@
                                     {{ $a->fecha_hora_llegada?->diffForHumans() ?? 'Sin fecha' }}
                                 </p>
                             </div>
+
                             <a href="{{ route('admisiones.show', $a) }}"
                                 class="text-xs font-bold text-orange-600 hover:text-orange-800 whitespace-nowrap">
                                 Ver →
@@ -160,13 +171,13 @@
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
                     Accesos rápidos
                 </h4>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
                     <a href="{{ route('signos-vitales.create') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
                                 <x-heroicon-o-plus class="w-5 h-5" />
                             </div>
                             <div>
@@ -179,8 +190,7 @@
                     <a href="{{ route('admisiones.index') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
                                 <x-heroicon-o-clipboard-document-check class="w-5 h-5" />
                             </div>
                             <div>
@@ -193,8 +203,7 @@
                     <a href="{{ route('enfermeria.administraciones.create') }}"
                         class="group bg-white p-5 rounded-2xl ring-1 ring-slate-200/70 shadow-card hover:shadow-md transition-all">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
                                 <x-heroicon-o-beaker class="w-5 h-5" />
                             </div>
                             <div>

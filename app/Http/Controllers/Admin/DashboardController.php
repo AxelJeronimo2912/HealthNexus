@@ -18,13 +18,12 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-
-        // 1. Alertas activas
         $alertasActivas = Alerta::whereIn('estado', ['activa', 'vista'])->count();
-        $alertasCriticas = Alerta::where('nivel', 'critico')
-            ->whereIn('estado', ['activa', 'vista'])->count();
 
-        // Stock de lotes vigentes calculado en SQL.
+        $alertasCriticas = Alerta::where('nivel', 'critico')
+            ->whereIn('estado', ['activa', 'vista'])
+            ->count();
+
         $medicamentosConStock = Medicamento::query()
             ->where('activo', true)
             ->withSum([
@@ -36,66 +35,49 @@ class DashboardController extends Controller
             ], 'cantidad_disponible')
             ->get();
 
-        // 2. Medicamentos con stock bajo.
         $medicamentosBajos = $medicamentosConStock
-            ->filter(
-                fn($m) =>
-                (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo
-            )
+            ->filter(fn($m) => (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo)
             ->count();
 
-        // 3. Camas disponibles
-        $camasDisponibles = Cama::where('estado', 'disponible')->where('activo', true)->count();
+        $camasDisponibles = Cama::where('estado', 'disponible')
+            ->where('activo', true)
+            ->count();
+
         $camasTotales = Cama::where('activo', true)->count();
 
-        // 4. Eventos de auditoría críticos hoy
         $auditoriaCritica = AuditLog::where('severidad', 'critical')
             ->whereDate('created_at', today())
             ->count();
-
-        // ============ RESUMEN DE OPERACIÓN ============
 
         $resumen = [
             'pacientes_activos' => Paciente::where('activo', true)->count(),
             'citas_hoy' => Cita::whereDate('fecha_hora', today())->count(),
             'consultas_hoy' => Consulta::whereDate('created_at', today())->count(),
-            'camas_ocupadas' => Cama::where('estado', 'ocupada')->count(),
+            'camas_ocupadas' => Cama::where('activo', true)
+                ->where('estado', 'ocupada')
+                ->count(),
         ];
 
-        // ============ DATOS PARA MODALES (los usaremos en el PASO 2) ============
-
-        // Últimas alertas
         $ultimasAlertas = Alerta::whereIn('estado', ['activa', 'vista'])
             ->orderByRaw("FIELD(nivel, 'critico', 'advertencia', 'info')")
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-        // Últimos eventos de auditoría relevantes
         $ultimaAuditoria = AuditLog::with('user')
             ->whereIn('severidad', ['critical', 'warning'])
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 
-        // Medicamentos en riesgo.
         $medicamentosCriticos = $medicamentosConStock
-            ->filter(
-                fn($m) =>
-                (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo
-            )
-            ->sortBy(
-                fn($m) =>
-                (int) ($m->stock_lotes_vigentes ?? 0)
-            )
+            ->filter(fn($m) => (int) ($m->stock_lotes_vigentes ?? 0) <= $m->stock_minimo)
+            ->sortBy(fn($m) => (int) ($m->stock_lotes_vigentes ?? 0))
             ->take(10)
             ->values();
 
-        // Cargar los lotes de los 10 medicamentos mostrados,
-        // si la vista los necesita.
         $medicamentosCriticos->load('lotes');
 
-        // Camas por área
         $camasPorArea = Cama::select('area')
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN estado = 'disponible' THEN 1 ELSE 0 END) as disponibles")
@@ -118,16 +100,15 @@ class DashboardController extends Controller
             'camasPorArea'
         ));
     }
+
     public function slaData(): \Illuminate\Http\JsonResponse
     {
-        // Asegurar que existan eventos recientes
         if (\App\Models\SlaEvento::count() === 0) {
             SlaService::generarDesdeDatos(30);
         }
 
         $resumen = SlaService::resumen();
 
-        // Top 10 outliers más recientes
         $outliers = \App\Models\SlaEvento::where('is_outlier', true)
             ->with('user')
             ->orderByDesc('evento_en')
@@ -143,7 +124,6 @@ class DashboardController extends Controller
                 'severidad' => $e->severidad_z,
             ]);
 
-        // Distribución por hora de outliers
         $outliersPorHora = \App\Models\SlaEvento::where('is_outlier', true)
             ->selectRaw('start_hour, COUNT(*) as total')
             ->groupBy('start_hour')
@@ -151,8 +131,8 @@ class DashboardController extends Controller
             ->pluck('total', 'start_hour')
             ->toArray();
 
-        // Rellenar horas faltantes con 0
         $distribucionHoraria = [];
+
         for ($h = 0; $h < 24; $h++) {
             $distribucionHoraria[$h] = $outliersPorHora[$h] ?? 0;
         }
