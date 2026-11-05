@@ -352,112 +352,232 @@ class CuentaController extends Controller
     /* =========================================================
      |  REGISTRAR PAGO
      ========================================================= */
-    public function registrarPago(Request $request, Cuenta $cuenta): RedirectResponse
-    {
-        if ($cuenta->estado !== 'abierta') {
-            return back()->with('error', 'No puedes registrar pagos en una cuenta cerrada.');
-        }
-
-        $data = $request->validate([
-            'monto'      => ['required', 'numeric', 'min:0.01'],
-            'metodo'     => ['required', 'in:efectivo,tarjeta,transferencia,otro'],
-            'referencia' => ['nullable', 'string', 'max:100'],
-            'pagado_en'  => ['nullable', 'date'],
-            'notas'      => ['nullable', 'string'],
-        ]);
-
-        if ((float) $data['monto'] > (float) $cuenta->saldo) {
-            return back()->with('error',
-                'El monto no puede superar el saldo pendiente ($' .
-                number_format((float) $cuenta->saldo, 2) . ').'
-            )->withInput();
-        }
-
-        $pago = $cuenta->pagos()->create([
-            'user_id'    => auth()->id(),
-            'folio'      => Pago::generarFolio(),
-            'monto'      => $data['monto'],
-            'metodo'     => $data['metodo'],
-            'referencia' => $data['referencia'] ?? null,
-            'pagado_en'  => $data['pagado_en'] ?? now(),
-            'notas'      => $data['notas'] ?? null,
-            'estado'     => 'aplicado',
-        ]);
-
-        $cuenta->refresh();
-        $cerrada = $this->cerrarSiSaldoCero($cuenta);
-
-        AuditoriaService::registrar(
-            AuditEvent::CUENTA_PAGO,
-            'cuentas',
-            "Pago registrado en cuenta {$cuenta->folio}: {$pago->folio} por $" .
-            number_format((float) $pago->monto, 2) . " ({$pago->metodo})",
-            $cuenta,
-            [],
-            [],
-            [
-                'pago_id'   => $pago->id,
-                'folio'     => $pago->folio,
-                'monto'     => (float) $pago->monto,
-                'metodo'    => $pago->metodo,
-                'referencia'=> $pago->referencia,
-                'cerro_cuenta' => $cerrada,
-            ]
-        );
-
-        $mensaje = $cerrada
-            ? "Pago registrado. Folio: {$pago->folio}.  Cuenta cerrada automáticamente."
-            : "Pago registrado. Folio: {$pago->folio}. Saldo pendiente: $" .
-              number_format((float) $cuenta->saldo, 2);
-
-        return back()->with('success', $mensaje);
+   
+public function registrarPago(Request $request, Cuenta $cuenta): RedirectResponse
+{
+    if ($cuenta->estado !== 'abierta') {
+        return back()->with('error', 'No puedes registrar pagos en una cuenta cerrada.');
     }
+
+    // Normalizar método a minúsculas y quitar espacios
+    $request->merge([
+        'metodo'     => is_string($request->input('metodo'))
+                            ? strtolower(trim($request->input('metodo')))
+                            : $request->input('metodo'),
+        'referencia' => is_string($request->input('referencia'))
+                            ? trim($request->input('referencia'))
+                            : $request->input('referencia'),
+        'monto'      => is_string($request->input('monto'))
+                            ? str_replace([',', ' '], '', trim($request->input('monto')))
+                            : $request->input('monto'),
+    ]);
+
+    $data = $request->validate(
+        [
+            'monto' => [
+                'required',
+                'numeric',
+                'decimal:0,2',       // máximo 2 decimales
+                'min:0.01',
+                'max:999999.99',
+            ],
+            'metodo' => [
+                'required',
+                'string',
+                'in:efectivo,tarjeta,transferencia,otro',
+            ],
+            'referencia' => [
+                'nullable',
+                'string',
+                'max:100',
+                // Requerida si el método es tarjeta o transferencia
+                function (string $attribute, $value, $fail) use ($request) {
+                    $metodo = $request->input('metodo');
+                    if (in_array($metodo, ['tarjeta', 'transferencia'], true)
+                        && (is_null($value) || trim((string) $value) === '')) {
+                        $fail('La referencia es obligatoria para pagos con tarjeta o transferencia.');
+                    }
+                },
+            ],
+            'pagado_en' => [
+                'nullable',
+                'date',
+                'before_or_equal:now',
+                function (string $attribute, $value, $fail) use ($cuenta) {
+                    if ($cuenta->created_at && $value) {
+                        try {
+                            $fechaPago = \Carbon\Carbon::parse($value);
+                            if ($fechaPago->lt($cuenta->created_at->startOfDay())) {
+                                $fail('La fecha de pago no puede ser anterior a la creación de la cuenta.');
+                            }
+                        } catch (\Throwable $e) {
+                            // Si no se puede parsear, ya lo cubre 'date'
+                        }
+                    }
+                },
+            ],
+            'notas' => ['nullable', 'string', 'max:1000'],
+        ],
+        [
+            'monto.required'        => 'El monto del pago es obligatorio.',
+            'monto.numeric'         => 'El monto debe ser un número válido.',
+            'monto.decimal'         => 'El monto solo puede tener hasta 2 decimales.',
+            'monto.min'             => 'El monto debe ser mayor a $0.00.',
+            'monto.max'             => 'El monto excede el límite permitido.',
+            'metodo.required'       => 'Debes seleccionar un método de pago.',
+            'metodo.in'             => 'El método de pago no es válido. Opciones: efectivo, tarjeta, transferencia, otro.',
+            'referencia.max'        => 'La referencia no puede superar los 100 caracteres.',
+            'pagado_en.date'        => 'La fecha de pago no es válida.',
+            'pagado_en.before_or_equal' => 'La fecha de pago no puede ser futura.',
+            'notas.max'             => 'Las notas no pueden superar los 1000 caracteres.',
+        ]
+    );
+
+    // Validación de negocio: no permitir pagos en $0
+    if ((float) $data['monto'] <= 0) {
+        return back()
+            ->withErrors(['monto' => 'El monto debe ser mayor a $0.00.'])
+            ->withInput();
+    }
+
+    // Validación de negocio: no superar el saldo pendiente
+    if ((float) $data['monto'] > (float) $cuenta->saldo) {
+        return back()
+            ->withErrors([
+                'monto' => 'El monto no puede superar el saldo pendiente ($' .
+                           number_format((float) $cuenta->saldo, 2) . ').',
+            ])
+            ->withInput();
+    }
+
+    // Validación de negocio: si la cuenta no tiene saldo, no tiene sentido registrar pago
+    if ((float) $cuenta->saldo <= 0) {
+        return back()
+            ->withErrors(['monto' => 'Esta cuenta no tiene saldo pendiente.'])
+            ->withInput();
+    }
+
+    $pago = $cuenta->pagos()->create([
+        'user_id'    => auth()->id(),
+        'folio'      => Pago::generarFolio(),
+        'monto'      => $data['monto'],
+        'metodo'     => $data['metodo'],
+        'referencia' => $data['referencia'] ?? null,
+        'pagado_en'  => $data['pagado_en'] ?? now(),
+        'notas'      => $data['notas'] ?? null,
+        'estado'     => 'aplicado',
+    ]);
+
+    $cuenta->refresh();
+    $cerrada = $this->cerrarSiSaldoCero($cuenta);
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_PAGO,
+        'cuentas',
+        "Pago registrado en cuenta {$cuenta->folio}: {$pago->folio} por $" .
+        number_format((float) $pago->monto, 2) . " ({$pago->metodo})",
+        $cuenta,
+        [],
+        [],
+        [
+            'pago_id'   => $pago->id,
+            'folio'     => $pago->folio,
+            'monto'     => (float) $pago->monto,
+            'metodo'    => $pago->metodo,
+            'referencia'=> $pago->referencia,
+            'cerro_cuenta' => $cerrada,
+        ]
+    );
+
+    $mensaje = $cerrada
+        ? "Pago registrado. Folio: {$pago->folio}.  Cuenta cerrada automáticamente."
+        : "Pago registrado. Folio: {$pago->folio}. Saldo pendiente: $" .
+          number_format((float) $cuenta->saldo, 2);
+
+    return back()->with('success', $mensaje);
+}
 
     /* =========================================================
      |  CANCELAR PAGO
      ========================================================= */
-    public function cancelarPago(Request $request, Pago $pago): RedirectResponse
-    {
-        if ($pago->estado === 'cancelado') {
-            return back()->with('error', 'Este pago ya estaba cancelado.');
-        }
-
-        if ($pago->cuenta->estado !== 'abierta') {
-            return back()->with('error',
-                'No puedes cancelar pagos de una cuenta cerrada. Reabre la cuenta primero.'
-            );
-        }
-
-        $data = $request->validate([
-            'motivo_cancelacion' => ['required', 'string', 'max:500'],
-        ]);
-
-        $pago->update([
-            'estado'             => 'cancelado',
-            'motivo_cancelacion' => $data['motivo_cancelacion'],
-            'cancelado_en'       => now(),
-            'cancelado_por'      => auth()->id(),
-        ]);
-
-        $pago->cuenta->recalcular();
-
-        AuditoriaService::registrar(
-            AuditEvent::CUENTA_PAGO_CANCELADO,
-            'cuentas',
-            "Pago cancelado {$pago->folio} de cuenta {$pago->cuenta->folio}. Motivo: {$data['motivo_cancelacion']}",
-            $pago->cuenta,
-            ['estado' => 'aplicado'],
-            ['estado' => 'cancelado'],
-            [
-                'pago_id'            => $pago->id,
-                'folio'              => $pago->folio,
-                'monto'              => (float) $pago->monto,
-                'motivo_cancelacion' => $data['motivo_cancelacion'],
-            ]
-        );
-
-        return back()->with('success', 'Pago cancelado.');
+    
+public function cancelarPago(Request $request, Pago $pago): RedirectResponse
+{
+    // Validación de estado del pago
+    if ($pago->estado === 'cancelado') {
+        return back()
+            ->withErrors(['motivo_cancelacion' => 'Este pago ya estaba cancelado.'])
+            ->withInput();
     }
+
+    // Validación: el pago debe tener cuenta
+    $cuenta = $pago->cuenta;
+    if (! $cuenta) {
+        return back()
+            ->withErrors(['motivo_cancelacion' => 'El pago no está asociado a una cuenta válida.']);
+    }
+
+    if ($cuenta->estado !== 'abierta') {
+        return back()
+            ->withErrors([
+                'motivo_cancelacion' =>
+                    'No puedes cancelar pagos de una cuenta cerrada. Reabre la cuenta primero.',
+            ]);
+    }
+
+    // Normalizar motivo
+    $request->merge([
+        'motivo_cancelacion' => is_string($request->input('motivo_cancelacion'))
+            ? trim($request->input('motivo_cancelacion'))
+            : $request->input('motivo_cancelacion'),
+    ]);
+
+    $data = $request->validate(
+        [
+            'motivo_cancelacion' => [
+                'required',
+                'string',
+                'min:5',           // mínimo razonable
+                'max:500',
+                'not_regex:/^\s*$/', // no solo espacios
+            ],
+        ],
+        [
+            'motivo_cancelacion.required'  => 'Debes indicar el motivo de la cancelación.',
+            'motivo_cancelacion.string'    => 'El motivo de cancelación no es válido.',
+            'motivo_cancelacion.min'       => 'El motivo de cancelación debe tener al menos 5 caracteres.',
+            'motivo_cancelacion.max'       => 'El motivo de cancelación no puede superar los 500 caracteres.',
+            'motivo_cancelacion.not_regex' => 'El motivo de cancelación no puede estar vacío.',
+        ]
+    );
+
+    $pago->update([
+        'estado'             => 'cancelado',
+        'motivo_cancelacion' => $data['motivo_cancelacion'],
+        'cancelado_en'       => now(),
+        'cancelado_por'      => auth()->id(),
+    ]);
+
+    $cuenta->recalcular();
+    $cuenta->refresh();
+
+    AuditoriaService::registrar(
+        AuditEvent::CUENTA_PAGO_CANCELADO,
+        'cuentas',
+        "Pago cancelado {$pago->folio} de cuenta {$cuenta->folio}. Motivo: {$data['motivo_cancelacion']}",
+        $cuenta,
+        ['estado' => 'aplicado'],
+        ['estado' => 'cancelado'],
+        [
+            'pago_id'            => $pago->id,
+            'folio'              => $pago->folio,
+            'monto'              => (float) $pago->monto,
+            'motivo_cancelacion' => $data['motivo_cancelacion'],
+        ]
+    );
+
+    return back()->with('success', 'Pago cancelado.');
+}
 
     /* =========================================================
      |  CERRAR CUENTA MANUALMENTE
