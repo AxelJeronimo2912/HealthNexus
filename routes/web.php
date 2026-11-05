@@ -246,13 +246,19 @@ Route::middleware(['auth', 'permission:camas.ver'])
 */
 Route::middleware(['auth', 'permission:signos-vitales.ver'])
     ->group(function () {
-        Route::resource('signos-vitales', SignoVitalController::class);
+        Route::resource('signos-vitales', SignoVitalController::class)->parameters([
+            'signos-vitales' => 'signoVital'
+        ]);
+        
+        // NUEVA RUTA AQUÍ:
+        Route::post('signos-vitales/verificar-password', [SignoVitalController::class, 'verificarPassword'])
+            ->name('signos-vitales.verificar-password');
+
         Route::post('signos-vitales/{signoVital}/asignar-cama', [SignoVitalController::class, 'asignarCama'])
             ->name('signos-vitales.asignar-cama');
         Route::post('signos-vitales/{signoVital}/liberar-cama', [SignoVitalController::class, 'liberarCama'])
             ->name('signos-vitales.liberar-cama');
     });
-
 /*
 |--------------------------------------------------------------------------
 | Módulo de Agenda
