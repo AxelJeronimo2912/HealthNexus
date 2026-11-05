@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Enums\AuditEvent;
 use App\Services\AuditoriaService;
+use Illuminate\Support\Facades\Hash;
 
 class SignoVitalController extends Controller
 {
@@ -103,21 +104,15 @@ class SignoVitalController extends Controller
         return view('signos-vitales.show', compact('signoVital', 'camasDisponibles'));
     }
 
-    public function edit(SignoVital $signoVital): View
-    {
-        $signoVital->load('paciente');
+public function edit(SignoVital $signoVital): View
+{
+    $signoVital->load('paciente');
 
-        abort_if(
-            !$signoVital->paciente,
-            404,
-            'El paciente asociado a este registro ya no existe.'
-        );
-
-        return view('signos-vitales.edit', [
-            'registro'  => $signoVital,
-            'pacientes' => Paciente::orderBy('apellido_paterno')->get(),
-        ]);
-    }
+    return view('signos-vitales.edit', [
+        'signoVital' => $signoVital,
+        'pacientes'  => Paciente::orderBy('apellido_paterno')->get(),
+    ]);
+}
 
     public function update(UpdateSignoVitalRequest $request, SignoVital $signoVital): RedirectResponse
     {
@@ -239,5 +234,19 @@ class SignoVitalController extends Controller
         }
 
         return true;
+    }
+
+      public function verificarPassword(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'string']
+        ]);
+
+        // Verificamos la contraseña usando el Hash de Laravel
+        if (Hash::check($request->password, auth()->user()->password)) {
+            return response()->json(['valido' => true]);
+        }
+
+        return response()->json(['valido' => false], 403);
     }
 }
