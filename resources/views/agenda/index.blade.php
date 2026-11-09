@@ -203,7 +203,9 @@
                 },
 
                 calendarioRef() {
-                    return this.calendar || window.calendar || null;
+                    // `window.calendar` también puede ser el <div id="calendar">: solo se usa si es la instancia de FullCalendar.
+                    const c = this.calendar || window.hnCalendar || window.calendar;
+                    return c && typeof c.getEvents === 'function' ? c : null;
                 },
 
                 actualizarAhora() {
