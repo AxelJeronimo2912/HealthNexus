@@ -111,7 +111,7 @@ class GestionPagosCuentaTest extends TestCase
         );
 
         $response->assertRedirect('/cuentas');
-        $response->assertSessionHas('error');
+        $response->assertSessionHasErrors('monto');
 
         $this->assertDatabaseCount('pagos', 0);
 
@@ -191,7 +191,7 @@ class GestionPagosCuentaTest extends TestCase
         );
 
         $response->assertRedirect('/cuentas');
-        $response->assertSessionHas('error');
+        $response->assertSessionHasErrors('motivo_cancelacion');
 
         $this->assertEquals(
             'cancelado',

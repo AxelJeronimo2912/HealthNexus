@@ -33,7 +33,7 @@
 </head>
 
 <body class="h-full font-sans antialiased bg-nexus-bg text-slate-800">
-    <div x-data="hnLayout" class="min-h-full">
+    <div x-data="hnLayout" class="min-h-full" @keydown.escape.window="mobileOpen = false">
 
         <x-sidebar />
 
