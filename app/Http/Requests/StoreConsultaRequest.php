@@ -59,6 +59,9 @@ class StoreConsultaRequest extends FormRequest
 
             // ===== Flags =====
             'finalizar' => ['nullable', 'boolean'],
+            'estudios' => ['nullable', 'array'], 
+'estudios.*.servicio_id' => ['nullable', 'exists:servicios,id'],
+'estudios.*.tipo_estudio' => ['nullable', 'string', 'max:100'],
         ];
     }
 

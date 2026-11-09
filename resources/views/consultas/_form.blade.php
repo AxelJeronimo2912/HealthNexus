@@ -220,8 +220,7 @@
                 </div>
             </div>
 
-            <p
-                class="mt-4 text-xs font-medium text-amber-700 bg-amber-50/60 border border-amber-100 rounded-xl p-3">
+            <p class="mt-4 text-xs font-medium text-amber-700 bg-amber-50/60 border border-amber-100 rounded-xl p-3">
                 ℹ️ Se registran en el módulo de signos vitales; aquí solo se muestran como referencia.
             </p>
         </section>
@@ -418,6 +417,43 @@
             </div>
         </section>
 
+        {{-- ====================================================== --}}
+        {{-- SOLICITUD DE ESTUDIOS (LAB / IMAGEN)                  --}}
+        {{-- ====================================================== --}}
+        <section class="{{ $cardCls }} space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="{{ $sectionTitleCls }}">Solicitud de Estudios</h3>
+                        <p class="{{ $sectionSubCls }}">Laboratorio e Imagenología (Opcional)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="agregarEstudio()"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Agregar estudio
+                </button>
+            </div>
+
+            <div id="estudios-container" class="space-y-3">
+                {{-- Aquí se cargan dinámicamente las filas --}}
+            </div>
+
+            <p id="estudio-vacio"
+                class="text-center text-xs text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl">
+                Aún no hay estudios solicitados. (El paciente no requiere estudios).
+            </p>
+        </section>
+
         {{-- NOTAS --}}
         <section class="{{ $cardCls }}">
             <label class="{{ $labelCls }}">Notas adicionales</label>
@@ -429,7 +465,7 @@
     </div>
 </div>
 
-{{-- Plantilla de fila de medicamento (reutiliza el mismo partial) --}}
+{{-- Plantilla de fila de medicamento --}}
 <template id="med-template">
     @include('consultas._medicamento_row', [
         'index' => '__INDEX__',
@@ -438,14 +474,12 @@
     ])
 </template>
 
-{{-- ============ JS: IMC + medicamentos + dictado por voz + TomSelect ============ --}}
+{{-- ============ JS: IMC + medicamentos + dictado por voz + TomSelect + Estudios ============ --}}
 <script>
     let medIndex =
-        {{ old('medicamentos')
-            ? count(old('medicamentos'))
-            : (($c ?? null) && $c->medicamentos
-                ? $c->medicamentos->count()
-                : 0) }};
+        {{ old('medicamentos') ? count(old('medicamentos')) : (($c ?? null) && $c->medicamentos ? $c->medicamentos->count() : 0) }};
+    let estudioIndex = 0;
+    const serviciosEstudio = @json($servicios ?? []);
 
     function actualizarVacioMed() {
         const hay = document.querySelectorAll('#medicamentos-container .medicamento-row').length > 0;
@@ -459,14 +493,84 @@
         actualizarVacioMed();
     }
 
+    // 👇 NUEVAS FUNCIONES PARA ESTUDIOS
+    function actualizarVacioEstudios() {
+        const hay = document.querySelectorAll('#estudios-container .estudio-row').length > 0;
+        document.getElementById('estudio-vacio')?.classList.toggle('hidden', hay);
+    }
+
+    function agregarEstudio() {
+        if (serviciosEstudio.length === 0) {
+            alert('No hay servicios de laboratorio o imagenología registrados en el sistema.');
+            return;
+        }
+
+        const row = document.createElement('div');
+        row.className =
+            'estudio-row grid grid-cols-1 md:grid-cols-12 gap-3 items-start bg-slate-50 p-3 rounded-xl border border-slate-200';
+
+        let opciones = '<option value="">— Seleccionar estudio —</option>';
+        let ultimoTipo = '';
+        serviciosEstudio.forEach(s => {
+            if (s.tipo !== ultimoTipo) {
+                if (ultimoTipo !== '') opciones += '</optgroup>';
+                opciones += `<optgroup label="${s.tipo === 'imagenes' ? 'Imagenología' : 'Laboratorio'}">`;
+                ultimoTipo = s.tipo;
+            }
+            opciones +=
+                `<option value="${s.id}" data-precio="${s.precio}">${s.nombre} - $${parseFloat(s.precio).toFixed(2)}</option>`;
+        });
+        if (ultimoTipo !== '') opciones += '</optgroup>';
+
+        row.innerHTML = `
+            <div class="md:col-span-5">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Servicio</label>
+                <select name="estudios[${estudioIndex}][servicio_id]" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none" onchange="actualizarTipoEstudio(this)">
+                    ${opciones}
+                </select>
+            </div>
+            <div class="md:col-span-4">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo / Indicación</label>
+                <input type="text" name="estudios[${estudioIndex}][tipo_estudio]" placeholder="Ej. Ayuno de 8 hrs" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Notas</label>
+                <input type="text" name="estudios[${estudioIndex}][indicaciones]" placeholder="Opcional" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none">
+            </div>
+            <div class="md:col-span-1 flex justify-end pt-5">
+                <button type="button" onclick="this.closest('.estudio-row').remove(); actualizarVacioEstudios();" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition" title="Quitar estudio">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+            </div>
+        `;
+
+        document.getElementById('estudios-container').appendChild(row);
+        estudioIndex++;
+        actualizarVacioEstudios();
+    }
+
+    function actualizarTipoEstudio(select) {
+        const opt = select.options[select.selectedIndex];
+        const row = select.closest('.estudio-row');
+        const inputTipo = row.querySelector('input[name*="[tipo_estudio]"]');
+
+        if (opt && opt.value) {
+            const nombreCompleto = opt.text.split(' - ')[0];
+            if (!inputTipo.value) {
+                inputTipo.value = nombreCompleto;
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
 
-        // ===== Estado vacío de medicamentos (también al eliminar filas) =====
         actualizarVacioMed();
         new MutationObserver(actualizarVacioMed)
             .observe(document.getElementById('medicamentos-container'), {
                 childList: true
             });
+
+        actualizarVacioEstudios();
 
         // ===== IMC automático + clasificación =====
         const peso = document.getElementById('peso');

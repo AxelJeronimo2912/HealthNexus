@@ -8,6 +8,8 @@ use App\Models\Cita;
 use App\Models\Consulta;
 use App\Models\Diagnostico;
 use App\Models\Medicamento;
+use App\Models\Servicio;
+use App\Models\SolicitudEstudio;
 use App\Models\SignoVital;
 use App\Services\InventarioService;
 use App\Services\CobroService;
@@ -65,7 +67,14 @@ class ConsultaController extends Controller
         $medicamentos = Medicamento::where('activo', true)->orderBy('nombre')->get();
         $diagnosticos = Diagnostico::where('activo', true)->orderBy('codigo')->get();
 
-        return view('consultas.create', compact('cita', 'signo', 'medicamentos', 'diagnosticos'));
+        // 👇 Cargar catálogo de estudios
+        $servicios = Servicio::where('activo', true)
+            ->whereIn('tipo', ['imagenes', 'laboratorio'])
+            ->orderBy('tipo')
+            ->orderBy('nombre')
+            ->get();
+
+        return view('consultas.create', compact('cita', 'signo', 'medicamentos', 'diagnosticos', 'servicios'));
     }
 
     /* =========================================================
@@ -89,6 +98,9 @@ class ConsultaController extends Controller
         $consulta = Consulta::create($data);
 
         $this->guardarMedicamentos($consulta, $request);
+        
+        // 👇 NUEVO: Guardar estudios (Opcional)
+        $this->guardarEstudios($request, $cita);
 
         $cita->update(['estado' => 'atendida']);
 
@@ -138,7 +150,14 @@ class ConsultaController extends Controller
         $medicamentos = Medicamento::where('activo', true)->orderBy('nombre')->get();
         $diagnosticos = Diagnostico::where('activo', true)->orderBy('codigo')->get();
 
-        return view('consultas.edit', compact('consulta', 'medicamentos', 'diagnosticos'));
+        // 👇 Cargar catálogo de estudios
+        $servicios = Servicio::where('activo', true)
+            ->whereIn('tipo', ['imagenes', 'laboratorio'])
+            ->orderBy('tipo')
+            ->orderBy('nombre')
+            ->get();
+
+        return view('consultas.edit', compact('consulta', 'medicamentos', 'diagnosticos', 'servicios'));
     }
 
     /* =========================================================
@@ -162,6 +181,9 @@ class ConsultaController extends Controller
         $consulta->update($data);
 
         $this->guardarMedicamentos($consulta, $request);
+        
+        // 👇 NUEVO: Guardar estudios (Opcional)
+        $this->guardarEstudios($request, $consulta->cita);
 
         $consulta->cita->update(['estado' => 'atendida']);
 
@@ -197,19 +219,18 @@ class ConsultaController extends Controller
     /* =========================================================
      |  PDF RECETA
      ========================================================= */
+    public function pdfReceta(Consulta $consulta)
+    {
+        $this->autorizarAcceso($consulta);
 
-public function pdfReceta(Consulta $consulta)
-{
-    $this->autorizarAcceso($consulta);
+        $consulta->load(['paciente', 'medico', 'medicamentos', 'diagnosticoPrincipal']);
 
-    $consulta->load(['paciente', 'medico', 'medicamentos', 'diagnosticoPrincipal']);
+        RecetaValidator::validarParaImprimir($consulta); 
 
-    RecetaValidator::validarParaImprimir($consulta); 
+        $pdf = Pdf::loadView('consultas.pdf.receta', compact('consulta'));
 
-    $pdf = Pdf::loadView('consultas.pdf.receta', compact('consulta'));
-
-    return $pdf->stream('receta-' . $consulta->id . '.pdf');
-}
+        return $pdf->stream('receta-' . $consulta->id . '.pdf');
+    }
 
     /* =========================================================
      |  VALIDAR STOCK
@@ -301,6 +322,28 @@ public function pdfReceta(Consulta $consulta)
         $consulta->medicamentos()->sync($nuevos);
     }
 
+    /* =========================================================
+     |  GUARDAR ESTUDIOS (NUEVO) - Lógica no obligatoria
+     ========================================================= */
+    private function guardarEstudios(Request $request, Cita $cita): void
+{
+    $estudios = $request->input('estudios', []);
+    
+    if (empty($estudios)) return;
+
+    foreach ($estudios as $est) {
+        if (empty($est['servicio_id'])) continue;
+
+        SolicitudEstudio::crearYCargar([
+            'paciente_id'        => $cita->paciente_id,
+            'servicio_id'        => $est['servicio_id'],
+            'tipo_estudio'       => $est['tipo_estudio'] ?? 'Estudio general',
+            'indicaciones'       => $est['indicaciones'] ?? null,
+            'cita_id'            => $cita->id,
+            'medico_solicita_id' => auth()->id(), 
+        ]);
+    }
+}
     /* =========================================================
      |  AUTORIZACIÓN DE ACCESO
      ========================================================= */

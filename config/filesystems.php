@@ -59,6 +59,12 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'estudios_privados' => [
+    'driver' => 'local',
+    'root'   => storage_path('app/private/estudios'),
+    'serve'  => false,
+    'throw'  => false,
+],
 
     ],
 

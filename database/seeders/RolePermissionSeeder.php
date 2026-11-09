@@ -64,5 +64,17 @@ class RolePermissionSeeder extends Seeder
              'asistente.ver',
              'alertas.ver'
         ]);
-    }
-}
+
+     // Laboratorio Clínico e Imagenología
+
+     Role::findByName('laboratorio')->syncPermissions([
+     'pacientes.ver',      
+     'servicios.ver',      
+     'estudios.ver',       
+     'estudios.editar',   
+     'estudios.crear',
+     'asistente.ver',
+     'alertas.ver',
+     ]);
+     }
+     }
