@@ -14,6 +14,7 @@ class RoleSeeder extends Seeder
             'medico',
             'enfermeria',
             'farmacia',
+            'laboratorio', 
         ];
 
         foreach ($roles as $nombre) {

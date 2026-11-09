@@ -17,28 +17,31 @@ class PermissionSeeder extends Seeder
             'especialidades.ver',
             'citas.ver',
             'turnos.ver',
+            'camas.ver',
+            'cuentas.ver',
+
+            // Estudios (Laboratorio / Imagenología) ✅
+            'estudios.ver',
+            'estudios.crear',
+            'estudios.editar',
+
+            // Agenda
+            'agenda.ver',
 
             // Atención Clínica
             'expediente.ver',
-            'consultas.ver',      
+            'consultas.ver',
             'enfermeria.ver',
             'seguimiento.ver',
-            'camas.ver',
-              'consultas.ver',
             'signos-vitales.ver',
-            'expediente.ver',
-            'existencias.ver',
+
             // Farmacia e Inventario
             'medicamentos.ver',
             'existencias.ver',
             'movimientos.ver',
             'prediccion.ver',
-            'turnos.ver',
-            'agenda.ver',
-            'prediccion.ver',
-            'enfermeria.ver',
-            'cuentas.ver',
-            
+            'dispensaciones.ver',
+
             // Seguridad e Inteligencia
             'usuarios.ver',
             'roles.ver',
@@ -46,11 +49,10 @@ class PermissionSeeder extends Seeder
             'auditoria.ver',
             'asistente.ver',
             'alertas.ver',
-            'dispensaciones.ver',
         ];
 
         foreach ($permisos as $nombre) {
-            Permission::firstOrCreate(['name' => $nombre]);
+            Permission::firstOrCreate(['name' => $nombre, 'guard_name' => 'web']);
         }
     }
 }
