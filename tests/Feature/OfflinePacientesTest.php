@@ -197,4 +197,30 @@ class OfflinePacientesTest extends TestCase
             ->assertOk()
             ->assertJsonPath('caduca_en', now()->addHours(8)->toIso8601String());
     }
+
+    public function test_el_service_worker_no_guarda_la_ruta_de_pacientes(): void
+    {
+        $sw = file_get_contents(public_path('sw.js'));
+
+        preg_match("/const ESTATICOS = \[(.*?)\];/", $sw, $m);
+        $this->assertNotEmpty($m, 'sw.js debe declarar ESTATICOS');
+        $this->assertStringNotContainsString('/offline/', $m[1], 'Los datos de pacientes no pueden ir a la caché del service worker');
+        $this->assertStringContainsString("'/js/hn-offline.js'", $sw, 'El script de consulta sin conexión debe estar precargado');
+    }
+
+    public function test_la_pagina_con_sesion_activa_la_sincronizacion_y_la_de_invitado_borra_los_datos(): void
+    {
+        $this->withoutVite();
+
+        $this->actingAs($this->enfermera)->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('js/hn-offline.js', false)
+            ->assertSee('HNOffline.activar();', false);
+
+        auth()->logout();
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('HNOffline.borrar();', false)
+            ->assertDontSee('HNOffline.activar();', false);
+    }
 }
