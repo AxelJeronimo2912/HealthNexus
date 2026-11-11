@@ -38,6 +38,7 @@ use App\Http\Controllers\AdmisionController;
 use App\Http\Controllers\AsistenteController;
 use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\OfflinePacientesController;
 use App\Http\Controllers\Laboratorio\DashboardController as LaboratorioDashboardController;
 
 
@@ -83,6 +84,13 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     return view('dashboard');
 })->name('dashboard');
+
+/*
+| HAL-199: datos mínimos de SUS pacientes para consultarlos sin conexión (médico y enfermería).
+| El navegador los guarda cifrados y los borra al cerrar sesión o al caducar (config/offline.php).
+*/
+Route::middleware(['auth', 'throttle:20,1'])->get('/offline/pacientes', OfflinePacientesController::class)
+    ->name('offline.pacientes');
 
 /*
 |--------------------------------------------------------------------------
