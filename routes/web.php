@@ -39,6 +39,7 @@ use App\Http\Controllers\AsistenteController;
 use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\OfflinePacientesController;
+use App\Http\Controllers\ReporteDescargaController;
 use App\Http\Controllers\Laboratorio\DashboardController as LaboratorioDashboardController;
 
 
@@ -84,6 +85,13 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     return view('dashboard');
 })->name('dashboard');
+
+/*
+| Reportes PDF del asistente: archivos privados, enlace firmado de 30 min y solo para quien lo generó.
+*/
+Route::middleware(['auth', 'signed'])->get('/reportes/{archivo}', ReporteDescargaController::class)
+    ->where('archivo', '[A-Za-z0-9._-]+\\.pdf')
+    ->name('reportes.descargar');
 
 /*
 | HAL-199: datos mínimos de SUS pacientes para consultarlos sin conexión (médico y enfermería).

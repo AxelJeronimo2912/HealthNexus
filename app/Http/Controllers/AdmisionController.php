@@ -208,11 +208,6 @@ public function derivar(Request $request, Admision $admision): RedirectResponse|
         return back()->with('error', 'El paciente debe estar derivado para generar el pase.');
     }
 
-    $carpeta = storage_path('app/public/pases-salida');
-    if (!file_exists($carpeta)) {
-        mkdir($carpeta, 0755, true);
-    }
-
     $pdf = Pdf::loadView('admisiones.pdf.pase-salida', compact('admision'));
     $pdf->setOption('isRemoteEnabled', true);
     $pdf->setOption('defaultFont', 'DejaVu Sans');
@@ -221,7 +216,8 @@ public function derivar(Request $request, Admision $admision): RedirectResponse|
     $output = $pdf->output();
 
     $nombreArchivo = 'pases-salida/pase-' . $admision->folio . '.pdf';
-    \Storage::disk('public')->put($nombreArchivo, $output);
+    // Disco privado: el pase solo se descarga por esta ruta, con sesión y permiso (nunca por /storage).
+    \Storage::disk('local')->put($nombreArchivo, $output);
     $admision->update(['pase_salida_pdf' => $nombreArchivo]);
 
     AuditoriaService::registrar(

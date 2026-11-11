@@ -249,6 +249,7 @@ class DerivacionPaseSalidaTest extends TestCase
     public function test_pase_salida_genera_pdf_y_guarda_archivo(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         $this->actingAs($this->admin);
 
         $admision = $this->admisionDerivada();
@@ -264,7 +265,8 @@ class DerivacionPaseSalidaTest extends TestCase
         $esperado = 'pases-salida/pase-' . $admision->folio . '.pdf';
 
         $this->assertSame($esperado, $admision->pase_salida_pdf);
-        Storage::disk('public')->assertExists($esperado);
+        Storage::disk('local')->assertExists($esperado);
+        Storage::disk('public')->assertMissing($esperado);
     }
 
     /* =========================================================
@@ -274,6 +276,7 @@ class DerivacionPaseSalidaTest extends TestCase
     public function test_pase_salida_usa_folio_en_el_nombre_del_archivo(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         $this->actingAs($this->admin);
 
         $admision = $this->admisionDerivada();
@@ -297,6 +300,7 @@ class DerivacionPaseSalidaTest extends TestCase
     public function test_pase_salida_rechaza_si_no_esta_derivado(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         $this->actingAs($this->admin);
 
         $admision = $this->crearAdmision(['estado' => 'en_espera']);
@@ -317,6 +321,7 @@ class DerivacionPaseSalidaTest extends TestCase
     public function test_pase_salida_puede_generarse_dos_veces_sobrescribiendo_archivo(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         $this->actingAs($this->admin);
 
         $admision = $this->admisionDerivada();
@@ -328,8 +333,9 @@ class DerivacionPaseSalidaTest extends TestCase
         $archivo = $admision->fresh()->pase_salida_pdf;
 
         $this->assertNotNull($archivo);
-        Storage::disk('public')->assertExists($archivo);
+        Storage::disk('local')->assertExists($archivo);
+        Storage::disk('public')->assertMissing($archivo);
         // Solo debe existir un archivo para ese folio
-        $this->assertCount(1, Storage::disk('public')->files('pases-salida'));
+        $this->assertCount(1, Storage::disk('local')->files('pases-salida'));
     }
 }
