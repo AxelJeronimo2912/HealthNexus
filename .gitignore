@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Bases de datos locales (nunca al repo: contienen usuarios y contraseñas)
+/healthnexus
+*.sqlite
+*.sqlite3
