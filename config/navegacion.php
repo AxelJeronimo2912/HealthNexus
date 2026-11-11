@@ -28,7 +28,9 @@ return [
             ['permiso' => 'servicios.ver',      'ruta' => 'servicios.index',       'activo' => 'servicios.*',       'icono' => 'building-office-2',        'label' => 'Servicios'],
             ['permiso' => 'especialidades.ver', 'ruta' => 'especialidades.index',  'activo' => 'especialidades.*',  'icono' => 'academic-cap',             'label' => 'Especialidades'],
             ['permiso' => 'citas.ver',          'ruta' => 'citas.index',           'activo' => 'citas.*',           'icono' => 'calendar-days',            'label' => 'Citas'],
-            ['permiso' => 'turnos.ver',         'ruta' => 'admin.turnos.index',    'activo' => 'admin.turnos.*',    'icono' => 'clock',                    'label' => 'Turnos'],
+            // La pantalla de turnos está en el grupo del administrador (rol.prefijo:admin); con 'turnos.ver'
+            // médico y enfermería veían la opción y recibían 403. Se muestra solo a quien administra usuarios.
+            ['permiso' => 'usuarios.ver',       'ruta' => 'admin.turnos.index',    'activo' => 'admin.turnos.*',    'icono' => 'clock',                    'label' => 'Turnos'],
             ['permiso' => 'camas.ver',          'ruta' => 'camas.index',           'activo' => 'camas.*',           'icono' => 'home-modern',              'label' => 'Camas'],
             [
                 'permiso'  => 'estudios.ver',

@@ -158,6 +158,7 @@ class ReportePersonalTest extends TestCase
     public function test_reporte_de_personal_activo_genera_y_guarda_el_pdf(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
 
         $medico = $this->crearMedico();
         $medico->especialidades()->attach($this->crearEspecialidad('CARD', 'Cardiología')->id, [
@@ -170,11 +171,13 @@ class ReportePersonalTest extends TestCase
 
         $this->assertSame('Reporte de personal activo', $resultado['nombre']);
         $this->assertSame(1, $resultado['total_personal']);
-        $this->assertStringContainsString('storage/reportes/personal-activo-', $resultado['url']);
+        $this->assertStringContainsString('/reportes/personal-activo-', $resultado['url']);
+        $this->assertStringContainsString('signature=', $resultado['url']);
 
-        $archivos = Storage::disk('public')->allFiles('reportes');
+        $this->assertSame([], Storage::disk('public')->allFiles());
+        $archivos = Storage::disk('local')->allFiles('reportes');
         $this->assertCount(1, $archivos);
-        $this->assertStringStartsWith('%PDF-', Storage::disk('public')->get($archivos[0]));
+        $this->assertStringStartsWith('%PDF-', Storage::disk('local')->get($archivos[0]));
     }
 
     public function test_plantilla_de_personal_activo_lista_las_especialidades_de_cada_persona(): void

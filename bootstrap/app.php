@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->web(append: [
         \App\Http\Middleware\RegistrarAccesoMiddleware::class,
+        \App\Http\Middleware\CabecerasSeguridad::class,
     ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -5,27 +5,28 @@ namespace Tests\Feature\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * El registro público está cerrado: las cuentas del personal las crea el administrador.
+ */
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_la_pantalla_de_registro_no_existe(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/register')->assertNotFound();
     }
 
-    public function test_new_users_can_register(): void
+    public function test_nadie_puede_crear_una_cuenta_desde_afuera(): void
     {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $this->post('/register', [
+            'name' => 'Persona Externa',
+            'email' => 'externa@correo.test',
+            'password' => 'ClaveSegura#2026',
+            'password_confirmation' => 'ClaveSegura#2026',
+        ])->assertNotFound();
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'externa@correo.test']);
     }
 }

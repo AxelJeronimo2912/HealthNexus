@@ -30,7 +30,7 @@
         // Al cerrar sesión se borran los pacientes guardados y la caché del service worker.
         document.addEventListener('submit', function (e) {
             var accion = e.target && e.target.getAttribute('action');
-            if (accion && /\/logout$/.test(accion)) { HNOffline.borrar(); }
+            if (accion && /\/logout$/.test(accion)) { HNOffline.borrar({ cache: true }); }
         }, true);
     })();
 </script>
