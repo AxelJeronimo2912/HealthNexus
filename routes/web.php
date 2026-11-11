@@ -561,10 +561,10 @@ Route::middleware(['auth', 'permission:admision.ver'])
 
 /*
 |--------------------------------------------------------------------------
-| Módulo de Asistente IA
+| Módulo de Asistente IA (solo roles con el permiso asistente.ver)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'permission:asistente.ver', 'throttle:30,1'])->group(function () {
     Route::get('/asistente',                  [AsistenteController::class, 'index'])            ->name('asistente.index');
     Route::get('/asistente-lista',            [AsistenteController::class, 'lista'])            ->name('asistente.lista');
     Route::get('/asistente/{conversacion}',   [AsistenteController::class, 'ver'])              ->name('asistente.ver');

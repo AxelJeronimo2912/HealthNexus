@@ -129,8 +129,10 @@ class AsistenteService
             'max_tokens' => 1024,
         ];
 
-        if ($conHerramientas) {
-            $payload['tools'] = AsistenteTools::definiciones();
+        // Solo se ofrecen las herramientas que el usuario tiene permiso de usar (puede no haber ninguna).
+        $herramientas = $conHerramientas ? AsistenteTools::definiciones() : [];
+        if ($herramientas) {
+            $payload['tools'] = $herramientas;
             $payload['tool_choice'] = 'auto';
         }
 
