@@ -676,6 +676,13 @@ Route::middleware(['auth', 'permission:estudios.ver'])
         Route::delete('/archivos/{archivo}', [ArchivoEstudioController::class, 'destroy'])
             ->middleware('permission:estudios.editar')->name('archivos.destroy');
 
+        // Contador para el badge del sidebar (debe ir ANTES de /{solicitud}; si no, esa ruta lo captura y da 404)
+        Route::get('/contador-pendientes', function () {
+            return response()->json([
+                'total' => \App\Models\SolicitudEstudio::whereIn('estado', ['solicitado', 'en_proceso'])->count(),
+            ]);
+        })->name('contador');
+
         // Detalle
         Route::get('/{solicitud}', [SolicitudEstudioController::class, 'show'])->name('show');
         Route::patch('/{solicitud}/estado', [SolicitudEstudioController::class, 'updateEstado'])
@@ -685,12 +692,6 @@ Route::middleware(['auth', 'permission:estudios.ver'])
         Route::post('/{solicitud}/archivos', [ArchivoEstudioController::class, 'store'])
             ->middleware('permission:estudios.editar')->name('archivos.store');
 
-        // Contador para el badge del sidebar
-        Route::get('/contador-pendientes', function () {
-            return response()->json([
-                'total' => \App\Models\SolicitudEstudio::whereIn('estado', ['solicitado', 'en_proceso'])->count(),
-            ]);
-        })->name('contador');
     });
     /*
 |--------------------------------------------------------------------------
