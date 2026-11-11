@@ -6,16 +6,20 @@
  * iniciada, respuestas con datos de pacientes ni peticiones que no sean GET:
  * esas siempre van a la red. Si no hay red, se muestra /offline.html.
  *
+ * Los datos mínimos de pacientes para consultar sin conexión NO pasan por esta caché:
+ * los guarda cifrados public/js/hn-offline.js en IndexedDB, con caducidad (HAL-199).
+ *
  * Al cambiar este archivo, sube la versión para que se limpie la caché anterior.
  */
-const VERSION = 'hn-static-v2';
+const VERSION = 'hn-static-v3';
 const PRECACHE = [
   '/offline.html',
+  '/js/hn-offline.js',
   '/images/icons/icon-192.png',
   '/images/logo-mark.png',
 ];
 // Rutas del mismo dominio que sí se pueden guardar (contenido público y estático).
-const ESTATICOS = ['/build/', '/images/', '/fonts/'];
+const ESTATICOS = ['/build/', '/images/', '/fonts/', '/js/'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
