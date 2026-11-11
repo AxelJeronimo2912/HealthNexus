@@ -206,6 +206,7 @@ class OfflinePacientesTest extends TestCase
         $this->assertNotEmpty($m, 'sw.js debe declarar ESTATICOS');
         $this->assertStringNotContainsString('/offline/', $m[1], 'Los datos de pacientes no pueden ir a la caché del service worker');
         $this->assertStringContainsString("'/js/hn-offline.js'", $sw, 'El script de consulta sin conexión debe estar precargado');
+        $this->assertMatchesRegularExpression("/'hn:limpiar-cache'[\\s\\S]*\\.then\\(precargar\\)/", $sw, 'Al limpiar la caché se debe volver a precargar offline.html');
     }
 
     public function test_la_pagina_con_sesion_activa_la_sincronizacion_y_la_de_invitado_borra_los_datos(): void
@@ -215,7 +216,8 @@ class OfflinePacientesTest extends TestCase
         $this->actingAs($this->enfermera)->get(route('profile.edit'))
             ->assertOk()
             ->assertSee('js/hn-offline.js', false)
-            ->assertSee('HNOffline.activar();', false);
+            ->assertSee('HNOffline.activar();', false)
+            ->assertSee('HNOffline.borrar({ cache: true });', false);
 
         auth()->logout();
         $this->get(route('login'))

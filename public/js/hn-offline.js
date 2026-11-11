@@ -8,7 +8,8 @@
  * Cuánto tiempo: hasta `caduca_en` (12 h por defecto, un turno). Al leerse vencido, se borra.
  * Cuándo se borra todo: al cerrar sesión, al abrir una pantalla sin sesión (login), si el servidor responde
  *   401/403/419, o al caducar.
- * Sincronización: al cargar una pantalla con sesión, al recuperar la conexión y cada 15 minutos.
+ * Sincronización: al cargar una pantalla con sesión SOLO si los datos tienen más de 10 minutos (así navegar por
+ *   la web no descarga la lista en cada página ni llena la bitácora), al recuperar la conexión y cada 15 minutos.
  */
 (function (global) {
   'use strict';
@@ -17,6 +18,7 @@
   var STORE = 'kv';
   var URL_DATOS = '/offline/pacientes';
   var CADA_MS = 15 * 60 * 1000;
+  var VIGENCIA_MS = 10 * 60 * 1000;
 
   var soportado = !!(global.indexedDB && global.crypto && global.crypto.subtle);
 
@@ -62,9 +64,12 @@
       .then(function (b) { return JSON.parse(new TextDecoder().decode(b)); });
   }
 
-  /** Borra los datos, la clave y la caché del service worker. */
-  function borrar() {
-    if (global.navigator && navigator.serviceWorker && navigator.serviceWorker.controller) {
+  /**
+   * Borra los pacientes guardados y su clave. Con `{ cache: true }` (al cerrar sesión) también pide al service
+   * worker limpiar su caché; él vuelve a precargar la página sin conexión.
+   */
+  function borrar(opciones) {
+    if (opciones && opciones.cache && global.navigator && navigator.serviceWorker && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage('hn:limpiar-cache');
     }
     if (!global.indexedDB) return Promise.resolve();
@@ -103,13 +108,21 @@
     }).catch(function () { return borrar().then(function () { return null; }); });
   }
 
+  /** Descarga de nuevo solo si no hay datos o tienen más de 10 minutos. */
+  function sincronizarSiHaceFalta() {
+    return leerKV('datos').then(function (reg) {
+      var edad = reg && reg.generado_en ? Date.now() - new Date(reg.generado_en).getTime() : Infinity;
+      return edad > VIGENCIA_MS ? sincronizar() : reg;
+    }).catch(function () { return sincronizar(); });
+  }
+
   /** Para pantallas con sesión de médico o enfermería. */
   function activar() {
     if (!soportado) return;
-    sincronizar();
+    sincronizarSiHaceFalta();
     global.addEventListener('online', sincronizar);
     global.setInterval(sincronizar, CADA_MS);
   }
 
-  global.HNOffline = { soportado: soportado, sincronizar: sincronizar, leer: leer, borrar: borrar, activar: activar };
+  global.HNOffline = { soportado: soportado, sincronizar: sincronizar, sincronizarSiHaceFalta: sincronizarSiHaceFalta, leer: leer, borrar: borrar, activar: activar };
 })(typeof window !== 'undefined' ? window : globalThis);
