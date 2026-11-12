@@ -134,4 +134,9 @@ public function especialidadPrincipal()
         ->wherePivot('es_principal', true)
         ->wherePivot('activo', true);
 }
+
+   public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
 }

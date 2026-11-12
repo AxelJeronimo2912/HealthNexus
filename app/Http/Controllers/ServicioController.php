@@ -135,26 +135,18 @@ class ServicioController extends Controller
     /**
      * Formulario para asignar personal al servicio.
      */
-    public function personal(Servicio $servicio): View
-    {
-        $servicio->load('users');
+   public function personal(Servicio $servicio)
+{
+    $servicio->load('users');
+    $asignados = $servicio->users()->pluck('users.id')->toArray();
+    $disponibles = User::whereNotIn('id', $asignados)
+        ->where('activo', true)
+        ->orderBy('nombre') // O 'name' si así se llama tu columna
+        ->get();
 
-        // Usuarios no asignados al servicio
-        $asignados = $servicio->users()
-            ->pluck('users.id')
-            ->toArray();
-
-        $disponibles = User::whereNotIn('id', $asignados)
-            ->where('activo', true)
-            ->orderBy('nombre')
-            ->get();
-
-        return view(
-            'servicios.personal',
-            compact('servicio', 'disponibles')
-        );
-    }
-
+    // ⬇️ ESTA ES LA LÍNEA QUE DEBES CAMBIAR
+    return view('servicios.partials._modal-personal-content', compact('servicio', 'disponibles'));
+}
     /**
      * Asigna un usuario al servicio.
      */
@@ -169,9 +161,9 @@ class ServicioController extends Controller
         ]);
 
         $existe = $servicio->users()
-            ->wherePivot('user_id', $data['user_id'])
-            ->wherePivot('activo', true)
-            ->exists();
+    ->where('users.id', $data['user_id'])   
+    ->wherePivot('activo', true)
+    ->exists();;
 
         if ($existe) {
             return back()->with(

@@ -11,13 +11,9 @@ use Illuminate\View\View;
 
 class AsistenteController extends Controller
 {
-    /**
-     * Vista principal del asistente.
-     */
     public function index(Request $request): View
     {
         $user = auth()->user();
-
         $conversaciones = ChatConversacion::where('user_id', $user->id)
             ->orderByDesc('ultimo_mensaje_en')
             ->limit(20)
@@ -33,9 +29,6 @@ class AsistenteController extends Controller
         return view('asistente.index', compact('conversaciones', 'conversacionActiva'));
     }
 
-    /**
-     * Lista todas las conversaciones del usuario autenticado (para el sidebar).
-     */
     public function lista(): JsonResponse
     {
         $conversaciones = ChatConversacion::where('user_id', auth()->id())
@@ -46,10 +39,6 @@ class AsistenteController extends Controller
         return response()->json($conversaciones);
     }
 
-    /**
-     * Devuelve los mensajes de una conversación específica.
-     * Solo si pertenece al usuario autenticado.
-     */
     public function ver(ChatConversacion $conversacion): JsonResponse
     {
         if ($conversacion->user_id !== auth()->id()) {
@@ -70,9 +59,6 @@ class AsistenteController extends Controller
         ]);
     }
 
-    /**
-     * Crea una conversación nueva vacía.
-     */
     public function nuevaConversacion(): JsonResponse
     {
         $conversacion = ChatConversacion::create([
@@ -84,9 +70,6 @@ class AsistenteController extends Controller
         return response()->json(['id' => $conversacion->id]);
     }
 
-    /**
-     * Envía un mensaje al asistente y devuelve su respuesta.
-     */
     public function enviar(Request $request): JsonResponse
     {
         $request->validate([
@@ -98,7 +81,6 @@ class AsistenteController extends Controller
 
         $user = auth()->user();
 
-        // Crear o recuperar la conversación (validando propiedad)
         $conversacion = null;
         if ($request->filled('conversacion_id')) {
             $conversacion = ChatConversacion::where('user_id', $user->id)
@@ -113,37 +95,32 @@ class AsistenteController extends Controller
             ]);
         }
 
-        // Guardar mensaje del usuario
+        // Guardar mensaje del usuario en la base de datos
         ChatMensaje::create([
             'conversacion_id' => $conversacion->id,
             'rol'             => 'user',
             'contenido'       => $request->message,
         ]);
 
-        // Obtener historial (últimos 10 mensajes)
-        $historial = $conversacion->mensajes()
-            ->whereIn('rol', ['user', 'assistant'])
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get()
-            ->reverse()
-            ->map(fn($m) => ['role' => $m->rol, 'content' => $m->contenido])
-            ->values()
-            ->toArray();
+        // ¡AQUÍ ESTÁ EL CAMBIO CLAVE!
+        // Enviamos SOLO el mensaje actual, sin historial.
+        // Esto obliga al modelo a concentrarse exclusivamente en lo que acaba de preguntar.
+        $mensajesParaGroq = [
+            ['role' => 'user', 'content' => $request->message]
+        ];
 
-        // Datos de humor
         $sinSentido         = (bool) $request->input('sin_sentido', false);
         $contadorSinSentido = (int)  $request->input('contador_sin_sentido', 0);
 
         // Enviar al asistente
         $respuesta = AsistenteService::responder(
-            $historial,
+            $mensajesParaGroq,
             null,
             $sinSentido,
             $contadorSinSentido
         );
 
-        // Guardar respuesta
+        // Guardar respuesta del asistente
         ChatMensaje::create([
             'conversacion_id' => $conversacion->id,
             'rol'             => 'assistant',
@@ -161,9 +138,6 @@ class AsistenteController extends Controller
         ]);
     }
 
-    /**
-     * Elimina una conversación (solo si es del usuario).
-     */
     public function destruir(ChatConversacion $conversacion)
     {
         if ($conversacion->user_id !== auth()->id()) {
@@ -172,7 +146,6 @@ class AsistenteController extends Controller
 
         $conversacion->delete();
 
-        // Si la petición es AJAX/JSON, devolver JSON; si no, redirigir
         if (request()->expectsJson()) {
             return response()->json(['ok' => true]);
         }

@@ -9,12 +9,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use App\Enums\AuditEvent;
 use App\Services\AuditoriaService;
 use App\Services\DispositivoService;
-use Illuminate\Support\Facades\RateLimiter;
 
 class PinController extends Controller
 {
@@ -33,33 +33,51 @@ class PinController extends Controller
             return redirect()->route('login');
         }
 
-        return view('auth.pin');
+        $userId = (int) $request->session()->get(self::SESSION_USER_ID);
+        $clave = 'pin:'.$userId;
+
+        // Si está bloqueado, mostramos la vista con el aviso.
+        if (RateLimiter::tooManyAttempts($clave, self::MAX_INTENTOS)) {
+            $segundos = RateLimiter::availableIn($clave);
+
+            return view('auth.pin', [
+                'bloqueado' => true,
+                'segundosRestantes' => $segundos,
+            ]);
+        }
+
+        return view('auth.pin', [
+            'bloqueado' => false,
+            'intentosRestantes' => RateLimiter::remaining($clave, self::MAX_INTENTOS),
+        ]);
     }
 
     public function verify(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'pin' => ['required', 'digits:4'],
-        ], [
-            'pin.required' => 'Debes ingresar tu PIN.',
-            'pin.digits' => 'El PIN debe tener exactamente 4 dígitos.',
-        ]);
-
         $userId = $request->session()->get(self::SESSION_USER_ID);
 
         if (! $userId) {
             return redirect()->route('login');
         }
 
-        $user = User::find($userId);
         $clave = 'pin:'.$userId;
 
-        // El límite es por cuenta, no por sesión ni por IP: volver a escribir la contraseña no da más intentos.
+        // 🔒 Bloqueo activo: ni siquiera validamos el PIN.
         if (RateLimiter::tooManyAttempts($clave, self::MAX_INTENTOS)) {
-            return $this->bloquear($request, $user, $clave);
+            return $this->bloquear($request, User::find($userId), $clave);
         }
 
+        $validated = $request->validate([
+            'pin' => ['required', 'digits:4'],
+        ], [
+            'pin.required' => 'Debes ingresar tu PIN.',
+            'pin.digits'   => 'El PIN debe tener exactamente 4 dígitos.',
+        ]);
+
+        $user = User::find($userId);
+
         if (! $user || ! $user->pin || ! Hash::check($validated['pin'], $user->pin)) {
+            // ❌ Intento fallido: registramos en el rate limiter.
             RateLimiter::hit($clave, self::BLOQUEO_SEGUNDOS);
             $restantes = RateLimiter::remaining($clave, self::MAX_INTENTOS);
 
@@ -82,8 +100,9 @@ class PinController extends Controller
             ]);
         }
 
-        // PIN correcto
+        //  PIN correcto
         RateLimiter::clear($clave);
+
         Auth::login($user, $request->session()->get(self::SESSION_REMEMBER, false));
 
         DispositivoService::registrarDesdeRequest($request, $user->id);
