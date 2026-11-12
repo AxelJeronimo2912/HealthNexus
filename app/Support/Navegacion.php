@@ -21,6 +21,7 @@ class Navegacion
             str_starts_with($rol, 'medic') || $rol === 'm' => route('medico.dashboard'),
             str_starts_with($rol, 'enferm') => route('enfermeria.dashboard'),
             str_starts_with($rol, 'farmac') => route('farmacia.dashboard'),
+            str_starts_with($rol, 'laborator') || str_starts_with($rol, 'quimic') => route('laboratorio.dashboard'),
             default => route('dashboard'),
         };
     }

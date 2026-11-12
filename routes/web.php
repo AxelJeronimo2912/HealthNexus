@@ -20,6 +20,8 @@ use App\Http\Controllers\TurnoController;
 use App\Http\Controllers\AsignacionTurnoController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\CitaController;
+use App\Http\Controllers\SolicitudEstudioController;
+use App\Http\Controllers\ArchivoEstudioController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\ExistenciaController;
@@ -36,6 +38,11 @@ use App\Http\Controllers\AdmisionController;
 use App\Http\Controllers\AsistenteController;
 use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\OfflinePacientesController;
+use App\Http\Controllers\ReporteDescargaController;
+use App\Http\Controllers\Laboratorio\DashboardController as LaboratorioDashboardController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +85,20 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     return view('dashboard');
 })->name('dashboard');
+
+/*
+| Reportes PDF del asistente: archivos privados, enlace firmado de 30 min y solo para quien lo generó.
+*/
+Route::middleware(['auth', 'signed'])->get('/reportes/{archivo}', ReporteDescargaController::class)
+    ->where('archivo', '[A-Za-z0-9._-]+\\.pdf')
+    ->name('reportes.descargar');
+
+/*
+| HAL-199: datos mínimos de SUS pacientes para consultarlos sin conexión (médico y enfermería).
+| El navegador los guarda cifrados y los borra al cerrar sesión o al caducar (config/offline.php).
+*/
+Route::middleware(['auth', 'throttle:20,1'])->get('/offline/pacientes', OfflinePacientesController::class)
+    ->name('offline.pacientes');
 
 /*
 |--------------------------------------------------------------------------
@@ -548,10 +569,10 @@ Route::middleware(['auth', 'permission:admision.ver'])
 
 /*
 |--------------------------------------------------------------------------
-| Módulo de Asistente IA
+| Módulo de Asistente IA (solo roles con el permiso asistente.ver)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'permission:asistente.ver', 'throttle:30,1'])->group(function () {
     Route::get('/asistente',                  [AsistenteController::class, 'index'])            ->name('asistente.index');
     Route::get('/asistente-lista',            [AsistenteController::class, 'lista'])            ->name('asistente.lista');
     Route::get('/asistente/{conversacion}',   [AsistenteController::class, 'ver'])              ->name('asistente.ver');
@@ -591,6 +612,88 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
     });
 
 /*
+
+pp\Http\Controllers\ArchivoEstudioController;
+
+/*
+|--------------------------------------------------------------------------
+| Rutas del LABORATORIO (acepta laboratorio, quimico...)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'rol.prefijo:laborator,quimic'])
+    ->prefix('laboratorio')
+    ->name('laboratorio.')
+    ->group(function () {
+        Route::get('/dashboard', [LaboratorioDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Módulo de Estudios (Laboratorio e Imagenología)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'permission:estudios.ver'])
+    ->prefix('estudios')
+    ->name('estudios.')
+    ->group(function () {
+
+        Route::get('/pacientes/buscar-json', function (\Illuminate\Http\Request $request) {
+            $q = trim($request->input('q', ''));
+            if (strlen($q) < 2) {
+                return response()->json([]);
+            }
+
+            $pacientes = \App\Models\Paciente::query()
+                ->where(function ($sub) use ($q) {
+                    $sub->where('nombre', 'like', "%{$q}%")
+                        ->orWhere('apellido_paterno', 'like', "%{$q}%")
+                        ->orWhere('apellido_materno', 'like', "%{$q}%")
+                        ->orWhere('curp', 'like', "%{$q}%")
+                        ->orWhere('id', $q);
+                })
+                ->orderBy('nombre')
+                ->limit(15)
+                ->get(['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'curp']);
+
+            return response()->json($pacientes->map(fn ($p) => [
+                'id'     => $p->id,
+                'nombre' => trim("{$p->nombre} {$p->apellido_paterno} {$p->apellido_materno}"),
+                'curp'   => $p->curp,
+            ]));
+        })->name('buscar-pacientes');
+
+        // Listado y creación
+        Route::get('/', [SolicitudEstudioController::class, 'index'])->name('index');
+        Route::get('/crear', [SolicitudEstudioController::class, 'create'])
+            ->middleware('permission:estudios.crear')->name('create');
+        Route::post('/', [SolicitudEstudioController::class, 'store'])
+            ->middleware('permission:estudios.crear')->name('store');
+
+        // Archivos
+        Route::get('/archivos/{archivo}/ver', [ArchivoEstudioController::class, 'ver'])->name('archivos.ver');
+        Route::get('/archivos/{archivo}/descargar', [ArchivoEstudioController::class, 'descargar'])->name('archivos.descargar');
+        Route::delete('/archivos/{archivo}', [ArchivoEstudioController::class, 'destroy'])
+            ->middleware('permission:estudios.editar')->name('archivos.destroy');
+
+        // Contador para el badge del sidebar (debe ir ANTES de /{solicitud}; si no, esa ruta lo captura y da 404)
+        Route::get('/contador-pendientes', function () {
+            return response()->json([
+                'total' => \App\Models\SolicitudEstudio::whereIn('estado', ['solicitado', 'en_proceso'])->count(),
+            ]);
+        })->name('contador');
+
+        // Detalle
+        Route::get('/{solicitud}', [SolicitudEstudioController::class, 'show'])->name('show');
+        Route::patch('/{solicitud}/estado', [SolicitudEstudioController::class, 'updateEstado'])
+            ->middleware('permission:estudios.editar')->name('estado');
+        Route::post('/{solicitud}/cancelar', [SolicitudEstudioController::class, 'cancelar'])
+            ->middleware('permission:estudios.editar')->name('cancelar');
+        Route::post('/{solicitud}/archivos', [ArchivoEstudioController::class, 'store'])
+            ->middleware('permission:estudios.editar')->name('archivos.store');
+
+    });
+    /*
 |--------------------------------------------------------------------------
 | Rutas de autenticación
 |--------------------------------------------------------------------------

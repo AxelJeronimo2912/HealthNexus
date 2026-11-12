@@ -10,6 +10,9 @@ use App\Models\Medicamento;
 use App\Models\Paciente;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class ReporteService
 {
@@ -252,19 +255,18 @@ class ReporteService
     // ============================================================
 
     /**
-     * Guarda el PDF en storage/app/public/reportes y devuelve su URL pública.
+     * Guarda el PDF en el disco PRIVADO (storage/app/private/reportes) y devuelve un enlace firmado que vence en
+     * 30 minutos y solo funciona para el usuario que lo generó (ruta reportes.descargar, con sesión iniciada).
+     * Antes se guardaban en el disco público con nombres fáciles de adivinar y cualquiera podía descargarlos.
      */
     private static function guardarPdf($pdf, string $nombreBase): string
     {
-        $nombreArchivo = 'reportes/' . $nombreBase . '.pdf';
+        $archivo = $nombreBase.'-'.Str::lower(Str::random(20)).'.pdf';
+        Storage::disk('local')->put('reportes/'.$archivo, $pdf->output());
 
-        $carpeta = storage_path('app/public/reportes');
-        if (!file_exists($carpeta)) {
-            mkdir($carpeta, 0755, true);
-        }
-
-        \Storage::disk('public')->put($nombreArchivo, $pdf->output());
-
-        return asset('storage/' . $nombreArchivo);
+        return URL::temporarySignedRoute('reportes.descargar', now()->addMinutes(30), [
+            'archivo' => $archivo,
+            'usuario' => auth()->id() ?? 0,
+        ]);
     }
 }

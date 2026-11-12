@@ -4,29 +4,116 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#141739">
+<meta name="robots" content="noindex">
 <title>Sin conexión · HealthNexus</title>
 <style>
-  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;
-         background: #0D1230; color: #FFFFFF; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 420px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  :root { --fondo: #0D1230; --tarjeta: #171C45; --borde: #2A3170; --texto: #FFFFFF; --sub: #C9CDF0; --tenue: #9EA3F7; --acento: #5B5FEF; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; padding: 24px 16px; background: var(--fondo); color: var(--texto);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .centro { min-height: calc(100vh - 48px); max-width: 420px; justify-content: center; align-items: center; text-align: center; }
   .logo { width: 72px; height: 72px; border-radius: 18px; background: #FFFFFF; display: grid; place-items: center; }
   .logo img { width: 56px; height: 56px; object-fit: contain; }
   h1 { margin: 8px 0 0; font-size: 26px; }
-  p { margin: 0; font-size: 16px; line-height: 1.6; color: #C9CDF0; }
-  button { margin-top: 8px; height: 48px; padding: 0 28px; border: none; border-radius: 12px; background: #5B5FEF; color: #FFFFFF;
+  p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--sub); }
+  button { height: 48px; padding: 0 28px; border: none; border-radius: 12px; background: var(--acento); color: #FFFFFF;
            font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
   button:hover { background: #4A4ED8; }
-  small { color: #9EA3F7; font-size: 13px; }
+  small { color: var(--tenue); font-size: 13px; }
+  .barra { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  .barra h1 { margin: 0; font-size: 22px; }
+  .aviso { background: #3A2A0A; border: 1px solid #8A6A1E; color: #FFE3A3; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+  input[type=search] { width: 100%; height: 48px; border-radius: 12px; border: 1px solid var(--borde); background: var(--tarjeta);
+                       color: var(--texto); padding: 0 14px; font: inherit; font-size: 16px; }
+  .lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .paciente { background: var(--tarjeta); border: 1px solid var(--borde); border-left-width: 6px; border-radius: 12px; padding: 14px 16px; }
+  .paciente h2 { margin: 0 0 4px; font-size: 17px; }
+  .meta { color: var(--sub); font-size: 14px; }
+  .dato { margin-top: 8px; font-size: 14px; line-height: 1.5; }
+  .dato b { color: var(--tenue); font-weight: 600; }
+  .alergia { color: #FFB4B4; }
+  .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+  .t-rojo { border-left-color: #E53935; } .c-rojo { background: #E53935; }
+  .t-naranja { border-left-color: #FB8C00; } .c-naranja { background: #FB8C00; }
+  .t-amarillo { border-left-color: #FDD835; } .c-amarillo { background: #FDD835; color: #1A1A1A; }
+  .t-verde { border-left-color: #43A047; } .c-verde { background: #43A047; }
+  .t-azul { border-left-color: #1E88E5; } .c-azul { background: #1E88E5; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<main>
+<!-- Sin datos guardados: mensaje original -->
+<main id="sin-datos" class="centro">
   <div class="logo"><img src="/images/logo-mark.png" alt=""></div>
   <h1>Sin conexión</h1>
-  <p>No pudimos conectar con HealthNexus. Revisa tu conexión a internet e inténtalo de nuevo.</p>
-  <p>Por seguridad, la información de pacientes no se guarda en este dispositivo y solo está disponible en línea.</p>
-  <button type="button" onclick="location.reload()">Reintentar</button>
+  <p>No pudimos conectar con HealthNexus. Revisa tu conexión a internet; la página se recargará sola al volver la conexión.</p>
+  <p>No hay pacientes guardados en este dispositivo para consultar sin conexión.</p>
+  <button type="button" id="reintentar-1">Reintentar</button>
   <small>HealthNexus · Tecnología para el sector salud</small>
 </main>
+
+<!-- Con datos guardados (HAL-199/200): consulta de solo lectura -->
+<main id="con-datos" hidden>
+  <div class="barra">
+    <h1>Mis pacientes · sin conexión</h1>
+    <button type="button" id="reintentar-2">Reintentar conexión</button>
+  </div>
+  <div class="aviso" id="aviso" role="status"></div>
+  <input type="search" id="buscar" placeholder="Buscar por nombre o cama" aria-label="Buscar paciente">
+  <ul class="lista" id="lista"></ul>
+  <small>Solo lectura. Para registrar signos, notas o medicamentos espera a tener conexión. Los datos se borran al cerrar sesión.</small>
+</main>
+
+<script src="/js/hn-offline.js"></script>
+<script>
+(function () {
+  'use strict';
+  var TRIAGE = { rojo: 'Rojo · I', naranja: 'Naranja · II', amarillo: 'Amarillo · III', verde: 'Verde · IV', azul: 'Azul · V' };
+  var hora = function (iso) { try { return new Date(iso).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ''; } };
+
+  // HAL-200: al volver la conexión se recarga la página (y la pantalla con sesión vuelve a sincronizar).
+  window.addEventListener('online', function () { location.reload(); });
+  document.getElementById('reintentar-1').onclick = document.getElementById('reintentar-2').onclick = function () { location.reload(); };
+
+  // Todo se arma con textContent: los datos nunca se insertan como HTML.
+  function el(tag, clase, texto) { var n = document.createElement(tag); if (clase) { n.className = clase; } if (texto != null) { n.textContent = texto; } return n; }
+  function dato(etiqueta, valor, clase) {
+    if (valor == null || valor === '') { return null; }
+    var d = el('div', 'dato' + (clase ? ' ' + clase : '')); d.appendChild(el('b', null, etiqueta + ': ')); d.appendChild(document.createTextNode(valor)); return d;
+  }
+
+  function tarjeta(p) {
+    var li = el('li', 'paciente' + (p.triage ? ' t-' + p.triage : ''));
+    var h = el('h2', null, p.nombre);
+    if (p.triage && TRIAGE[p.triage]) { h.appendChild(el('span', 'chip c-' + p.triage, TRIAGE[p.triage])); }
+    li.appendChild(h);
+    li.appendChild(el('div', 'meta', [p.edad != null ? p.edad + ' años' : null, p.sexo, p.cama ? 'Cama ' + p.cama : 'Sin cama', p.tipo_sanguineo ? 'Sangre ' + p.tipo_sanguineo : null].filter(Boolean).join(' · ')));
+    var s = p.signos;
+    [dato('Alergias', p.alergias || 'No registradas', p.alergias ? 'alergia' : null),
+     dato('Enfermedades crónicas', p.enfermedades_cronicas),
+     dato('Diagnóstico', p.diagnostico),
+     dato('Médico', p.medico),
+     s ? dato('Últimos signos (' + hora(s.tomados_en) + ')', [s.temperatura != null ? s.temperatura + ' °C' : null, s.fc ? 'FC ' + s.fc : null, s.fr ? 'FR ' + s.fr : null, s.ta ? 'TA ' + s.ta : null, s.spo2 ? 'SpO₂ ' + s.spo2 + ' %' : null].filter(Boolean).join(' · ')) : null,
+    ].forEach(function (d) { if (d) { li.appendChild(d); } });
+    li.dataset.busqueda = ((p.nombre || '') + ' ' + (p.cama || '')).toLowerCase();
+    return li;
+  }
+
+  if (!window.HNOffline) { return; }
+  HNOffline.leer().then(function (datos) {
+    if (!datos || !datos.pacientes || !datos.pacientes.length) { return; }
+    document.getElementById('sin-datos').hidden = true;
+    document.getElementById('con-datos').hidden = false;
+    document.getElementById('aviso').textContent = 'Sin conexión · ' + datos.pacientes.length + ' paciente(s). Actualizados: ' + hora(datos.generado_en) + ' · Se borran de este dispositivo: ' + hora(datos.caduca_en);
+    var lista = document.getElementById('lista');
+    datos.pacientes.forEach(function (p) { lista.appendChild(tarjeta(p)); });
+    document.getElementById('buscar').addEventListener('input', function (e) {
+      var q = e.target.value.trim().toLowerCase();
+      Array.prototype.forEach.call(lista.children, function (li) { li.hidden = q && li.dataset.busqueda.indexOf(q) === -1; });
+    });
+  });
+})();
+</script>
 </body>
 </html>

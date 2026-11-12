@@ -181,6 +181,7 @@
                 });
 
                 calendar.render();
+                window.hnCalendar = calendar;
 
                 @if ($errors->any())
                     this.modalCrear = true;

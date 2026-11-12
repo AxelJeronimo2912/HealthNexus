@@ -263,6 +263,7 @@ class AdmisionTriagePaseSalidaTest extends TestCase
     public function test_pase_salida_genera_pdf_cuando_esta_derivado(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
 
         $this->actingAs($this->admin);
 
@@ -289,7 +290,8 @@ class AdmisionTriagePaseSalidaTest extends TestCase
         $this->assertNotNull($admision->pase_salida_pdf);
         $this->assertStringContainsString('pases-salida/pase-', $admision->pase_salida_pdf);
 
-        Storage::disk('public')->assertExists($admision->pase_salida_pdf);
+        Storage::disk('local')->assertExists($admision->pase_salida_pdf);
+        Storage::disk('public')->assertMissing($admision->pase_salida_pdf);
     }
 
     public function test_pase_salida_rechaza_si_no_esta_derivado(): void

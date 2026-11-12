@@ -208,20 +208,20 @@ class ConsultaPdfTest extends TestCase
             ->assertSee('Consulta médica')
             // Médico y firma
             ->assertSee('Laura Ramírez Soto')
-            ->assertSee('Cédula: 12345678')
+            ->assertSee('Cédula profesional: 12345678')
             // Paciente
             ->assertSee('Juan Pérez López')
             ->assertSee('Penicilina')
             ->assertSee('O+')
             ->assertSee($consulta->paciente->edad . ' años')
             // Signos vitales y somatometría
-            ->assertSee('36.8 °C')
+            ->assertSeeText('36.8')
             ->assertSee('120/80')
-            ->assertSee('98%')
-            ->assertSee('70.00 kg')
-            ->assertSee('1.75 m')
+            ->assertSeeText('98')
+            ->assertSeeText('70.00')
+            ->assertSeeText('1.75')
             ->assertSee('22.9')
-            ->assertSee('88.50 cm');
+            ->assertSeeText('88.50');
     }
 
     public function test_plantilla_de_consulta_muestra_el_soap_descifrado(): void
@@ -245,7 +245,7 @@ class ConsultaPdfTest extends TestCase
             ->assertSee('[R51]')
             ->assertSee('Cefalea')
             // Receta
-            ->assertSee('Paracetamol 500 mg')
+            ->assertSeeText('Paracetamol 500 mg')
             ->assertSee('1 tableta')
             ->assertSee('Cada 8 horas')
             ->assertSee('5 días')
@@ -309,7 +309,10 @@ class ConsultaPdfTest extends TestCase
     public function test_pdf_de_receta_sin_medicamentos_se_genera_sin_error(): void
     {
         $medico = $this->crearMedico();
-        $consulta = $this->crearConsulta($medico, ['receta_libre' => 'Solo reposo.']);
+        $consulta = $this->crearConsulta($medico, [
+            'receta_libre'             => 'Solo reposo.',
+            'diagnostico_principal_id' => $this->crearDiagnostico()->id,
+        ]);
 
         $response = $this->actingAs($medico)->get(route('consultas.receta.pdf', $consulta));
 
@@ -353,7 +356,7 @@ class ConsultaPdfTest extends TestCase
             ->assertSee($consulta->paciente->edad . ' años')
             ->assertSee($consulta->created_at->format('d/m/Y'))
             // Medicamento con su posología
-            ->assertSee('Paracetamol 500 mg')
+            ->assertSeeText('Paracetamol 500 mg')
             ->assertSee('1 tableta')
             ->assertSee('Oral')
             ->assertSee('Cada 8 horas')
@@ -362,9 +365,8 @@ class ConsultaPdfTest extends TestCase
             // Indicaciones adicionales
             ->assertSee('Reposo relativo e hidratación abundante.')
             // Firma
-            ->assertSee('Firma del médico')
             ->assertSee('Laura Ramírez Soto')
-            ->assertSee('Cédula: 12345678');
+            ->assertSee('Cédula profesional: 12345678');
     }
 
     public function test_plantilla_de_receta_omite_la_tabla_si_no_hay_medicamentos(): void

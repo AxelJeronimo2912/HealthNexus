@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\AuditEvent;
+
 use App\Models\Admision;
 use App\Models\Cama;
 use App\Models\Cita;
@@ -41,7 +43,82 @@ private static function esEnfermeria(): bool
 {
     return self::usuarioActual()?->roles->contains(fn($r) => str_contains(strtolower($r->name), 'enfermer')) ?? false;
 }
+    /**
+     * Permiso que necesita cada herramienta (basta con uno de la lista). Son los mismos permisos que protegen
+     * las pantallas de la web: el asistente nunca entrega datos que el usuario no podría ver en su menú.
+     * Una herramienta que no está aquí no se puede usar. El administrador puede usar todas.
+     *
+     * @var array<string, list<string>>
+     */
+    private const PERMISOS = [
+        'contar_pacientes' => ['pacientes.ver'],
+        'buscar_paciente' => ['pacientes.ver'],
+        'listar_pacientes' => ['pacientes.ver'],
+        'historial_consultas_paciente' => ['expediente.ver', 'consultas.ver'],
+        'citas_hoy' => ['citas.ver', 'agenda.ver'],
+        'citas_por_fecha' => ['citas.ver', 'agenda.ver'],
+        'citas_medico' => ['citas.ver', 'agenda.ver'],
+        'listar_citas' => ['citas.ver', 'agenda.ver'],
+        'camas_disponibles' => ['camas.ver'],
+        'camas_por_area' => ['camas.ver'],
+        'listar_camas' => ['camas.ver'],
+        'medicamentos_stock_bajo' => ['medicamentos.ver', 'existencias.ver'],
+        'medicamentos_stock_alto' => ['medicamentos.ver', 'existencias.ver'],
+        'buscar_medicamento' => ['medicamentos.ver', 'existencias.ver'],
+        'medicamentos_proximos_caducar' => ['medicamentos.ver', 'existencias.ver'],
+        'listar_medicamentos' => ['medicamentos.ver', 'existencias.ver'],
+        'prediccion_agotamiento' => ['prediccion.ver', 'medicamentos.ver'],
+        'medicamentos_mayor_demanda' => ['prediccion.ver', 'medicamentos.ver'],
+        'medicos_activos' => ['citas.ver', 'agenda.ver'],
+        'turnos_de_hoy' => ['turnos.ver'],
+        'listar_personal' => ['usuarios.ver'],
+        'admisiones_de_hoy' => ['admision.ver'],
+        'listar_admisiones' => ['admision.ver'],
+        'resumen_hospital' => ['pacientes.ver', 'camas.ver', 'medicamentos.ver'],
+        'estadisticas_generales' => ['usuarios.ver'],
+        'generar_pdf_pacientes_medico' => ['pacientes.ver'],
+        'generar_pdf_citas_dia' => ['citas.ver', 'agenda.ver'],
+        'generar_pdf_inventario_bajo' => ['medicamentos.ver', 'existencias.ver'],
+        'generar_pdf_medicamentos_stock_alto' => ['medicamentos.ver', 'existencias.ver'],
+        'generar_pdf_pacientes' => ['pacientes.ver'],
+        'generar_pdf_personal' => ['usuarios.ver'],
+        'generar_pdf_admisiones' => ['admision.ver'],
+    ];
+
+    /**
+     * ¿El usuario de la sesión puede usar esta herramienta?
+     */
+    public static function permitida(string $nombre): bool
+    {
+        $user = self::usuarioActual();
+        if (! $user || ! array_key_exists($nombre, self::PERMISOS)) {
+            return false;
+        }
+        if (self::esAdmin()) {
+            return true;
+        }
+
+        foreach (self::PERMISOS[$nombre] as $permiso) {
+            if ($user->can($permiso)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Herramientas que se ofrecen al modelo: solo las que el usuario puede usar.
+     */
     public static function definiciones(): array
+    {
+        return array_values(array_filter(
+            self::todasLasDefiniciones(),
+            fn (array $tool) => self::permitida($tool['function']['name'] ?? '')
+        ));
+    }
+
+    private static function todasLasDefiniciones(): array
     {
         return [
             // ===== PACIENTES =====
@@ -447,6 +524,17 @@ private static function esEnfermeria(): bool
 
    public static function ejecutar(string $nombre, array $args = []): array
 {
+    // Segunda barrera: aunque el modelo pida una herramienta, se revisa el permiso del usuario.
+    if (! self::permitida($nombre)) {
+        AuditoriaService::registrar(
+            AuditEvent::ACCESO_DENEGADO,
+            'asistente',
+            "El asistente intentó usar '{$nombre}' sin permiso del usuario"
+        );
+
+        return ['error' => 'No tienes permiso para consultar esa información.'];
+    }
+
     return match ($nombre) {
         // Pacientes
         'contar_pacientes' => self::contarPacientes(),
@@ -559,7 +647,6 @@ private static function esEnfermeria(): bool
         'pacientes' => $pacientes->map(fn($p) => [
             'id' => $p->id,
             'nombre_completo' => $p->nombre_completo,
-            'curp' => $p->curp,
             'edad' => $p->edad,
             'alergias' => $p->alergias,
             'medico_asignado' => $p->medicoAsignado?->medico?->nombre_completo,
@@ -1026,7 +1113,6 @@ private static function listarPacientes(int $limite = 20): array
         'id' => $p->id,
         'nombre' => $p->nombre_completo,
         'edad' => $p->edad,
-        'curp' => $p->curp,
         'medico_asignado' => $p->medicoAsignado?->medico?->nombre_completo,
     ])->toArray();
 

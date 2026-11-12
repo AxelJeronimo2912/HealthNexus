@@ -10,12 +10,27 @@
         window.addEventListener('load', function () {
             navigator.serviceWorker.register('/sw.js').catch(function () {});
         });
-        // Al cerrar sesión, borra también la caché del service worker.
+    }
+</script>
+{{-- HAL-199/200/201: pacientes para consultar sin conexión, cifrados en el dispositivo (ver public/js/hn-offline.js) --}}
+<script src="{{ asset('js/hn-offline.js') }}"></script>
+<script>
+    (function () {
+        if (!window.HNOffline) { return; }
+        @auth
+            @if (\App\Support\RoleHelper::esMedico(auth()->user()) || \App\Support\RoleHelper::tieneRol(auth()->user(), 'enfermeria'))
+                HNOffline.activar();
+            @else
+                HNOffline.borrar();
+            @endif
+        @else
+            // Sin sesión (login, sesión vencida o la de otra persona): no debe quedar nada guardado.
+            HNOffline.borrar();
+        @endauth
+        // Al cerrar sesión se borran los pacientes guardados y la caché del service worker.
         document.addEventListener('submit', function (e) {
             var accion = e.target && e.target.getAttribute('action');
-            if (accion && /\/logout$/.test(accion) && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage('hn:limpiar-cache');
-            }
+            if (accion && /\/logout$/.test(accion)) { HNOffline.borrar({ cache: true }); }
         }, true);
-    }
+    })();
 </script>

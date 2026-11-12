@@ -59,6 +59,9 @@ class StoreConsultaRequest extends FormRequest
 
             // ===== Flags =====
             'finalizar' => ['nullable', 'boolean'],
+            'estudios' => ['nullable', 'array'], 
+'estudios.*.servicio_id' => ['nullable', 'exists:servicios,id'],
+'estudios.*.tipo_estudio' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -91,7 +94,7 @@ class StoreConsultaRequest extends FormRequest
     {
         $validator->after(function ($v) {
 
-            $paciente = Paciente::find($this->route('cita')?->paciente_id);
+            $paciente = $this->pacienteDeLaConsulta();
 
             // ===== Regla 1: Coherencia peso/talla vs IMC =====
             if ($this->peso && $this->talla) {
@@ -103,7 +106,7 @@ class StoreConsultaRequest extends FormRequest
             }
 
             // ===== Regla 2: No repetir medicamentos (ignorando filas vacías) =====
-            $ids = collect($this->medicamentos ?? [])
+            $ids = collect($this->medicamentosEnviados())
                 ->pluck('id')
                 ->filter() // <-- Ignora los IDs vacíos/nulos
                 ->values();
@@ -115,7 +118,7 @@ class StoreConsultaRequest extends FormRequest
 
             // ===== Regla 3: Medicamentos sin dosis/frecuencia cuando se finaliza =====
             if ($this->boolean('finalizar')) {
-                foreach ($this->medicamentos ?? [] as $i => $m) {
+                foreach ($this->medicamentosEnviados() as $i => $m) {
                     
                     // Ignorar filas completamente vacías (sin ID de medicamento)
                     if (empty($m['id'])) {
@@ -136,7 +139,7 @@ class StoreConsultaRequest extends FormRequest
             // ===== Regla 4: Alergias vs medicamentos =====
             if ($paciente && $paciente->alergias) {
                 $alergias = strtolower($paciente->alergias);
-                foreach ($this->medicamentos ?? [] as $i => $m) {
+                foreach ($this->medicamentosEnviados() as $i => $m) {
                     
                     // Ignorar filas vacías
                     if (empty($m['id'])) {
@@ -186,6 +189,22 @@ class StoreConsultaRequest extends FormRequest
                     'No puedes poner un diagnóstico secundario sin el principal.');
             }
         });
+    }
+
+    /**
+     * Medicamentos recibidos. Si no llegan como arreglo, la regla `array` ya lo reporta.
+     */
+    private function medicamentosEnviados(): array
+    {
+        return is_array($this->medicamentos) ? $this->medicamentos : [];
+    }
+
+    /**
+     * Paciente al que pertenece la consulta que se valida.
+     */
+    protected function pacienteDeLaConsulta(): ?Paciente
+    {
+        return Paciente::find($this->route('cita')?->paciente_id);
     }
 
     /**

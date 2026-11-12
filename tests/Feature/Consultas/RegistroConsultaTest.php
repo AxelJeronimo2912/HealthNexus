@@ -181,7 +181,10 @@ class RegistroConsultaTest extends TestCase
         $cita = $this->crearCita($medico);
 
         $this->actingAs($medico)
-            ->post(route('consultas.store', $cita), $this->datosConsulta(['finalizar' => 1]))
+            ->post(route('consultas.store', $cita), $this->datosConsulta([
+                'finalizar'                => 1,
+                'diagnostico_principal_id' => $this->crearDiagnostico()->id,
+            ]))
             ->assertSessionHasNoErrors();
 
         $consulta = Consulta::firstOrFail();
@@ -344,7 +347,7 @@ class RegistroConsultaTest extends TestCase
                 'frecuencia_cardiaca'     => 250,
                 'frecuencia_respiratoria' => 5,
                 'saturacion_oxigeno'      => 100,
-                'glucosa'                 => 0,
+                'glucosa'                 => 20,
             ]))
             ->assertSessionHasNoErrors();
 
@@ -457,8 +460,9 @@ class RegistroConsultaTest extends TestCase
 
         $this->actingAs($medico)
             ->put(route('consultas.update', $consulta), $this->datosConsulta([
-                'analisis'  => 'Migraña sin aura.',
-                'finalizar' => 1,
+                'analisis'                 => 'Migraña sin aura.',
+                'finalizar'                => 1,
+                'diagnostico_principal_id' => $this->crearDiagnostico()->id,
             ]))
             ->assertRedirect(route('consultas.show', $consulta))
             ->assertSessionHas('success');

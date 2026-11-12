@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 use App\Services\DispositivoService;
 
 class PinController extends Controller
@@ -19,19 +21,11 @@ class PinController extends Controller
     private const SESSION_USER_ID = 'pin_pending_user_id';
     private const SESSION_REMEMBER = 'pin_pending_remember';
 
-    /** Intentos fallidos permitidos antes del bloqueo. */
-    private const MAX_ATTEMPTS = 5;
+    /** Intentos de PIN permitidos por cuenta antes de bloquear el paso del PIN. */
+    private const MAX_INTENTOS = 5;
 
-    /** Segundos de bloqueo (5 minutos). */
-    private const DECAY_SECONDS = 300;
-
-    /**
-     * Clave única del rate limiter para un usuario.
-     */
-    private function throttleKey(int $userId): string
-    {
-        return 'pin-verify:' . $userId;
-    }
+    /** Segundos que dura el bloqueo (aunque vuelva a escribir la contraseña). */
+    private const BLOQUEO_SEGUNDOS = 900;
 
     public function show(Request $request): View|RedirectResponse
     {
@@ -40,11 +34,11 @@ class PinController extends Controller
         }
 
         $userId = (int) $request->session()->get(self::SESSION_USER_ID);
-        $key    = $this->throttleKey($userId);
+        $clave = 'pin:'.$userId;
 
         // Si está bloqueado, mostramos la vista con el aviso.
-        if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
-            $segundos = RateLimiter::availableIn($key);
+        if (RateLimiter::tooManyAttempts($clave, self::MAX_INTENTOS)) {
+            $segundos = RateLimiter::availableIn($clave);
 
             return view('auth.pin', [
                 'bloqueado' => true,
@@ -54,7 +48,7 @@ class PinController extends Controller
 
         return view('auth.pin', [
             'bloqueado' => false,
-            'intentosRestantes' => RateLimiter::remaining($key, self::MAX_ATTEMPTS),
+            'intentosRestantes' => RateLimiter::remaining($clave, self::MAX_INTENTOS),
         ]);
     }
 
@@ -66,16 +60,11 @@ class PinController extends Controller
             return redirect()->route('login');
         }
 
-        $key = $this->throttleKey((int) $userId);
+        $clave = 'pin:'.$userId;
 
         // 🔒 Bloqueo activo: ni siquiera validamos el PIN.
-        if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
-            $minutos = (int) ceil(RateLimiter::availableIn($key) / 60);
-
-            throw ValidationException::withMessages([
-                'pin' => "PIN bloqueado por demasiados intentos fallidos. "
-                       . "Intenta de nuevo en {$minutos} minuto(s) o contacta al administrador para solicitar un nuevo PIN.",
-            ]);
+        if (RateLimiter::tooManyAttempts($clave, self::MAX_INTENTOS)) {
+            return $this->bloquear($request, User::find($userId), $clave);
         }
 
         $validated = $request->validate([
@@ -89,24 +78,30 @@ class PinController extends Controller
 
         if (! $user || ! $user->pin || ! Hash::check($validated['pin'], $user->pin)) {
             // ❌ Intento fallido: registramos en el rate limiter.
-            RateLimiter::hit($key, self::DECAY_SECONDS);
+            RateLimiter::hit($clave, self::BLOQUEO_SEGUNDOS);
+            $restantes = RateLimiter::remaining($clave, self::MAX_INTENTOS);
 
-            $restantes = RateLimiter::remaining($key, self::MAX_ATTEMPTS);
+            AuditoriaService::registrar(
+                AuditEvent::PIN_FALLIDO,
+                'auth',
+                'PIN incorrecto'.($user ? " para {$user->email}" : ''),
+                $user,
+                [],
+                [],
+                ['intentos_restantes' => $restantes]
+            );
 
-            if ($restantes <= 0) {
-                throw ValidationException::withMessages([
-                    'pin' => 'PIN bloqueado por demasiados intentos fallidos. '
-                           . 'Contacta al administrador para solicitar un nuevo PIN. '
-                           . 'Podrás reintentar en 5 minutos.',
-                ]);
+            if ($restantes === 0) {
+                return $this->bloquear($request, $user, $clave);
             }
 
             throw ValidationException::withMessages([
-                'pin' => "PIN incorrecto. Te quedan {$restantes} intento(s).",
+                'pin' => $restantes === 1 ? 'PIN incorrecto. Te queda 1 intento.' : "PIN incorrecto. Te quedan {$restantes} intentos.",
             ]);
         }
 
-        RateLimiter::clear($key);
+        //  PIN correcto
+        RateLimiter::clear($clave);
 
         Auth::login($user, $request->session()->get(self::SESSION_REMEMBER, false));
 
@@ -120,5 +115,44 @@ class PinController extends Controller
                 ? route('admin.dashboard', absolute: false)
                 : route('dashboard', absolute: false)
         );
+    }
+
+    /**
+     * Demasiados PIN incorrectos: se cancela el paso del PIN, se avisa en la bitácora y se pide volver a
+     * iniciar sesión cuando termine el bloqueo.
+     */
+    private function bloquear(Request $request, ?User $user, string $clave): RedirectResponse
+    {
+        $minutos = (int) ceil(RateLimiter::availableIn($clave) / 60);
+
+        AuditoriaService::registrar(
+            AuditEvent::ACTIVIDAD_INUSUAL,
+            'auth',
+            'Paso del PIN bloqueado por demasiados intentos'.($user ? " ({$user->email})" : ''),
+            $user,
+            [],
+            [],
+            ['bloqueo_minutos' => $minutos]
+        );
+
+        $request->session()->forget([self::SESSION_USER_ID, self::SESSION_REMEMBER]);
+        $request->session()->regenerate();
+
+        return redirect()->route('login')->withErrors([
+            'email' => "Demasiados intentos de PIN. Por seguridad, espera {$minutos} minutos e inicia sesión de nuevo.",
+        ]);
+    }
+
+    private function cancelPinFlow(Request $request): RedirectResponse
+    {
+        $request->session()->forget([
+            self::SESSION_USER_ID,
+            self::SESSION_REMEMBER,
+        ]);
+
+        $request->session()->regenerate();
+
+        return redirect()->route('login')
+            ->with('status', 'Verificación cancelada. Inicia sesión nuevamente.');
     }
 }

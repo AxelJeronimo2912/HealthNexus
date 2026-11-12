@@ -10,10 +10,11 @@
 | tres lugares, respetando el permiso indicado.
 |
 | Cada item:
-|   permiso → permiso de spatie/laravel-permission (null = visible para todos)
-|   ruta    → nombre de la ruta a la que enlaza
-|   activo  → patrón(es) de routeIs() que marcan el item como activo
-|   icono   → nombre de Heroicon (outline)
+|   permiso  → permiso de spatie/laravel-permission (null = visible para todos)
+|   ruta     → nombre de la ruta a la que enlaza
+|   activo   → patrón(es) de routeIs() que marcan el item como activo
+|   icono    → nombre de Heroicon (outline)
+|   contador → (opcional) nombre de ruta que devuelve { total: N }
 |
 */
 
@@ -27,8 +28,18 @@ return [
             ['permiso' => 'servicios.ver',      'ruta' => 'servicios.index',       'activo' => 'servicios.*',       'icono' => 'building-office-2',        'label' => 'Servicios'],
             ['permiso' => 'especialidades.ver', 'ruta' => 'especialidades.index',  'activo' => 'especialidades.*',  'icono' => 'academic-cap',             'label' => 'Especialidades'],
             ['permiso' => 'citas.ver',          'ruta' => 'citas.index',           'activo' => 'citas.*',           'icono' => 'calendar-days',            'label' => 'Citas'],
-            ['permiso' => 'turnos.ver',         'ruta' => 'admin.turnos.index',    'activo' => 'admin.turnos.*',    'icono' => 'clock',                    'label' => 'Turnos'],
+            // La pantalla de turnos está en el grupo del administrador (rol.prefijo:admin); con 'turnos.ver'
+            // médico y enfermería veían la opción y recibían 403. Se muestra solo a quien administra usuarios.
+            ['permiso' => 'usuarios.ver',       'ruta' => 'admin.turnos.index',    'activo' => 'admin.turnos.*',    'icono' => 'clock',                    'label' => 'Turnos'],
             ['permiso' => 'camas.ver',          'ruta' => 'camas.index',           'activo' => 'camas.*',           'icono' => 'home-modern',              'label' => 'Camas'],
+            [
+                'permiso'  => 'estudios.ver',
+                'ruta'     => 'estudios.index',
+                'activo'   => 'estudios.*',
+                'icono'    => 'beaker',
+                'label'    => 'Estudios Lab/Imagen',
+                'contador' => 'estudios.contador',
+            ],
             ['permiso' => 'cuentas.ver',        'ruta' => 'cuentas.index',         'activo' => 'cuentas.*',         'icono' => 'banknotes',                'label' => 'Cuentas por cobrar'],
         ],
     ],
@@ -56,23 +67,23 @@ return [
     [
         'titulo' => 'Farmacia e inventario',
         'items' => [
-            ['permiso' => 'medicamentos.ver',   'ruta' => 'medicamentos.index',   'activo' => 'medicamentos.*',   'icono' => 'beaker',          'label' => 'Medicamentos'],
-            ['permiso' => 'dispensaciones.ver', 'ruta' => 'dispensaciones.index', 'activo' => 'dispensaciones.*', 'icono' => 'document-check',  'label' => 'Recetas'],
-            ['permiso' => 'existencias.ver',    'ruta' => 'existencias.index',    'activo' => 'existencias.*',    'icono' => 'archive-box',     'label' => 'Existencias'],
+            ['permiso' => 'medicamentos.ver',   'ruta' => 'medicamentos.index',   'activo' => 'medicamentos.*',   'icono' => 'beaker',            'label' => 'Medicamentos'],
+            ['permiso' => 'dispensaciones.ver', 'ruta' => 'dispensaciones.index', 'activo' => 'dispensaciones.*', 'icono' => 'document-check',    'label' => 'Recetas'],
+            ['permiso' => 'existencias.ver',    'ruta' => 'existencias.index',    'activo' => 'existencias.*',    'icono' => 'archive-box',       'label' => 'Existencias'],
             ['permiso' => 'movimientos.ver',    'ruta' => 'movimientos.index',    'activo' => 'movimientos.*',    'icono' => 'arrows-right-left', 'label' => 'Movimientos'],
-            ['permiso' => 'prediccion.ver',     'ruta' => 'prediccion.index',     'activo' => 'prediccion.*',     'icono' => 'cpu-chip',        'label' => 'Predicción IA'],
+            ['permiso' => 'prediccion.ver',     'ruta' => 'prediccion.index',     'activo' => 'prediccion.*',     'icono' => 'cpu-chip',          'label' => 'Predicción IA'],
         ],
     ],
 
     [
         'titulo' => 'Seguridad e inteligencia',
         'items' => [
-            ['permiso' => 'usuarios.ver',    'ruta' => 'admin.users.index', 'activo' => 'admin.users.*', 'icono' => 'users',               'label' => 'Usuarios'],
-            ['permiso' => 'roles.ver',       'ruta' => 'admin.roles.index', 'activo' => 'admin.roles.*', 'icono' => 'shield-check',        'label' => 'Roles y permisos'],
+            ['permiso' => 'usuarios.ver',     'ruta' => 'admin.users.index', 'activo' => 'admin.users.*', 'icono' => 'users',               'label' => 'Usuarios'],
+            ['permiso' => 'roles.ver',        'ruta' => 'admin.roles.index', 'activo' => 'admin.roles.*', 'icono' => 'shield-check',        'label' => 'Roles y permisos'],
             ['permiso' => 'dispositivos.ver', 'ruta' => 'dispositivos.index', 'activo' => 'dispositivos.*', 'icono' => 'device-phone-mobile', 'label' => 'Dispositivos'],
-            ['permiso' => 'auditoria.ver',   'ruta' => 'auditoria.index',   'activo' => 'auditoria.*',   'icono' => 'finger-print',        'label' => 'Auditoría'],
-            ['permiso' => 'asistente.ver',   'ruta' => 'asistente.index',   'activo' => 'asistente.*',   'icono' => 'sparkles',            'label' => 'Asistente IA'],
-            ['permiso' => 'alertas.ver',     'ruta' => 'alertas.index',     'activo' => 'alertas.*',     'icono' => 'bell-alert',          'label' => 'Alertas inteligentes', 'contador' => 'alertas.contar'],
+            ['permiso' => 'auditoria.ver',    'ruta' => 'auditoria.index',   'activo' => 'auditoria.*',   'icono' => 'finger-print',        'label' => 'Auditoría'],
+            ['permiso' => 'asistente.ver',    'ruta' => 'asistente.index',   'activo' => 'asistente.*',   'icono' => 'sparkles',            'label' => 'Asistente IA'],
+            ['permiso' => 'alertas.ver',      'ruta' => 'alertas.index',     'activo' => 'alertas.*',     'icono' => 'bell-alert',          'label' => 'Alertas inteligentes', 'contador' => 'alertas.contar'],
         ],
     ],
 
