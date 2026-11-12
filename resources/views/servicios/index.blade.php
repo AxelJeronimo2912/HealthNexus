@@ -353,8 +353,24 @@
                 });
             });
 
-            // ---------- Helper AJAX para Ver / Editar / Personal ----------
+            // =====================================================================
+            // HELPER AJAX MEJORADO (CON VISUALIZACIÓN DE ERRORES)
+            // =====================================================================
             async function cargarModal(url, contentId, modalId) {
+                const content = document.getElementById(contentId);
+                const modal = document.getElementById(modalId);
+
+                // Mostrar modal con spinner
+                content.innerHTML = `
+                    <div class="flex items-center justify-center py-10">
+                        <svg class="animate-spin h-6 w-6 text-nexus-primary" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        <span class="ml-3 text-sm text-slate-500">Cargando…</span>
+                    </div>`;
+                modal.classList.remove('hidden');
+
                 try {
                     const res = await fetch(url, {
                         headers: {
@@ -364,14 +380,45 @@
                         credentials: 'same-origin'
                     });
 
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-
                     const html = await res.text();
-                    document.getElementById(contentId).innerHTML = html;
-                    document.getElementById(modalId).classList.remove('hidden');
+
+                    if (!res.ok) {
+                        // Loguear en consola toda la respuesta del servidor
+                        console.group('❌ Error HTTP ' + res.status + ' en ' + url);
+                        console.log(html);
+                        console.groupEnd();
+
+                        // Extraer texto del HTML de error para mostrarlo en el modal
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        const textoError = tempDiv.textContent || tempDiv.innerText || 'Error desconocido';
+
+                        content.innerHTML = `
+                            <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-3">
+                                <p class="text-sm font-bold text-rose-800">
+                                    No se pudo cargar el contenido (HTTP ${res.status})
+                                </p>
+                                <p class="text-xs text-rose-700 font-mono break-all">
+                                    ${url}
+                                </p>
+                                <details class="mt-2 group">
+                                    <summary class="text-xs font-bold text-rose-700 cursor-pointer select-none">
+                                        Ver detalle del error del servidor
+                                    </summary>
+                                    <pre class="mt-2 p-3 bg-white border border-rose-200 rounded-lg text-[10px] text-slate-700 overflow-auto max-h-64 whitespace-pre-wrap">${textoError.trim().slice(0, 3000)}</pre>
+                                </details>
+                            </div>`;
+                        return;
+                    }
+
+                    content.innerHTML = html;
                 } catch (err) {
-                    console.error('Error cargando modal:', modalId, err);
-                    alert('No se pudo cargar el contenido. Revisa la consola.');
+                    console.error('Error de red:', err);
+                    content.innerHTML = `
+                        <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                            <p class="text-sm font-bold text-rose-800">Error de red</p>
+                            <p class="text-xs text-rose-700 mt-1">${err.message}</p>
+                        </div>`;
                 }
             }
 

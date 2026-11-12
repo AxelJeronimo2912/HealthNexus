@@ -36,11 +36,12 @@ class AsistenteService
             ]
         ];
 
-        // Añadimos el mensaje actual (que es el único que viene en el array)
+        // Añadimos el historial (o el mensaje actual)
         foreach ($mensajes as $m) {
             $payloadMessages[] = $m;
         }
 
+        // MODO HUMOR: Sin herramientas
         if ($sinSentido) {
             $payloadMessages[0]['content'] .= self::instruccionHumor($contadorSinSentido);
             $respuesta = self::llamarApi($url, $apiKey, $model, $payloadMessages, false);
@@ -48,6 +49,7 @@ class AsistenteService
                 ?? 'Mi estetoscopio no detecta esa pregunta. ¿Probamos con algo del hospital?';
         }
 
+        // MODO NORMAL: Primera llamada CON herramientas
         $respuesta = self::llamarApi($url, $apiKey, $model, $payloadMessages, true);
 
         if (!$respuesta) {
@@ -56,11 +58,13 @@ class AsistenteService
 
         $toolCalls = $respuesta['choices'][0]['message']['tool_calls'] ?? null;
 
+        // Si el modelo NO usó herramientas, devolvemos su respuesta
         if (!$toolCalls || count($toolCalls) === 0) {
             return $respuesta['choices'][0]['message']['content'] 
                 ?? 'El asistente no generó una respuesta.';
         }
 
+        // Si el modelo PIDIÓ herramientas:
         foreach ($toolCalls as $toolCall) {
             $nombreTool = $toolCall['function']['name'];
             $argumentos = json_decode($toolCall['function']['arguments'] ?? '{}', true) ?? [];
@@ -81,10 +85,17 @@ class AsistenteService
             ];
         }
 
-        $respuesta2 = self::llamarApi($url, $apiKey, $model, $payloadMessages, false);
+        // SEGUNDA LLAMADA: Forzamos a que responda con texto (tool_choice = none)
+        $respuesta2 = self::llamarApi($url, $apiKey, $model, $payloadMessages, true, true);
 
         if ($respuesta2) {
-            return $respuesta2['choices'][0]['message']['content'] ?? 'No pude interpretar los datos obtenidos.';
+            $textoFinal = $respuesta2['choices'][0]['message']['content'] ?? '';
+            
+            if (trim($textoFinal) === '') {
+                return 'He generado la información solicitada, pero el asistente no pudo redactar un resumen. Por favor, revisa el módulo correspondiente.';
+            }
+
+            return $textoFinal;
         }
 
         return 'Se ejecutaron las acciones, pero el asistente falló al generar la respuesta final.';
@@ -96,20 +107,22 @@ class AsistenteService
         string $model, 
         array $messages, 
         bool $conHerramientas,
+        bool $forzarTexto = false, // Parámetro nuevo
         int $intento = 0
     ): ?array {
         $payload = [
             'model' => $model,
             'messages' => $messages,
-            'temperature' => 0.1, // Temperatura bajísima para evitar que el modelo "alucine"
+            'temperature' => 0.1,
             'max_tokens' => 1024,
         ];
 
-        // Solo se ofrecen las herramientas que el usuario tiene permiso de usar (puede no haber ninguna).
         $herramientas = $conHerramientas ? AsistenteTools::definiciones() : [];
+        
         if ($herramientas) {
             $payload['tools'] = $herramientas;
-            $payload['tool_choice'] = 'auto';
+            // Si forzamos texto, le decimos a Groq "no uses herramientas, solo escribe"
+            $payload['tool_choice'] = $forzarTexto ? 'none' : 'auto'; 
         }
 
         try {
@@ -118,6 +131,7 @@ class AsistenteService
                 'Content-Type' => 'application/json',
             ])->timeout(60)->post(rtrim($url, '/') . '/chat/completions', $payload);
 
+            // Manejo de Rate Limit
             if ($response->status() === 429 && $intento < 3) {
                 $body = $response->body();
                 $espera = 3;
@@ -126,7 +140,7 @@ class AsistenteService
                 }
                 Log::warning("Groq Rate Limit alcanzado. Reintentando en {$espera} segundos...");
                 sleep((int) ceil($espera));
-                return self::llamarApi($url, $apiKey, $model, $messages, $conHerramientas, $intento + 1);
+                return self::llamarApi($url, $apiKey, $model, $messages, $conHerramientas, $forzarTexto, $intento + 1);
             }
 
             if ($response->failed()) {
@@ -189,6 +203,7 @@ REGLAS:
 20. Si te piden medicamentos con stock alto, usa 'medicamentos_stock_alto'. Si te piden stock bajo, usa 'medicamentos_stock_bajo'.
 21. Si te piden el catálogo completo de medicamentos, usa 'listar_medicamentos'. Si te piden ver un medicamento específico, usa 'buscar_medicamento'.
 22. Antes de decir "no tengo esa herramienta", REVISA la lista completa de herramientas disponibles.
+23. ATENCIÓN EXTREMA AL CONTEXTO: Lee siempre el ÚLTIMO mensaje del usuario. Si el último mensaje pide algo diferente a los anteriores (ej. pasar de camas a medicamentos), DEBES usar la herramienta del nuevo tema. Bajo ninguna circunstancia repitas la respuesta de la pregunta anterior.
 PROMPT;
     }
 }
