@@ -111,6 +111,9 @@
                         </svg>
                         Registrado el {{ $signoVital->created_at->format('d/m/Y H:i') }} por
                         {{ $signoVital->user->name ?? '—' }}
+                        @if ($signoVital->sin_conexion)
+                            · capturado sin conexión y enviado al reconectar
+                        @endif
                     </p>
                 </div>
             </div>

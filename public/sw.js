@@ -11,7 +11,7 @@
  *
  * Al cambiar este archivo, sube la versión para que se limpie la caché anterior.
  */
-const VERSION = 'hn-static-v5';
+const VERSION = 'hn-static-v6';
 const PRECACHE = [
   '/offline.html',
   '/js/hn-offline.js',

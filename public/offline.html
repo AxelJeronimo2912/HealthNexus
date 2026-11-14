@@ -39,6 +39,20 @@
   .t-amarillo { border-left-color: #FDD835; } .c-amarillo { background: #FDD835; color: #1A1A1A; }
   .t-verde { border-left-color: #43A047; } .c-verde { background: #43A047; }
   .t-azul { border-left-color: #1E88E5; } .c-azul { background: #1E88E5; }
+  .acciones { margin-top: 10px; }
+  .secundario { height: 40px; padding: 0 16px; font-size: 14px; background: transparent; border: 1px solid var(--acento); color: #DCDDFF; }
+  .secundario:hover { background: #22285C; }
+  form.signos { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borde); display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  form.signos label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--sub); }
+  form.signos input, form.signos textarea { height: 42px; border-radius: 10px; border: 1px solid var(--borde); background: #0F1438; color: var(--texto);
+                                             padding: 0 10px; font: inherit; font-size: 15px; }
+  form.signos textarea { height: 64px; padding: 8px 10px; resize: vertical; }
+  form.signos .ancho { grid-column: 1 / -1; }
+  .estado { font-size: 13px; margin-top: 8px; }
+  .ok { color: #9BE3B4; } .mal { color: #FFB4B4; }
+  .pendientes { background: #2A2010; border: 1px solid #8A6A1E; border-radius: 12px; padding: 12px 14px; }
+  .pendientes h2 { margin: 0 0 6px; font-size: 16px; color: #FFE3A3; }
+  .pendientes li { font-size: 14px; color: var(--sub); margin: 4px 0; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -61,8 +75,13 @@
   </div>
   <div class="aviso" id="aviso" role="status"></div>
   <input type="search" id="buscar" placeholder="Buscar por nombre o cama" aria-label="Buscar paciente">
+  <section class="pendientes" id="pendientes" hidden>
+    <h2 id="pendientes-titulo"></h2>
+    <ul id="pendientes-lista"></ul>
+  </section>
   <ul class="lista" id="lista"></ul>
-  <small>Solo lectura. Para registrar signos, notas o medicamentos espera a tener conexión. Los datos se borran al cerrar sesión.</small>
+  <small>Puedes registrar signos vitales: se guardan cifrados en este dispositivo y se envían solos al reconectar con tu cuenta.
+    Notas, medicamentos y emergencias necesitan conexión. Los pacientes guardados se borran al cerrar sesión.</small>
 </main>
 
 <script src="/js/hn-offline.js"></script>
@@ -72,8 +91,14 @@
   var TRIAGE = { rojo: 'Rojo · I', naranja: 'Naranja · II', amarillo: 'Amarillo · III', verde: 'Verde · IV', azul: 'Azul · V' };
   var hora = function (iso) { try { return new Date(iso).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ''; } };
 
-  // HAL-200: al volver la conexión se recarga la página (y la pantalla con sesión vuelve a sincronizar).
-  window.addEventListener('online', function () { location.reload(); });
+  // HAL-200: al volver la conexión se recarga la página (y la pantalla con sesión vuelve a sincronizar y envía los pendientes).
+  // Se comprueba que el servidor responda antes de recargar: el evento "online" llega antes de que haya red de verdad, y si lo
+  // que falló fue el servidor (con internet) ese evento nunca llega; por eso también se revisa cada 30 segundos.
+  function siHayServidor() {
+    fetch('/up', { cache: 'no-store' }).then(function (r) { if (r.ok) { location.reload(); } }, function () {});
+  }
+  window.addEventListener('online', function () { setTimeout(siHayServidor, 1000); });
+  setInterval(siHayServidor, 30000);
   document.getElementById('reintentar-1').onclick = document.getElementById('reintentar-2').onclick = function () { location.reload(); };
 
   // Todo se arma con textContent: los datos nunca se insertan como HTML.
@@ -81,6 +106,66 @@
   function dato(etiqueta, valor, clase) {
     if (valor == null || valor === '') { return null; }
     var d = el('div', 'dato' + (clase ? ' ' + clase : '')); d.appendChild(el('b', null, etiqueta + ': ')); d.appendChild(document.createTextNode(valor)); return d;
+  }
+
+  // Modo sin conexión, fase 1: registrar signos vitales en la cola cifrada (mismos rangos que la web)
+  var CAMPOS = [
+    ['temperatura', 'Temp. (°C)', { type: 'number', step: '0.1', min: 30, max: 45 }],
+    ['frecuencia_cardiaca', 'FC (lpm)', { type: 'number', min: 20, max: 250 }],
+    ['frecuencia_respiratoria', 'FR (rpm)', { type: 'number', min: 5, max: 80 }],
+    ['presion_arterial', 'Presión (120/80)', { type: 'text', pattern: '\\d{2,3}/\\d{2,3}', inputmode: 'numeric' }],
+    ['saturacion_oxigeno', 'SpO₂ (%)', { type: 'number', min: 50, max: 100 }],
+    ['glucosa', 'Glucosa (mg/dL)', { type: 'number', min: 20, max: 800 }],
+    ['escala_dolor', 'Dolor (0 a 10)', { type: 'number', min: 0, max: 10 }],
+  ];
+  var usuario = null;
+
+  function formularioSignos(p, li) {
+    var f = el('form', 'signos');
+    f.setAttribute('aria-label', 'Registrar signos vitales de ' + p.nombre);
+    CAMPOS.forEach(function (c) {
+      var l = el('label', null, c[1]);
+      var i = document.createElement('input');
+      i.name = c[0];
+      Object.keys(c[2]).forEach(function (k) { i.setAttribute(k, c[2][k]); });
+      l.appendChild(i); f.appendChild(l);
+    });
+    var ln = el('label', 'ancho', 'Notas');
+    var t = document.createElement('textarea'); t.name = 'notas'; t.maxLength = 2000; ln.appendChild(t); f.appendChild(ln);
+    var b = el('button', 'ancho', 'Guardar en este dispositivo'); b.type = 'submit'; f.appendChild(b);
+    var estado = el('div', 'estado ancho'); estado.setAttribute('role', 'status'); f.appendChild(estado);
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var datos = { paciente_id: p.id };
+      new FormData(f).forEach(function (v, k) { if (String(v).trim() !== '') { datos[k] = String(v).trim(); } });
+      if (Object.keys(datos).length === 1 || (Object.keys(datos).length === 2 && datos.notas)) {
+        estado.className = 'estado ancho mal'; estado.textContent = 'Registra al menos un signo vital.'; return;
+      }
+      b.disabled = true;
+      HNOffline.encolarSignos(datos, { usuario: usuario, paciente: p.nombre }).then(function () {
+        f.reset();
+        estado.className = 'estado ancho ok';
+        estado.textContent = 'Guardado en este dispositivo. Se enviará solo al reconectar.';
+        pintarPendientes();
+      }, function (err) {
+        estado.className = 'estado ancho mal'; estado.textContent = 'No se pudo guardar: ' + err.message;
+      }).then(function () { b.disabled = false; });
+    });
+    return f;
+  }
+
+  function pintarPendientes() {
+    if (!usuario || !HNOffline.cola) { return; }
+    HNOffline.cola(usuario).then(function (items) {
+      var caja = document.getElementById('pendientes');
+      var ul = document.getElementById('pendientes-lista');
+      ul.textContent = '';
+      caja.hidden = !items.length;
+      document.getElementById('pendientes-titulo').textContent = items.length === 1 ? '1 registro sin enviar' : items.length + ' registros sin enviar';
+      items.forEach(function (i) {
+        ul.appendChild(el('li', i.estado === 'error' ? 'mal' : null, (i.paciente || 'Paciente') + ' · ' + hora(i.capturado_en) + ' · ' + (i.estado === 'error' ? 'No enviado: ' + i.error : 'Pendiente de enviar')));
+      });
+    }, function () { /* si la cola no se puede leer, no se muestra (y no se toca) */ });
   }
 
   function tarjeta(p) {
@@ -96,6 +181,18 @@
      dato('Médico', p.medico),
      s ? dato('Últimos signos (' + hora(s.tomados_en) + ')', [s.temperatura != null ? s.temperatura + ' °C' : null, s.fc ? 'FC ' + s.fc : null, s.fr ? 'FR ' + s.fr : null, s.ta ? 'TA ' + s.ta : null, s.spo2 ? 'SpO₂ ' + s.spo2 + ' %' : null].filter(Boolean).join(' · ')) : null,
     ].forEach(function (d) { if (d) { li.appendChild(d); } });
+    if (usuario && p.id != null && HNOffline.encolarSignos) {
+      var acciones = el('div', 'acciones');
+      var abrir = el('button', 'secundario', 'Registrar signos');
+      abrir.type = 'button';
+      var form = null;
+      abrir.onclick = function () {
+        if (!form) { form = formularioSignos(p, li); li.appendChild(form); } else { form.hidden = !form.hidden; }
+        abrir.textContent = form.hidden ? 'Registrar signos' : 'Cerrar';
+      };
+      acciones.appendChild(abrir);
+      li.appendChild(acciones);
+    }
     li.dataset.busqueda = ((p.nombre || '') + ' ' + (p.cama || '')).toLowerCase();
     return li;
   }
@@ -103,6 +200,8 @@
   if (!window.HNOffline) { return; }
   HNOffline.leer().then(function (datos) {
     if (!datos || !datos.pacientes || !datos.pacientes.length) { return; }
+    usuario = datos.usuario_id != null ? String(datos.usuario_id) : null;
+    pintarPendientes();
     document.getElementById('sin-datos').hidden = true;
     document.getElementById('con-datos').hidden = false;
     document.getElementById('aviso').textContent = 'Sin conexión · ' + datos.pacientes.length + ' paciente(s). Actualizados: ' + hora(datos.generado_en) + ' · Se borran de este dispositivo: ' + hora(datos.caduca_en);

@@ -82,7 +82,8 @@ public function asignacionesCama()
 
 public function ultimoSignoVital()
 {
-    return $this->hasOne(SignoVital::class)->latestOfMany();
+    // Por fecha de la toma (no por id): un registro capturado sin conexión llega después pero puede ser más antiguo.
+    return $this->hasOne(SignoVital::class)->ofMany(['created_at' => 'max', 'id' => 'max']);
 }
 
 

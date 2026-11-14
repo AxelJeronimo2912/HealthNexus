@@ -12,6 +12,10 @@
         });
     }
 </script>
+@auth
+    {{-- Cuenta con sesión: la cola de signos capturados sin conexión solo se envía con la misma cuenta --}}
+    <meta name="hn-usuario" content="{{ auth()->id() }}">
+@endauth
 {{-- HAL-199/200/201: pacientes para consultar sin conexión, cifrados en el dispositivo (ver public/js/hn-offline.js) --}}
 <script src="{{ asset('js/hn-offline.js') }}"></script>
 <script>

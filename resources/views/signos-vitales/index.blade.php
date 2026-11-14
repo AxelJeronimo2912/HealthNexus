@@ -99,6 +99,10 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-xs font-medium text-slate-400 whitespace-nowrap">
                                     {{ $r->created_at->format('d/m/Y H:i') }}
+                                    @if ($r->sin_conexion)
+                                        <span class="ml-1 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200"
+                                            title="Capturado sin conexión a esta hora y enviado al reconectar">Sin conexión</span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3.5 text-xs font-semibold text-slate-700">
                                     {{ $r->temperatura ? $r->temperatura . '°C' : '—' }}

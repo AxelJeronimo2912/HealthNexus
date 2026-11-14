@@ -27,7 +27,8 @@
 
     <div class="py-8 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <form action="{{ route('signos-vitales.store') }}" method="POST"
-            class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden" id="form-signos">
+            class="bg-white rounded-2xl ring-1 ring-slate-200/70 shadow-card overflow-hidden" id="form-signos"
+            data-hn-offline="signos">
             @csrf
 
             <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">

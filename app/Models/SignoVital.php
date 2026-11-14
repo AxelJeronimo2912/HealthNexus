@@ -15,6 +15,7 @@ class SignoVital extends Model
         'peso', 'talla', 'escala_dolor',
         'triage', 'triage_manual',
         'motivo_consulta', 'notas',
+        'client_uuid', 'capturado_en', 'sin_conexion',
     ];
 
     protected $casts = [
@@ -22,6 +23,8 @@ class SignoVital extends Model
         'peso' => 'decimal:2',
         'talla' => 'decimal:2',
         'triage_manual' => 'boolean',
+        'capturado_en' => 'datetime',
+        'sin_conexion' => 'boolean',
     ];
 
     // ---------------- Relaciones ----------------
