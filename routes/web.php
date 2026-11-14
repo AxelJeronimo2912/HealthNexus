@@ -39,6 +39,7 @@ use App\Http\Controllers\AsistenteController;
 use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\OfflinePacientesController;
+use App\Http\Controllers\OfflineSignosController;
 use App\Http\Controllers\ReporteDescargaController;
 use App\Http\Controllers\Laboratorio\DashboardController as LaboratorioDashboardController;
 
@@ -99,6 +100,13 @@ Route::middleware(['auth', 'signed'])->get('/reportes/{archivo}', ReporteDescarg
 */
 Route::middleware(['auth', 'throttle:20,1'])->get('/offline/pacientes', OfflinePacientesController::class)
     ->name('offline.pacientes');
+
+/*
+| Modo sin conexión, fase 1: signos vitales capturados sin conexión que el navegador envía al reconectar
+| (public/js/hn-offline.js). Idempotente por client_uuid.
+*/
+Route::middleware(['auth', 'permission:signos-vitales.ver', 'throttle:60,1'])->post('/offline/signos', OfflineSignosController::class)
+    ->name('offline.signos');
 
 /*
 |--------------------------------------------------------------------------
