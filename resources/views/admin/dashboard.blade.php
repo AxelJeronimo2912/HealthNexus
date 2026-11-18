@@ -176,7 +176,6 @@
                 <section>
                     <div class="mb-3 flex items-end justify-between">
                         <h2 class="text-sm font-semibold text-slate-900">Modelos analíticos</h2>
-                        <p class="text-xs text-slate-500">Se abren en un panel sin salir del dashboard</p>
                     </div>
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                         @foreach ([['abrir-modal-sla', 'Pulso operativo SLA', 'Detección de anomalías', 'signal', 'from-sky-500 to-brand-600'], ['abrir-modal-fenotipado', 'Fenotipado clínico', 'K-Means + PCA', 'squares-plus', 'from-accent-500 to-accent-700'], ['abrir-modal-dwh', 'Data Warehouse', 'Big Data · Analítica', 'circle-stack', 'from-brand-500 to-brand-800'], ['abrir-modal-ia-medica', 'IA médica predictiva', '5 algoritmos', 'cpu-chip', 'from-accent-600 to-brand-700']] as [$evento, $titulo, $desc, $icono, $grad])
