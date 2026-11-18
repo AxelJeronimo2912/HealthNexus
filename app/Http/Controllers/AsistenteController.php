@@ -102,19 +102,23 @@ class AsistenteController extends Controller
             'contenido'       => $request->message,
         ]);
 
-        // ¡AQUÍ ESTÁ EL CAMBIO CLAVE!
-        // Enviamos SOLO el mensaje actual, sin historial.
-        // Esto obliga al modelo a concentrarse exclusivamente en lo que acaba de preguntar.
-        $mensajesParaGroq = [
-            ['role' => 'user', 'content' => $request->message]
-        ];
+        // Obtener los últimos 4 mensajes (2 del usuario, 2 del bot) para darle memoria
+        $historial = $conversacion->mensajes()
+            ->whereIn('rol', ['user', 'assistant'])
+            ->orderByDesc('created_at')
+            ->limit(4)
+            ->get()
+            ->reverse()
+            ->map(fn($m) => ['role' => $m->rol, 'content' => $m->contenido])
+            ->values()
+            ->toArray();
 
         $sinSentido         = (bool) $request->input('sin_sentido', false);
         $contadorSinSentido = (int)  $request->input('contador_sin_sentido', 0);
 
-        // Enviar al asistente
+        // Enviar al asistente CON el historial
         $respuesta = AsistenteService::responder(
-            $mensajesParaGroq,
+            $historial,
             null,
             $sinSentido,
             $contadorSinSentido

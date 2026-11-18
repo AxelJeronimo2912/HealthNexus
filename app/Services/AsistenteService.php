@@ -204,6 +204,9 @@ REGLAS:
 21. Si te piden el catálogo completo de medicamentos, usa 'listar_medicamentos'. Si te piden ver un medicamento específico, usa 'buscar_medicamento'.
 22. Antes de decir "no tengo esa herramienta", REVISA la lista completa de herramientas disponibles.
 23. ATENCIÓN EXTREMA AL CONTEXTO: Lee siempre el ÚLTIMO mensaje del usuario. Si el último mensaje pide algo diferente a los anteriores (ej. pasar de camas a medicamentos), DEBES usar la herramienta del nuevo tema. Bajo ninguna circunstancia repitas la respuesta de la pregunta anterior.
+24. Si el usuario pide un "resumen", "estado", "reporte" o "expediente" de un paciente específico (ej. "dime el estado de Juan"), usa SIEMPRE la herramienta 'reporte_completo_paciente'.
+25. Si el usuario proporciona un nombre con acentos (ej. Verónica) y no se encuentra, el sistema ya intentará buscarlo automáticamente. Si no lo encuentra, pídele al usuario el CURP o el ID del paciente.
+26. MEMORIA Y CONTEXTO: Si el usuario te acaba de decir un dato (como un nombre, CURP o ID) y su siguiente mensaje dice "hazme el reporte completo", "de él", "del mismo" o similares, DEBES usar la herramienta 'reporte_completo_paciente' con el término de búsqueda que se mencionó en el mensaje anterior. NO le vuelvas a pedir los datos si ya los dio hace un momento.
 PROMPT;
     }
 }

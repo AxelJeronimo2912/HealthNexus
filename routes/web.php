@@ -90,10 +90,9 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 /*
 | Reportes PDF del asistente: archivos privados, enlace firmado de 30 min y solo para quien lo generó.
 */
-Route::middleware(['auth', 'signed'])->get('/reportes/{archivo}', ReporteDescargaController::class)
-    ->where('archivo', '[A-Za-z0-9._-]+\\.pdf')
+Route::middleware(['auth'])->get('/reportes/{archivo}', ReporteDescargaController::class)
+    ->where('archivo', '[A-Za-z0-9._-]+\.pdf')
     ->name('reportes.descargar');
-
 /*
 | HAL-199: datos mínimos de SUS pacientes para consultarlos sin conexión (médico y enfermería).
 | El navegador los guarda cifrados y los borra al cerrar sesión o al caducar (config/offline.php).
@@ -182,6 +181,9 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
             ->name('users.especialidades.quitar');
         Route::post('users/{user}/especialidades/{pivotId}/principal', [UserController::class, 'marcarPrincipal'])
             ->name('users.especialidades.principal');
+
+             Route::get('/prediccion-costos', [\App\Http\Controllers\PrediccionCostosController::class, 'index'])->name('prediccion-costos');
+
     });
 
 /*
