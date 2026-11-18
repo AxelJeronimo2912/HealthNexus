@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SeriesHistoricasRequest;
+use App\Services\PrediccionCostosService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class SeriesHistoricasController extends Controller
 {
-    public function index(SeriesHistoricasRequest $request)
+    public function index(SeriesHistoricasRequest $request, PrediccionCostosService $predictor)
     {
         $indicador = $request->input('indicador');
         
-        // Si no mandan fechas, por defecto consultamos los últimos 12 meses
         $fechaInicio = $request->filled('fecha_inicio') 
             ? Carbon::parse($request->input('fecha_inicio'))->startOfMonth() 
             : now()->subMonths(12)->startOfMonth();
@@ -59,6 +59,11 @@ class SeriesHistoricasController extends Controller
                 ];
             });
 
+            $valoresParaMetricas = $series->pluck('valor')->toArray();
+
+            $metricasBasicas = $this->calcularMetricas($series);
+            $metricasPrecision = $predictor->calcularPrecision($valoresParaMetricas);
+
             return response()->json([
                 'success' => true,
                 'meta' => [
@@ -66,7 +71,7 @@ class SeriesHistoricasController extends Controller
                     'periodo_inicio' => $fechaInicio->format('Y-m-d'),
                     'periodo_fin' => $fechaFin->format('Y-m-d'),
                     'total_registros' => $series->count(),
-                    'modelo_confiabilidad' => $this->calcularMetricas($series) // 👈 Métricas del modelo
+                    'modelo_confiabilidad' => array_merge($metricasBasicas, $metricasPrecision) 
                 ],
                 'data' => $series
             ]);
@@ -81,7 +86,7 @@ class SeriesHistoricasController extends Controller
     }
 
     /**
-     * Calcula métricas básicas para saber si los datos son confiables
+     * Calcula métricas básicas de los datos históricos
      */
     private function calcularMetricas($series)
     {
@@ -96,14 +101,12 @@ class SeriesHistoricasController extends Controller
         $valores = $series->pluck('valor')->toArray();
         $promedio = array_sum($valores) / count($valores);
         
-        // Desviación estándar
         $sumaCuadrados = 0;
         foreach ($valores as $valor) {
             $sumaCuadrados += pow($valor - $promedio, 2);
         }
         $desviacion = sqrt($sumaCuadrados / count($valores));
 
-        // Tendencia simple (comparando el primer y último mes)
         $tendencia = 'Estable';
         if (count($valores) > 1) {
             $diferencia = end($valores) - $valores[0];

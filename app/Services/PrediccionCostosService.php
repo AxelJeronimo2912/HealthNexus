@@ -51,18 +51,51 @@ class PrediccionCostosService
         $n = count($valores);
         if ($n === 0) return [];
 
-        // El primer valor suavizado es igual al primer valor real
         $suavizados = [$valores[0]];
 
         for ($i = 1; $i < $n; $i++) {
-            // Fórmula: S_t = (alpha * Y_t) + ((1 - alpha) * S_t-1)
             $suavizados[] = ($alpha * $valores[$i]) + ((1 - $alpha) * end($suavizados));
         }
 
-        // Para predecir el futuro, asumimos que el último suavizado se mantiene
         $ultimoSuavizado = end($suavizados);
         $predicciones = array_fill(0, $periodosPredecir, round($ultimoSuavizado, 2));
 
         return $predicciones;
+    }
+
+
+        /**
+     * Calcula la precisión del modelo usando Backtesting (MAPE)
+     */
+    public function calcularPrecision(array $valores): array
+    {
+        $n = count($valores);
+        
+        if ($n < 3) {
+            return [
+                'mape' => null,
+                'precision' => null,
+                'mensaje' => 'Datos insuficientes para calcular precisión (se requieren al menos 3 meses).'
+            ];
+        }
+
+        $entrenamiento = array_slice($valores, 0, $n - 1);
+        $valorRealUltimoMes = end($valores);
+
+        $prediccion = $this->regresionLineal($entrenamiento, 1);
+        $valorPredichoUltimoMes = $prediccion[0] ?? 0;
+
+        $errorAbsoluto = 0;
+        if ($valorRealUltimoMes > 0) {
+            $errorAbsoluto = abs(($valorRealUltimoMes - $valorPredichoUltimoMes) / $valorRealUltimoMes) * 100;
+        }
+
+        $precision = max(0, 100 - $errorAbsoluto);
+
+        return [
+            'mape' => round($errorAbsoluto, 2), // Margen de error
+            'precision' => round($precision, 2), // Precisión del modelo (0-100%)
+            'mensaje' => 'Calculado comparando la predicción del último mes con el valor real.'
+        ];
     }
 }
