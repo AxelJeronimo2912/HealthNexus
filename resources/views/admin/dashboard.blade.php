@@ -7,10 +7,6 @@
         $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
         $ocupacion = $camasTotales > 0 ? round((($camasTotales - $camasDisponibles) / $camasTotales) * 100) : 0;
 
-        $datosPrediccion = app(\App\Http\Controllers\PrediccionCostosController::class)->index(
-            app(\App\Services\PrediccionCostosService::class),
-        );
-
         $pendientes = collect([
             $alertasCriticas > 0
                 ? [

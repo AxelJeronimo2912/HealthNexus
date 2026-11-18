@@ -182,8 +182,7 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
         Route::post('users/{user}/especialidades/{pivotId}/principal', [UserController::class, 'marcarPrincipal'])
             ->name('users.especialidades.principal');
 
-             Route::get('/prediccion-costos', [\App\Http\Controllers\PrediccionCostosController::class, 'index'])->name('prediccion-costos');
-
+Route::get('/prediccion-costos', [\App\Http\Controllers\PrediccionCostosController::class, 'index'])->name('prediccion-costos');
     });
 
 /*
