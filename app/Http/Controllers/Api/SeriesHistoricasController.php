@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SeriesHistoricasRequest;
 use App\Services\PrediccionCostosService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache; 
 use Carbon\Carbon;
 
 class SeriesHistoricasController extends Controller
@@ -22,67 +23,77 @@ class SeriesHistoricasController extends Controller
             ? Carbon::parse($request->input('fecha_fin'))->endOfMonth() 
             : now()->endOfMonth();
 
-        try {
-            if ($indicador === 'insumos') {
-                $datos = DB::table('movimientos_inventario')
-                    ->join('medicamentos', 'medicamentos.id', '=', 'movimientos_inventario.medicamento_id')
-                    ->select(
-                        DB::raw('SUM(movimientos_inventario.cantidad * medicamentos.precio_compra) as valor'), 
-                        DB::raw("DATE_FORMAT(movimientos_inventario.created_at, '%Y-%m') as periodo")
-                    )
-                    ->whereBetween('movimientos_inventario.created_at', [$fechaInicio, $fechaFin])
-                    ->where('movimientos_inventario.tipo', 'entrada')
-                    ->groupBy('periodo')
-                    ->orderBy('periodo', 'asc')
-                    ->get();
-            } else {
-                $query = DB::table('cuenta_items')
-                    ->join('cuentas', 'cuentas.id', '=', 'cuenta_items.cuenta_id')
-                    ->select(
-                        DB::raw('SUM(cuenta_items.importe) as valor'), 
-                        DB::raw("DATE_FORMAT(cuentas.created_at, '%Y-%m') as periodo")
-                    )
-                    ->whereBetween('cuentas.created_at', [$fechaInicio, $fechaFin]);
+        $servicioId = $request->input('servicio_id', 'todos');
 
-                if ($request->filled('servicio_id')) {
-                    $query->where('cuenta_items.servicio_id', $request->input('servicio_id'));
+        // Llave única para el caché
+        $cacheKey = "series_historicas_{$indicador}_{$fechaInicio->format('Ymd')}_{$fechaFin->format('Ymd')}_{$servicioId}";
+
+        $datosRespuesta = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($indicador, $fechaInicio, $fechaFin, $servicioId, $predictor) {
+            
+            try {
+                if ($indicador === 'insumos') {
+                    $datos = DB::table('movimientos_inventario')
+                        ->join('medicamentos', 'medicamentos.id', '=', 'movimientos_inventario.medicamento_id')
+                        ->select(
+                            DB::raw('SUM(movimientos_inventario.cantidad * medicamentos.precio_compra) as valor'), 
+                            DB::raw("DATE_FORMAT(movimientos_inventario.created_at, '%Y-%m') as periodo")
+                        )
+                        ->whereBetween('movimientos_inventario.created_at', [$fechaInicio, $fechaFin])
+                        ->where('movimientos_inventario.tipo', 'entrada')
+                        ->groupBy('periodo')
+                        ->orderBy('periodo', 'asc')
+                        ->get();
+                } else {
+                    $query = DB::table('cuenta_items')
+                        ->join('cuentas', 'cuentas.id', '=', 'cuenta_items.cuenta_id')
+                        ->select(
+                            DB::raw('SUM(cuenta_items.importe) as valor'), 
+                            DB::raw("DATE_FORMAT(cuentas.created_at, '%Y-%m') as periodo")
+                        )
+                        ->whereBetween('cuentas.created_at', [$fechaInicio, $fechaFin]);
+
+                    if ($servicioId !== 'todos') {
+                        $query->where('cuenta_items.servicio_id', $servicioId);
+                    }
+
+                    $datos = $query->groupBy('periodo')->orderBy('periodo', 'asc')->get();
                 }
 
-                $datos = $query->groupBy('periodo')->orderBy('periodo', 'asc')->get();
-            }
+                $series = $datos->map(function ($item) {
+                    return [
+                        'periodo' => $item->periodo,
+                        'valor' => (float) $item->valor
+                    ];
+                });
 
-            // Formatear los datos para la gráfica
-            $series = $datos->map(function ($item) {
+                $valoresParaMetricas = $series->pluck('valor')->toArray();
+                $metricasBasicas = $this->calcularMetricas($series);
+                $metricasPrecision = $predictor->calcularPrecision($valoresParaMetricas);
+
+                // 👇 AQUÍ ESTÁ EL CAMBIO: Usamos ->toArray() para que PHP pueda guardarlo en caché
                 return [
-                    'periodo' => $item->periodo,
-                    'valor' => (float) $item->valor
+                    'success' => true,
+                    'meta' => [
+                        'indicador' => $indicador,
+                        'periodo_inicio' => $fechaInicio->format('Y-m-d'),
+                        'periodo_fin' => $fechaFin->format('Y-m-d'),
+                        'total_registros' => $series->count(),
+                        'modelo_confiabilidad' => array_merge($metricasBasicas, $metricasPrecision),
+                        'desde_cache' => false 
+                    ],
+                    'data' => $series->toArray() // 👈 CAMBIO CLAVE AQUÍ
                 ];
-            });
 
-            $valoresParaMetricas = $series->pluck('valor')->toArray();
+            } catch (\Exception $e) {
+                return [
+                    'success' => false,
+                    'message' => 'Error al obtener las series históricas.',
+                    'error' => $e->getMessage()
+                ];
+            }
+        });
 
-            $metricasBasicas = $this->calcularMetricas($series);
-            $metricasPrecision = $predictor->calcularPrecision($valoresParaMetricas);
-
-            return response()->json([
-                'success' => true,
-                'meta' => [
-                    'indicador' => $indicador,
-                    'periodo_inicio' => $fechaInicio->format('Y-m-d'),
-                    'periodo_fin' => $fechaFin->format('Y-m-d'),
-                    'total_registros' => $series->count(),
-                    'modelo_confiabilidad' => array_merge($metricasBasicas, $metricasPrecision) 
-                ],
-                'data' => $series
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener las series históricas.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json($datosRespuesta);
     }
 
     /**
