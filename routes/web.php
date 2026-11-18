@@ -183,7 +183,10 @@ Route::middleware(['auth', 'rol.prefijo:admin'])
             ->name('users.especialidades.principal');
 
 Route::get('/prediccion-costos', [\App\Http\Controllers\PrediccionCostosController::class, 'index'])->name('prediccion-costos');
-    });
+  
+Route::get('/series-historicas', [\App\Http\Controllers\Api\SeriesHistoricasController::class, 'index'])->name('series-historicas');
+
+});
 
 /*
 |--------------------------------------------------------------------------
