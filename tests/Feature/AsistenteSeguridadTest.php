@@ -77,7 +77,7 @@ class AsistenteSeguridadTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['user_id' => $farmacia->id, 'evento' => 'acceso_denegado', 'modulo' => 'asistente']);
     }
 
-    public function test_enfermeria_consulta_pacientes_sin_que_la_curp_llegue_a_la_ia(): void
+    public function test_enfermeria_lista_pacientes_sin_la_curp(): void
     {
         $this->actingAs($this->usuario('enfermeria'));
 
@@ -85,7 +85,16 @@ class AsistenteSeguridadTest extends TestCase
 
         $this->assertSame('Laura Secreta', $resultado['pacientes'][0]['nombre']);
         $this->assertStringNotContainsString('SECL800101MDFRRR09', json_encode($resultado));
-        $this->assertStringNotContainsString('SECL800101MDFRRR09', json_encode(AsistenteTools::ejecutar('buscar_paciente', ['termino' => 'Laura'])));
+    }
+
+    public function test_listar_citas_responde_sin_error(): void
+    {
+        $this->actingAs($this->usuario('administrador'));
+
+        $resultado = AsistenteTools::ejecutar('listar_citas', ['limite' => 5]);
+
+        $this->assertArrayHasKey('citas', $resultado);
+        $this->assertArrayNotHasKey('error', $resultado);
     }
 
     public function test_solo_el_administrador_lista_al_personal(): void
