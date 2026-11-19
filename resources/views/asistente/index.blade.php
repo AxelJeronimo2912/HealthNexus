@@ -223,21 +223,44 @@
             }
 
             function agregarMensaje(texto, esUsuario, animar = true) {
+                // 1. FILTRO DE SEGURIDAD ANTI-BASURA (Alucinaciones de Groq)
+                if (!esUsuario) {
+                    const textoLimpioCheck = texto.replace(/\s+/g, ' ').trim();
+                    // Si el texto tiene muchos puntos suspensivos o palabras de error típicas de Groq
+                    if (textoLimpioCheck.includes('Oops!') ||
+                        textoLimpioCheck.includes('Sorry…') ||
+                        textoLimpioCheck.includes('Apologies') ||
+                        (textoLimpioCheck.match(/\.\.\./g) || []).length > 5) {
+                        texto =
+                            'Lo siento, hubo un problema interno al procesar la respuesta. Por favor, vuelve a intentarlo.';
+                    }
+                }
+
                 const fila = document.createElement('div');
                 fila.className =
                     `flex items-end gap-2 ${esUsuario ? 'justify-end' : 'justify-start'} ${animar ? 'mensaje-nuevo' : ''}`;
 
-                const pdfMatch = texto.match(/(https?:\/\/[^\s]+\.pdf)/);
                 let contenidoHTML = escaparHTML(texto);
 
-                if (pdfMatch) {
-                    const url = pdfMatch[1];
-                    contenidoHTML = contenidoHTML.replace(url,
-                        `<a href="${url}" target="_blank"
+                // 2. Limpiamos la URL si tiene saltos de línea o espacios metidos por error
+                const urlRegex = /(https?:\/\/[^\s]+\.pdf[^\s]*)/i;
+                let textoLimpio = contenidoHTML.replace(/(https?:\/\/[^\s]+\.pdf\?)\s+([^\s]+)/gi, '$1$2');
+
+                // 3. Buscamos la URL ya limpia
+                const match = textoLimpio.match(urlRegex);
+
+                if (match) {
+                    const urlCompleta = match[1];
+                    // 4. Reemplazamos en el texto limpio por el botón
+                    textoLimpio = textoLimpio.replace(urlCompleta, () => {
+                        return `<a href="${urlCompleta}" target="_blank"
                             class="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs hover:bg-red-700 transition-colors">
                             📄 Descargar PDF
-                        </a>`);
+                        </a>`;
+                    });
                 }
+
+                contenidoHTML = textoLimpio;
 
                 const avatar = !esUsuario ?
                     `<div class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>` :

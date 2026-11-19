@@ -70,7 +70,7 @@ class AsistenteController extends Controller
         return response()->json(['id' => $conversacion->id]);
     }
 
-    public function enviar(Request $request): JsonResponse
+        public function enviar(Request $request): JsonResponse
     {
         $request->validate([
             'message'              => ['required', 'string', 'max:2000'],
@@ -80,6 +80,15 @@ class AsistenteController extends Controller
         ]);
 
         $user = auth()->user();
+        $mensajeUsuario = $request->message;
+        $textoMin = mb_strtolower($mensajeUsuario);
+
+        // 1. DETECTAR EL TEMA DEL MENSAJE ACTUAL
+        $temaActual = 'otro';
+        if (str_contains($textoMin, 'cama')) $temaActual = 'camas';
+        elseif (str_contains($textoMin, 'cita')) $temaActual = 'citas';
+        elseif (str_contains($textoMin, 'medicamento') || str_contains($textoMin, 'farmaco')) $temaActual = 'medicamentos';
+        elseif (str_contains($textoMin, 'paciente')) $temaActual = 'pacientes';
 
         $conversacion = null;
         if ($request->filled('conversacion_id')) {
@@ -95,28 +104,54 @@ class AsistenteController extends Controller
             ]);
         }
 
-        // Guardar mensaje del usuario en la base de datos
+        // Guardar mensaje del usuario
         ChatMensaje::create([
             'conversacion_id' => $conversacion->id,
             'rol'             => 'user',
             'contenido'       => $request->message,
         ]);
 
-        // Obtener los últimos 4 mensajes (2 del usuario, 2 del bot) para darle memoria
-        $historial = $conversacion->mensajes()
-            ->whereIn('rol', ['user', 'assistant'])
+        // 2. LÓGICA DE HISTORIAL INTELIGENTE
+        $historial = [];
+        
+        // Si es un tema nuevo o no hay historial, NO enviamos contexto anterior
+        $ultimoMensajeBot = $conversacion->mensajes()
+            ->where('rol', 'assistant')
             ->orderByDesc('created_at')
-            ->limit(4)
-            ->get()
-            ->reverse()
-            ->map(fn($m) => ['role' => $m->rol, 'content' => $m->contenido])
-            ->values()
-            ->toArray();
+            ->first();
+
+        $temaAnterior = 'otro';
+        if ($ultimoMensajeBot) {
+            $textoBot = mb_strtolower($ultimoMensajeBot->contenido);
+            if (str_contains($textoBot, 'cama')) $temaAnterior = 'camas';
+            elseif (str_contains($textoBot, 'cita')) $temaAnterior = 'citas';
+            elseif (str_contains($textoBot, 'medicamento')) $temaAnterior = 'medicamentos';
+        }
+
+        // Si el tema cambió, enviamos SOLO el mensaje actual (historial vacío)
+        // Si es el mismo tema, enviamos el historial corto para dar contexto
+        if ($temaActual !== 'otro' && $temaActual !== $temaAnterior) {
+            // Cambio de tema: historial vacío para forzar al modelo a empezar de cero
+            $historial = [
+                ['role' => 'user', 'content' => $mensajeUsuario]
+            ];
+        } else {
+            // Mismo tema o tema desconocido: enviamos el último mensaje del bot y el nuevo del usuario
+            $historial = $conversacion->mensajes()
+                ->whereIn('rol', ['user', 'assistant'])
+                ->orderByDesc('created_at')
+                ->limit(2)
+                ->get()
+                ->reverse()
+                ->map(fn($m) => ['role' => $m->rol, 'content' => $m->contenido])
+                ->values()
+                ->toArray();
+        }
 
         $sinSentido         = (bool) $request->input('sin_sentido', false);
         $contadorSinSentido = (int)  $request->input('contador_sin_sentido', 0);
 
-        // Enviar al asistente CON el historial
+        // Enviar al asistente
         $respuesta = AsistenteService::responder(
             $historial,
             null,
