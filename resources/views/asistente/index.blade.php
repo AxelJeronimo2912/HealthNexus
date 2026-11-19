@@ -227,13 +227,17 @@
                 fila.className =
                     `flex items-end gap-2 ${esUsuario ? 'justify-end' : 'justify-start'} ${animar ? 'mensaje-nuevo' : ''}`;
 
-                const pdfMatch = texto.match(/(https?:\/\/[^\s]+\.pdf)/);
+                // El enlace del reporte va firmado: .pdf?expires=…&usuario=…&signature=…
+                // Hay que tomar la URL completa; sin la firma, la descarga responde 403.
+                const pdfMatch = texto.match(/(https?:\/\/[^\s"'<>)]+?\.pdf(?:\?[^\s"'<>)]*)?)/);
                 let contenidoHTML = escaparHTML(texto);
 
                 if (pdfMatch) {
-                    const url = pdfMatch[1];
+                    // escaparHTML cambia & por &amp;: se busca y se usa la URL ya escapada
+                    // Sin el punto o la coma con que la IA a veces cierra la frase (la firma es hexadecimal)
+                    const url = escaparHTML(pdfMatch[1].replace(/[.,;:!?]+$/, ''));
                     contenidoHTML = contenidoHTML.replace(url,
-                        `<a href="${url}" target="_blank"
+                        `<a href="${url}" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs hover:bg-red-700 transition-colors">
                             📄 Descargar PDF
                         </a>`);
