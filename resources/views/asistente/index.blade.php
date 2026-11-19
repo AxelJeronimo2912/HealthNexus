@@ -223,10 +223,9 @@
             }
 
             function agregarMensaje(texto, esUsuario, animar = true) {
-                // 1. FILTRO DE SEGURIDAD ANTI-BASURA (Alucinaciones de Groq)
+                // 1. FILTRO DE SEGURIDAD ANTI-BASURA (alucinaciones de Groq)
                 if (!esUsuario) {
                     const textoLimpioCheck = texto.replace(/\s+/g, ' ').trim();
-                    // Si el texto tiene muchos puntos suspensivos o palabras de error típicas de Groq
                     if (textoLimpioCheck.includes('Oops!') ||
                         textoLimpioCheck.includes('Sorry…') ||
                         textoLimpioCheck.includes('Apologies') ||
@@ -240,27 +239,30 @@
                 fila.className =
                     `flex items-end gap-2 ${esUsuario ? 'justify-end' : 'justify-start'} ${animar ? 'mensaje-nuevo' : ''}`;
 
-                let contenidoHTML = escaparHTML(texto);
+                // ===== ENLACE PDF FIRMADO =====
+                // La URL del reporte viene firmada: .pdf?expires=…&usuario=…&signature=…
+                // Hay que capturar la URL completa (con query string). Sin la firma,
+                // la descarga responde 403. Se limpian signos de puntuación finales
+                // que la IA a veces añade (la firma es hexadecimal).
+                const contenidoHTML = escaparHTML(texto);
 
-                // 2. Limpiamos la URL si tiene saltos de línea o espacios metidos por error
-                const urlRegex = /(https?:\/\/[^\s]+\.pdf[^\s]*)/i;
-                let textoLimpio = contenidoHTML.replace(/(https?:\/\/[^\s]+\.pdf\?)\s+([^\s]+)/gi, '$1$2');
+                const pdfRegex = /(https?:\/\/[^\s"'<>)]+?\.pdf(?:\?[^\s"'<>)]*)?)/i;
+                const match = contenidoHTML.match(pdfRegex);
 
-                // 3. Buscamos la URL ya limpia
-                const match = textoLimpio.match(urlRegex);
+                let contenidoFinal = contenidoHTML;
 
                 if (match) {
-                    const urlCompleta = match[1];
-                    // 4. Reemplazamos en el texto limpio por el botón
-                    textoLimpio = textoLimpio.replace(urlCompleta, () => {
-                        return `<a href="${urlCompleta}" target="_blank"
+                    // Quita puntuación final que no forma parte de la firma
+                    const urlEscapada = match[1].replace(/[.,;:!?]+$/, '');
+
+                    contenidoFinal = contenidoHTML.replace(
+                        urlEscapada,
+                        () => `<a href="${urlEscapada}" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs hover:bg-red-700 transition-colors">
                             📄 Descargar PDF
-                        </a>`;
-                    });
+                        </a>`
+                    );
                 }
-
-                contenidoHTML = textoLimpio;
 
                 const avatar = !esUsuario ?
                     `<div class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">HN</div>` :
@@ -269,7 +271,7 @@
                 const burbuja = `
                     <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-line shadow-sm
                         ${esUsuario ? 'bg-brand-600 text-white rounded-br-sm' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm'}">
-                        ${contenidoHTML}
+                        ${contenidoFinal}
                         <div class="text-xs mt-1 ${esUsuario ? 'text-brand-100' : 'text-gray-400'}">${horaActual()}</div>
                     </div>
                 `;

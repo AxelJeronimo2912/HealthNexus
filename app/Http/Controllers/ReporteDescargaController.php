@@ -2,24 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditEvent;
+use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Descarga de los reportes PDF que genera el asistente (ReporteService).
+ * Requiere sesión y un enlace firmado vigente emitido para el mismo usuario.
+ */
 class ReporteDescargaController extends Controller
 {
     public function __invoke(Request $request, string $archivo): StreamedResponse
     {
-        // 1. Verificamos que el archivo sea un PDF (seguridad básica)
-        abort_unless(str_ends_with(strtolower($archivo), '.pdf'), 404);
+        if ((int) $request->query('usuario') !== (int) $request->user()->id) {
+            AuditoriaService::registrar(AuditEvent::ACCESO_DENEGADO, 'reportes', "Intento de abrir el reporte {$archivo} generado por otro usuario");
+            abort(403);
+        }
 
-        // 2. Construimos la ruta segura
-        $ruta = 'reportes/' . basename($archivo);
+        $ruta = 'reportes/'.basename($archivo);
+        abort_unless(Storage::disk('local')->exists($ruta), 404);
 
-        // 3. Verificamos que exista
-        abort_unless(Storage::disk('local')->exists($ruta), 404, 'El archivo no existe o ha expirado.');
-
-        // 4. Lo devolvemos para descarga
         return Storage::disk('local')->response($ruta, $archivo, [
             'Content-Type' => 'application/pdf',
             'Cache-Control' => 'no-store, private',

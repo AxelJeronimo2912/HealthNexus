@@ -90,7 +90,7 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 /*
 | Reportes PDF del asistente: archivos privados, enlace firmado de 30 min y solo para quien lo generó.
 */
-Route::middleware(['auth'])->get('/reportes/{archivo}', ReporteDescargaController::class)
+Route::middleware(['auth', 'signed'])->get('/reportes/{archivo}', ReporteDescargaController::class)
     ->where('archivo', '[A-Za-z0-9._-]+\.pdf')
     ->name('reportes.descargar');
 /*
