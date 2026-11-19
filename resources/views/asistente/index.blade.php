@@ -223,24 +223,45 @@
             }
 
             function agregarMensaje(texto, esUsuario, animar = true) {
+                // 1. FILTRO DE SEGURIDAD ANTI-BASURA (alucinaciones de Groq)
+                if (!esUsuario) {
+                    const textoLimpioCheck = texto.replace(/\s+/g, ' ').trim();
+                    if (textoLimpioCheck.includes('Oops!') ||
+                        textoLimpioCheck.includes('Sorry…') ||
+                        textoLimpioCheck.includes('Apologies') ||
+                        (textoLimpioCheck.match(/\.\.\./g) || []).length > 5) {
+                        texto =
+                            'Lo siento, hubo un problema interno al procesar la respuesta. Por favor, vuelve a intentarlo.';
+                    }
+                }
+
                 const fila = document.createElement('div');
                 fila.className =
                     `flex items-end gap-2 ${esUsuario ? 'justify-end' : 'justify-start'} ${animar ? 'mensaje-nuevo' : ''}`;
 
-                // El enlace del reporte va firmado: .pdf?expires=…&usuario=…&signature=…
-                // Hay que tomar la URL completa; sin la firma, la descarga responde 403.
-                const pdfMatch = texto.match(/(https?:\/\/[^\s"'<>)]+?\.pdf(?:\?[^\s"'<>)]*)?)/);
-                let contenidoHTML = escaparHTML(texto);
+                // ===== ENLACE PDF FIRMADO =====
+                // La URL del reporte viene firmada: .pdf?expires=…&usuario=…&signature=…
+                // Hay que capturar la URL completa (con query string). Sin la firma,
+                // la descarga responde 403. Se limpian signos de puntuación finales
+                // que la IA a veces añade (la firma es hexadecimal).
+                const contenidoHTML = escaparHTML(texto);
 
-                if (pdfMatch) {
-                    // escaparHTML cambia & por &amp;: se busca y se usa la URL ya escapada
-                    // Sin el punto o la coma con que la IA a veces cierra la frase (la firma es hexadecimal)
-                    const url = escaparHTML(pdfMatch[1].replace(/[.,;:!?]+$/, ''));
-                    contenidoHTML = contenidoHTML.replace(url,
-                        `<a href="${url}" target="_blank" rel="noopener"
+                const pdfRegex = /(https?:\/\/[^\s"'<>)]+?\.pdf(?:\?[^\s"'<>)]*)?)/i;
+                const match = contenidoHTML.match(pdfRegex);
+
+                let contenidoFinal = contenidoHTML;
+
+                if (match) {
+                    // Quita puntuación final que no forma parte de la firma
+                    const urlEscapada = match[1].replace(/[.,;:!?]+$/, '');
+
+                    contenidoFinal = contenidoHTML.replace(
+                        urlEscapada,
+                        () => `<a href="${urlEscapada}" target="_blank" rel="noopener"
                             class="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs hover:bg-red-700 transition-colors">
                             📄 Descargar PDF
-                        </a>`);
+                        </a>`
+                    );
                 }
 
                 const avatar = !esUsuario ?
@@ -250,7 +271,7 @@
                 const burbuja = `
                     <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-line shadow-sm
                         ${esUsuario ? 'bg-brand-600 text-white rounded-br-sm' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-sm'}">
-                        ${contenidoHTML}
+                        ${contenidoFinal}
                         <div class="text-xs mt-1 ${esUsuario ? 'text-brand-100' : 'text-gray-400'}">${horaActual()}</div>
                     </div>
                 `;

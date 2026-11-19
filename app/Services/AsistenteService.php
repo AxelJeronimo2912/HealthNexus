@@ -29,19 +29,130 @@ class AsistenteService
                 "- Rol: " . ($user->getRoleNames()->first() ?? 'sin rol') . "\n";
         }
 
+        // 1. Obtener el último mensaje del usuario
+        $ultimoMensajeUsuario = '';
+        foreach (array_reverse($mensajes) as $m) {
+            if ($m['role'] === 'user') {
+                $ultimoMensajeUsuario = $m['content'];
+                break;
+            }
+        }
+
+        // 2. Instrucción dinámica
+        $instruccionContexto = "\n\n### INSTRUCCIÓN CRÍTICA ###\n" .
+                               "El usuario ACABA DE PREGUNTAR: \"{$ultimoMensajeUsuario}\".\n" .
+                               "REGLA DE ORO: Responde ÚNICAMENTE a esta pregunta. Ignora cualquier tema anterior.\n";
+
+        // =========================================================
+        // ENRUTADOR MANUAL INTELIGENTE (CON MÁS PALABRAS CLAVE)
+        // =========================================================
+        $toolForzada = null;
+        $argsForzados = null;
+        $textoMin = mb_strtolower($ultimoMensajeUsuario);
+        $esPdf = str_contains($textoMin, 'pdf') || str_contains($textoMin, 'reporte');
+
+        // --- CAMAS ---
+        if (str_contains($textoMin, 'cama')) {
+            if ($esPdf) {
+                $toolForzada = 'generar_pdf_camas';
+            } else {
+                if (str_contains($textoMin, 'ocupad') || str_contains($textoMin, 'disponible') || str_contains($textoMin, 'muestra') || str_contains($textoMin, 'list')) {
+                    $toolForzada = 'listar_camas';
+                    if (str_contains($textoMin, 'ocupad')) $argsForzados = ['estado' => 'ocupada'];
+                    elseif (str_contains($textoMin, 'disponible')) $argsForzados = ['estado' => 'disponible'];
+                } else {
+                    $toolForzada = 'camas_disponibles';
+                }
+            }
+        } 
+        // --- CITAS ---
+        elseif (str_contains($textoMin, 'cita')) {
+            if ($esPdf) {
+                $toolForzada = 'generar_pdf_citas_dia';
+            } else {
+                if (str_contains($textoMin, 'list') || str_contains($textoMin, 'muestra')) {
+                    $toolForzada = 'listar_citas';
+                } else {
+                    $toolForzada = 'citas_hoy';
+                }
+            }
+        } 
+        // --- MEDICAMENTOS (Incluye catálogo) ---
+        elseif (str_contains($textoMin, 'medicamento') || str_contains($textoMin, 'farmaco') || str_contains($textoMin, 'catalogo')) {
+            if ($esPdf) {
+                if (str_contains($textoMin, 'bajo') || str_contains($textoMin, 'poco')) {
+                    $toolForzada = 'generar_pdf_inventario_bajo';
+                } else {
+                    $toolForzada = 'generar_pdf_medicamentos_stock_alto';
+                }
+            } else {
+                if (str_contains($textoMin, 'bajo') || str_contains($textoMin, 'poco')) {
+                    $toolForzada = 'medicamentos_stock_bajo';
+                } elseif (str_contains($textoMin, 'alto')) {
+                    $toolForzada = 'medicamentos_stock_alto';
+                } elseif (str_contains($textoMin, 'caduc')) {
+                    $toolForzada = 'medicamentos_proximos_caducar';
+                } else {
+                    $toolForzada = 'listar_medicamentos';
+                }
+            }
+        } 
+        // --- PACIENTES ---
+        elseif (str_contains($textoMin, 'paciente')) {
+            $toolForzada = $esPdf ? 'generar_pdf_pacientes' : 'listar_pacientes';
+        }
+        // --- MÉDICOS / PERSONAL / TURNOS ---
+        elseif (str_contains($textoMin, 'medico') || str_contains($textoMin, 'médico') || str_contains($textoMin, 'doctor')) {
+            if (str_contains($textoMin, 'activo') || str_contains($textoMin, 'cuantos')) {
+                $toolForzada = 'medicos_activos';
+            } else {
+                $toolForzada = 'listar_personal';
+                $argsForzados = ['rol' => 'médico'];
+            }
+        }
+        elseif (str_contains($textoMin, 'trabaja') || str_contains($textoMin, 'turno') || str_contains($textoMin, 'quien esta')) {
+            $toolForzada = 'turnos_de_hoy';
+        }
+        // --- ADMISIONES ---
+        elseif (str_contains($textoMin, 'admision') || str_contains($textoMin, 'ingreso')) {
+            if (str_contains($textoMin, 'hoy') || str_contains($textoMin, 'cuantas')) {
+                $toolForzada = 'admisiones_de_hoy';
+            } else {
+                $toolForzada = 'listar_admisiones';
+            }
+        }
+        // --- ESTADÍSTICAS ---
+        elseif (str_contains($textoMin, 'estadistica') || str_contains($textoMin, 'resumen')) {
+            $toolForzada = 'estadisticas_generales';
+        }
+        // =========================================================
+
         $payloadMessages = [
             [
                 'role'    => 'system',
-                'content' => ($systemPrompt ?? self::systemPromptPorDefecto()) . $contextoUsuario,
+                'content' => ($systemPrompt ?? self::systemPromptPorDefecto()) . $contextoUsuario . $instruccionContexto,
             ]
         ];
 
-        // Añadimos el historial (o el mensaje actual)
-        foreach ($mensajes as $m) {
-            $payloadMessages[] = $m;
+        // =========================================================
+        // SI HAY HERRAMIENTA FORZADA, BORRAMOS EL HISTORIAL POR COMPLETO
+        // =========================================================
+        if ($toolForzada) {
+            // Solo enviamos el mensaje actual. Cero contexto anterior.
+            $payloadMessages[] = ['role' => 'user', 'content' => $ultimoMensajeUsuario];
+            
+            // Inyectamos los argumentos forzados si existen
+            if ($argsForzados) {
+                $payloadMessages[0]['content'] .= "\nARGUMENTOS OBLIGATORIOS PARA LA HERRAMIENTA: " . json_encode($argsForzados);
+            }
+        } else {
+            // Si no hay herramienta forzada (pregunta general), enviamos el historial normal
+            foreach ($mensajes as $m) {
+                $payloadMessages[] = $m;
+            }
         }
 
-        // MODO HUMOR: Sin herramientas
+        // MODO HUMOR
         if ($sinSentido) {
             $payloadMessages[0]['content'] .= self::instruccionHumor($contadorSinSentido);
             $respuesta = self::llamarApi($url, $apiKey, $model, $payloadMessages, false);
@@ -49,8 +160,35 @@ class AsistenteService
                 ?? 'Mi estetoscopio no detecta esa pregunta. ¿Probamos con algo del hospital?';
         }
 
-        // MODO NORMAL: Primera llamada CON herramientas
-        $respuesta = self::llamarApi($url, $apiKey, $model, $payloadMessages, true);
+        // LLAMADA A GROQ
+        $respuesta = self::llamarApi($url, $apiKey, $model, $payloadMessages, true, false, 0, $toolForzada);
+
+        // MODO RESPALDO (FALLBACK)
+        if (!$respuesta && $toolForzada) {
+            Log::warning("Groq falló. Activando Modo Respaldo para: {$toolForzada}");
+            $resultado = AsistenteTools::ejecutar($toolForzada, $argsForzados ?? []);
+            
+            if (isset($resultado['error'])) {
+                return "Error al obtener los datos: " . $resultado['error'];
+            }
+
+            if (isset($resultado['url'])) {
+                return "He generado el reporte. Puedes descargarlo aquí: " . $resultado['url'];
+            }
+
+            $textoRespaldo = "Aquí tienes la información solicitada (Modo Respaldo):\n\n";
+            foreach ($resultado as $key => $value) {
+                if (is_array($value)) {
+                    $textoRespaldo .= ucfirst($key) . ":\n";
+                    foreach ($value as $item) {
+                        $textoRespaldo .= "- " . (is_array($item) ? implode(', ', array_map(fn($k, $v) => "$k: $v", array_keys($item), $item)) : $item) . "\n";
+                    }
+                } else {
+                    $textoRespaldo .= ucfirst($key) . ": " . $value . "\n";
+                }
+            }
+            return trim($textoRespaldo);
+        }
 
         if (!$respuesta) {
             return 'No se pudo contactar al asistente (Error de API).';
@@ -58,13 +196,12 @@ class AsistenteService
 
         $toolCalls = $respuesta['choices'][0]['message']['tool_calls'] ?? null;
 
-        // Si el modelo NO usó herramientas, devolvemos su respuesta
         if (!$toolCalls || count($toolCalls) === 0) {
             return $respuesta['choices'][0]['message']['content'] 
                 ?? 'El asistente no generó una respuesta.';
         }
 
-        // Si el modelo PIDIÓ herramientas:
+        // EJECUTAMOS HERRAMIENTAS
         foreach ($toolCalls as $toolCall) {
             $nombreTool = $toolCall['function']['name'];
             $argumentos = json_decode($toolCall['function']['arguments'] ?? '{}', true) ?? [];
@@ -85,16 +222,14 @@ class AsistenteService
             ];
         }
 
-        // SEGUNDA LLAMADA: Forzamos a que responda con texto (tool_choice = none)
-        $respuesta2 = self::llamarApi($url, $apiKey, $model, $payloadMessages, true, true);
+        // SEGUNDA LLAMADA: Forzamos texto
+        $respuesta2 = self::llamarApi($url, $apiKey, $model, $payloadMessages, true, true, 0, null);
 
         if ($respuesta2) {
             $textoFinal = $respuesta2['choices'][0]['message']['content'] ?? '';
-            
             if (trim($textoFinal) === '') {
-                return 'He generado la información solicitada, pero el asistente no pudo redactar un resumen. Por favor, revisa el módulo correspondiente.';
+                return 'He generado la información solicitada, pero el asistente no pudo redactar un resumen.';
             }
-
             return $textoFinal;
         }
 
@@ -107,22 +242,34 @@ class AsistenteService
         string $model, 
         array $messages, 
         bool $conHerramientas,
-        bool $forzarTexto = false, // Parámetro nuevo
-        int $intento = 0
+        bool $forzarTexto = false, 
+        int $intento = 0,
+        ?string $toolForzada = null
     ): ?array {
         $payload = [
             'model' => $model,
             'messages' => $messages,
             'temperature' => 0.1,
             'max_tokens' => 1024,
+            'frequency_penalty' => 0.5,
+            'presence_penalty' => 0.5,
         ];
 
         $herramientas = $conHerramientas ? AsistenteTools::definiciones() : [];
         
         if ($herramientas) {
             $payload['tools'] = $herramientas;
-            // Si forzamos texto, le decimos a Groq "no uses herramientas, solo escribe"
-            $payload['tool_choice'] = $forzarTexto ? 'none' : 'auto'; 
+            
+            if ($forzarTexto) {
+                $payload['tool_choice'] = 'none';
+            } elseif ($toolForzada) {
+                $payload['tool_choice'] = [
+                    'type' => 'function',
+                    'function' => ['name' => $toolForzada]
+                ];
+            } else {
+                $payload['tool_choice'] = 'auto'; 
+            }
         }
 
         try {
@@ -131,7 +278,6 @@ class AsistenteService
                 'Content-Type' => 'application/json',
             ])->timeout(60)->post(rtrim($url, '/') . '/chat/completions', $payload);
 
-            // Manejo de Rate Limit
             if ($response->status() === 429 && $intento < 3) {
                 $body = $response->body();
                 $espera = 3;
@@ -140,7 +286,7 @@ class AsistenteService
                 }
                 Log::warning("Groq Rate Limit alcanzado. Reintentando en {$espera} segundos...");
                 sleep((int) ceil($espera));
-                return self::llamarApi($url, $apiKey, $model, $messages, $conHerramientas, $forzarTexto, $intento + 1);
+                return self::llamarApi($url, $apiKey, $model, $messages, $conHerramientas, $forzarTexto, $intento + 1, $toolForzada);
             }
 
             if ($response->failed()) {
@@ -181,7 +327,7 @@ class AsistenteService
 Eres el asistente virtual del sistema hospitalario HealthNexus, desarrollado en Laravel. Ayudas a médicos, enfermeros, farmacéuticos y personal administrativo.
 
 REGLAS:
-1. Cuando te pregunten por datos REALES del sistema (pacientes, citas, camas, medicamentos, turnos, admisiones), USA las herramientas disponibles. NUNCA inventes números.
+1. Cuando te pregunten por datos REALES del sistema (pacientes, citas, camas, medicamentos, turnos, admisiones, médicos), USA las herramientas disponibles. NUNCA inventes números.
 2. Si la pregunta es general o conceptual (ej. '¿qué es HealthNexus?'), responde sin usar herramientas.
 3. Si una herramienta devuelve un error, informa al usuario claramente.
 4. Responde siempre en ESPAÑOL, de forma clara, profesional y concisa.
@@ -198,9 +344,9 @@ REGLAS:
 15. Si el usuario insiste con preguntas sin sentido, sube el tono humorístico (pero nunca insultes de verdad, ni uses groserías, ni discrimines).
 16. Después de 3 preguntas consecutivas sin sentido, responde con un mensaje claramente divertido y "burlón" pero amable, e invita al usuario a volver al tema del hospital.
 17. NUNCA uses emojis en tus respuestas. Responde siempre en texto plano, sin símbolos, sin caritas y sin iconos.
-18. Si te piden un listado general (de pacientes, citas, camas, medicamentos, personal, admisiones), usa las herramientas 'listar_*' correspondientes.
+18. Si te piden un listado general (de pacientes, citas, camas, medicamentos, personal, admisiones, médicos), usa las herramientas 'listar_*' o 'medicos_activos' correspondientes.
 19. Si te piden estadísticas generales del hospital, usa 'estadisticas_generales'.
-20. Si te piden medicamentos con stock alto, usa 'medicamentos_stock_alto'. Si te piden stock bajo, usa 'medicamentos_stock_bajo'.
+20. Si te piden medicamentos con stock alto, usa 'medicamentos_stock_alto'. Si te piden stock bajo, usa 'medicamentos_stock_bajo'. Si te piden los próximos a caducar, usa 'medicamentos_proximos_caducar'.
 21. Si te piden el catálogo completo de medicamentos, usa 'listar_medicamentos'. Si te piden ver un medicamento específico, usa 'buscar_medicamento'.
 22. Antes de decir "no tengo esa herramienta", REVISA la lista completa de herramientas disponibles.
 23. ATENCIÓN EXTREMA AL CONTEXTO: Lee siempre el ÚLTIMO mensaje del usuario. Si el último mensaje pide algo diferente a los anteriores (ej. pasar de camas a medicamentos), DEBES usar la herramienta del nuevo tema. Bajo ninguna circunstancia repitas la respuesta de la pregunta anterior.
