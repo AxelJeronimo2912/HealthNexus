@@ -779,6 +779,35 @@ class AsistenteTools
         ];
     }
 
+    // ============ PACIENTES: LISTADO ============
+
+    /** Pacientes activos (el médico solo ve los suyos). Sin CURP ni datos de contacto. */
+    private static function listarPacientes(int $limite = 20): array
+    {
+        $query = Paciente::where('activo', true)->with('medicoAsignado.medico');
+
+        if (self::esMedico() && ! self::esAdmin()) {
+            $userId = self::usuarioActual()->id;
+            $query->where(function ($q) use ($userId) {
+                $q->whereHas('citas', fn ($sub) => $sub->where('medico_id', $userId))
+                    ->orWhereHas('consultas', fn ($sub) => $sub->where('medico_id', $userId))
+                    ->orWhereHas('medicoAsignado', fn ($sub) => $sub->where('medico_id', $userId));
+            });
+        }
+
+        $pacientes = $query->limit($limite)->get()->map(fn ($p) => [
+            'id' => $p->id,
+            'nombre' => $p->nombre_completo,
+            'edad' => $p->edad,
+            'medico_asignado' => $p->medicoAsignado?->medico?->nombre_completo,
+        ])->toArray();
+
+        return [
+            'total' => count($pacientes),
+            'pacientes' => $pacientes,
+        ];
+    }
+
     // ============ CITAS ============
 
     private static function citasHoy(): array
@@ -1099,6 +1128,40 @@ class AsistenteTools
                 'total_salidas' => (int) $r->total_salidas,
                 'promedio_diario' => round($r->total_salidas / max($dias, 1), 2),
             ])->toArray(),
+        ];
+    }
+
+    // ============ CITAS: LISTADO ============
+
+    /** Citas filtradas por estado y rango de fechas (el médico solo ve las suyas). */
+    private static function listarCitas(?string $estado = null, ?string $desde = null, ?string $hasta = null, int $limite = 20): array
+    {
+        $query = Cita::with(['paciente', 'medico']);
+
+        if ($estado) {
+            $query->where('estado', $estado);
+        }
+        if ($desde) {
+            $query->whereDate('fecha_hora', '>=', $desde);
+        }
+        if ($hasta) {
+            $query->whereDate('fecha_hora', '<=', $hasta);
+        }
+
+        if (self::esMedico() && ! self::esAdmin()) {
+            $query->where('medico_id', self::usuarioActual()->id);
+        }
+
+        $citas = $query->orderByDesc('fecha_hora')->limit($limite)->get()->map(fn ($c) => [
+            'fecha' => $c->fecha_hora->format('d/m/Y H:i'),
+            'paciente' => $c->paciente?->nombre_completo,
+            'medico' => $c->medico?->nombre_completo,
+            'estado' => $c->estado_label,
+        ])->toArray();
+
+        return [
+            'total' => count($citas),
+            'citas' => $citas,
         ];
     }
 
