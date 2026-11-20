@@ -103,9 +103,19 @@
                 </div>
 
                 <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/80">
-                    <p class="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                        Costos proyectados
-                    </p>
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                            Costos proyectados
+                        </p>
+                        <div class="flex items-center gap-3 text-[11px] text-slate-500">
+                            <span class="inline-flex items-center gap-1">
+                                <span class="h-2.5 w-2.5 rounded-sm bg-emerald-600"></span> Histórico
+                            </span>
+                            <span class="inline-flex items-center gap-1">
+                                <span class="h-2.5 w-2.5 rounded-sm bg-amber-600"></span> Proyección
+                            </span>
+                        </div>
+                    </div>
                     <p class="text-xs text-slate-400 mb-3">Estimación financiera para toma de decisiones</p>
                     <div class="h-60">
                         <canvas id="chartCostosModal"></canvas>
@@ -159,25 +169,51 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } }
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
                 }
             });
+
+            const etiquetasCostos = @json($costosLabels);
+            const coloresBarras = etiquetasCostos.map(lbl =>
+                String(lbl).startsWith('Mes +') ? '#d97706' : '#059669'
+            );
 
             chartCostosInst = new Chart(cEl, {
                 type: 'bar',
                 data: {
-                    labels: @json($costosLabels),
+                    labels: etiquetasCostos,
                     datasets: [{
                         label: 'Costo estimado ($)',
                         data: @json($costosValores),
-                        backgroundColor: '#059669',
+                        backgroundColor: coloresBarras,
                         borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ' $' + Number(ctx.parsed.y || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (val) => '$' + Number(val).toLocaleString('es-MX')
+                            }
+                        }
+                    }
                 }
             });
         }
