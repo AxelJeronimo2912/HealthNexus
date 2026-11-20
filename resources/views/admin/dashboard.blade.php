@@ -77,6 +77,7 @@
         @abrir-modal-fenotipado.window="modalAbierto = 'fenotipado'" @abrir-modal-dwh.window="modalAbierto = 'dwh'"
         @abrir-modal-ia-medica.window="modalAbierto = 'ia-medica'"
         @abrir-modal-prediccion.window="modalAbierto = 'prediccion'"
+        @abrir-modal-simulador-riesgo.window="modalAbierto = 'simulador-riesgo'"
         @abrir-modal-tendencia-costos.window="modalAbierto = 'tendencia-costos'"
         @keydown.escape.window="modalAbierto = null"
         class="py-7">
@@ -179,7 +180,7 @@
                     <div class="mb-3 flex items-end justify-between">
                         <h2 class="text-sm font-semibold text-slate-900">Modelos analíticos</h2>
                     </div>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
                         @foreach ([['abrir-modal-sla', 'Pulso operativo SLA', 'Detección de anomalías', 'signal', 'from-sky-500 to-brand-600'], ['abrir-modal-fenotipado', 'Fenotipado clínico', 'K-Means + PCA', 'squares-plus', 'from-accent-500 to-accent-700'], ['abrir-modal-dwh', 'Data Warehouse', 'Big Data · Analítica', 'circle-stack', 'from-brand-500 to-brand-800'], ['abrir-modal-ia-medica', 'IA médica predictiva', '5 algoritmos', 'cpu-chip', 'from-accent-600 to-brand-700']] as [$evento, $titulo, $desc, $icono, $grad])
                             <button type="button" @click="$dispatch('{{ $evento }}')"
                                 class="group relative overflow-hidden rounded-2xl bg-white p-5 text-left ring-1 ring-slate-200/70 shadow-card transition-all hover:shadow-md hover:ring-slate-300">
@@ -209,6 +210,21 @@
                             </div>
                             <p class="mt-4 text-sm font-semibold text-slate-900">Predicción de Costos</p>
                             <p class="mt-0.5 text-xs text-slate-500">Regresión Lineal · Suavizado</p>
+                        </button>
+
+                        {{-- BOTÓN PARA EL MODAL DE SIMULADOR DE RIESGO --}}
+                        <button type="button" @click="$dispatch('abrir-modal-simulador-riesgo')"
+                            class="group relative overflow-hidden rounded-2xl bg-white p-5 text-left ring-1 ring-slate-200/70 shadow-card transition-all hover:shadow-md hover:ring-slate-300">
+                            <div class="flex items-start justify-between">
+                                <span
+                                    class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-rose-600 to-red-700 text-white shadow-sm">
+                                    <x-heroicon-o-heart class="h-5 w-5" />
+                                </span>
+                                <x-heroicon-m-arrow-up-right
+                                    class="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
+                            </div>
+                            <p class="mt-4 text-sm font-semibold text-slate-900">Simulador de Riesgo</p>
+                            <p class="mt-0.5 text-xs text-slate-500">Signos vitales · Detección de riesgo</p>
                         </button>
                     </div>
                 </section>
@@ -243,6 +259,7 @@
             @include('admin.partials._modal-dwh')
             @include('admin.partials._modal-ia-medica')
             @include('admin.partials._modal-prediccion')
+            @include('admin.partials._modal-simulador-riesgo')
             @include('admin.partials._modal-tendencia-costos')
         @endif
     </div>
