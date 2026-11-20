@@ -76,7 +76,9 @@
     <div x-data="{ modalAbierto: null }" @abrir-modal-sla.window="modalAbierto = 'sla'"
         @abrir-modal-fenotipado.window="modalAbierto = 'fenotipado'" @abrir-modal-dwh.window="modalAbierto = 'dwh'"
         @abrir-modal-ia-medica.window="modalAbierto = 'ia-medica'"
-        @abrir-modal-prediccion.window="modalAbierto = 'prediccion'" @keydown.escape.window="modalAbierto = null"
+        @abrir-modal-prediccion.window="modalAbierto = 'prediccion'"
+        @abrir-modal-tendencia-costos.window="modalAbierto = 'tendencia-costos'"
+        @keydown.escape.window="modalAbierto = null"
         class="py-7">
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -210,6 +212,28 @@
                         </button>
                     </div>
                 </section>
+
+                {{-- SECCIÓN INFERIOR: TENDENCIA Y COSTOS PROYECTADOS --}}
+                <section>
+                    <div class="mb-3 flex items-end justify-between">
+                        <h2 class="text-sm font-semibold text-slate-900">Análisis por periodo</h2>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <button type="button" @click="$dispatch('abrir-modal-tendencia-costos')"
+                            class="group relative overflow-hidden rounded-2xl bg-white p-5 text-left ring-1 ring-slate-200/70 shadow-card transition-all hover:shadow-md hover:ring-slate-300">
+                            <div class="flex items-start justify-between">
+                                <span
+                                    class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-sm">
+                                    <x-heroicon-o-presentation-chart-line class="h-5 w-5" />
+                                </span>
+                                <x-heroicon-m-arrow-up-right
+                                    class="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
+                            </div>
+                            <p class="mt-4 text-sm font-semibold text-slate-900">Tendencia y Costos</p>
+                            <p class="mt-0.5 text-xs text-slate-500">Indicadores · Proyección periodo</p>
+                        </button>
+                    </div>
+                </section>
             @endif
         </div>
 
@@ -219,6 +243,7 @@
             @include('admin.partials._modal-dwh')
             @include('admin.partials._modal-ia-medica')
             @include('admin.partials._modal-prediccion')
+            @include('admin.partials._modal-tendencia-costos')
         @endif
     </div>
 </x-app-layout>
