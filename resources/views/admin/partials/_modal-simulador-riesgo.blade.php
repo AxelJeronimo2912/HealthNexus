@@ -138,26 +138,41 @@
 
             {{-- RESULTADO DE SIMULACIÓN --}}
             <template x-if="resultadoSim">
-                <div class="rounded-2xl p-4 border space-y-3"
+                <div class="rounded-2xl p-4 border space-y-3.5 transition-all"
                     :class="{
                         'bg-red-50/70 border-red-200': resultadoSim.nivel === 'Alto',
                         'bg-amber-50/70 border-amber-200': resultadoSim.nivel === 'Moderado',
                         'bg-emerald-50/70 border-emerald-200': resultadoSim.nivel === 'Bajo'
                     }">
                     <div class="flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex items-center gap-2.5">
-                            <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase"
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide"
                                 :class="{
                                     'bg-red-600 text-white': resultadoSim.nivel === 'Alto',
                                     'bg-amber-500 text-white': resultadoSim.nivel === 'Moderado',
                                     'bg-emerald-600 text-white': resultadoSim.nivel === 'Bajo'
                                 }"
                                 x-text="'Riesgo ' + resultadoSim.nivel"></span>
-                            <span class="text-sm font-bold text-slate-800"
+                            <span class="text-sm font-bold text-slate-900"
                                 x-text="'Fenotipo afín: ' + resultadoSim.fenotipo"></span>
                         </div>
-                        <span class="text-xs font-bold text-slate-600"
+                        <span class="text-xs font-bold text-slate-600 bg-white/80 px-2.5 py-1 rounded-lg border border-slate-200/70"
                             x-text="'Puntaje de alerta: ' + resultadoSim.puntaje"></span>
+                    </div>
+
+                    <p class="text-xs font-semibold text-slate-800" x-text="resultadoSim.recomendacion"></p>
+
+                    <div class="flex flex-wrap gap-2 text-[11px] text-slate-600">
+                        <span class="bg-white/80 px-2 py-1 rounded-md border border-slate-200/60"
+                            x-text="'Edad: ' + resultadoSim.signos.edad + ' a'"></span>
+                        <span class="bg-white/80 px-2 py-1 rounded-md border border-slate-200/60"
+                            x-text="'FC: ' + resultadoSim.signos.fc + ' lpm'"></span>
+                        <span class="bg-white/80 px-2 py-1 rounded-md border border-slate-200/60"
+                            x-text="'SpO2: ' + resultadoSim.signos.spo2 + '%'"></span>
+                        <span class="bg-white/80 px-2 py-1 rounded-md border border-slate-200/60"
+                            x-text="'PA: ' + resultadoSim.signos.pas + '/' + resultadoSim.signos.pad + ' mmHg'"></span>
+                        <span class="bg-white/80 px-2 py-1 rounded-md border border-slate-200/60"
+                            x-text="'Temp: ' + resultadoSim.signos.temp + ' °C'"></span>
                     </div>
 
                     <ul class="list-disc list-inside text-xs text-slate-700 space-y-1">
@@ -366,10 +381,18 @@
                     }
                 }
 
+                const recomendaciones = {
+                    Alto: 'Prioridad alta: requiere valoración médica inmediata y vigilancia continua de signos vitales.',
+                    Moderado: 'Prioridad moderada: se sugiere observación clínica cercana y reevaluación periódica.',
+                    Bajo: 'Riesgo bajo: parámetros sin datos críticos inmediatos; continuar manejo estándar.'
+                };
+
                 this.resultadoSim = {
                     nivel,
                     puntaje,
                     fenotipo: fenotipoAsignado,
+                    recomendacion: recomendaciones[nivel],
+                    signos: { edad, fc, spo2, pas, pad, temp },
                     hallazgos
                 };
             }
